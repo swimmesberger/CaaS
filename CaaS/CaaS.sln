@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Api", "CaaS.Api\CaaS.Api.csproj", "{4E355AB2-5DF6-422C-8B5B-D191F5EDC174}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Core", "CaaS.Core\CaaS.Core.csproj", "{4668DF74-3B06-49FD-93F6-584CB2452CE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Infrastructure", "CaaS.Infrastructure\CaaS.Infrastructure.csproj", "{4D3769FA-BC55-47B2-955B-CDD1017D33ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4E355AB2-5DF6-422C-8B5B-D191F5EDC174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E355AB2-5DF6-422C-8B5B-D191F5EDC174}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E355AB2-5DF6-422C-8B5B-D191F5EDC174}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E355AB2-5DF6-422C-8B5B-D191F5EDC174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4668DF74-3B06-49FD-93F6-584CB2452CE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4668DF74-3B06-49FD-93F6-584CB2452CE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4668DF74-3B06-49FD-93F6-584CB2452CE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4668DF74-3B06-49FD-93F6-584CB2452CE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D3769FA-BC55-47B2-955B-CDD1017D33ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D3769FA-BC55-47B2-955B-CDD1017D33ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D3769FA-BC55-47B2-955B-CDD1017D33ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D3769FA-BC55-47B2-955B-CDD1017D33ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
