@@ -1,10 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Api", "CaaS.Api\CaaS.Api.csproj", "{4E355AB2-5DF6-422C-8B5B-D191F5EDC174}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Api", "CaaS.Api\CaaS.Api.csproj", "{4E355AB2-5DF6-422C-8B5B-D191F5EDC174}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Core", "CaaS.Core\CaaS.Core.csproj", "{4668DF74-3B06-49FD-93F6-584CB2452CE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Core", "CaaS.Core\CaaS.Core.csproj", "{4668DF74-3B06-49FD-93F6-584CB2452CE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Infrastructure", "CaaS.Infrastructure\CaaS.Infrastructure.csproj", "{4D3769FA-BC55-47B2-955B-CDD1017D33ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Infrastructure", "CaaS.Infrastructure\CaaS.Infrastructure.csproj", "{4D3769FA-BC55-47B2-955B-CDD1017D33ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +27,11 @@ Global
 		{4D3769FA-BC55-47B2-955B-CDD1017D33ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D3769FA-BC55-47B2-955B-CDD1017D33ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D3769FA-BC55-47B2-955B-CDD1017D33ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DF56ECB8-C1E9-4057-9C22-975E04CB7AB2}
 	EndGlobalSection
 EndGlobal
