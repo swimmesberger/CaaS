@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace CaaS.Infrastructure.Repositories.Base; 
+namespace CaaS.Infrastructure.Repositories.Base.Mapping; 
 
 public static class IDataRecordExtensions {
     public static DateTimeOffset GetDateTimeOffset(this IDataRecord dataRecord, string fieldName) {

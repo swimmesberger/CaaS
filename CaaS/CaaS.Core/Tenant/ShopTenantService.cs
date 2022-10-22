@@ -43,7 +43,7 @@ public class ShopTenantService : ITenantService {
             return Tenant.Empty;
         }
         var tenantGuid = Guid.Parse(tenantId);
-        var shop = await _shopRepository.GetByIdAsync(tenantGuid, cancellationToken);
+        var shop = await _shopRepository.FindByIdAsync(tenantGuid, cancellationToken);
         var tenant = shop == null ? Tenant.Empty : new Tenant(tenantId, shop.Name);
         return tenant;
     }

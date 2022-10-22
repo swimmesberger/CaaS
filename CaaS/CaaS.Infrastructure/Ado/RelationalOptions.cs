@@ -1,4 +1,4 @@
-﻿namespace CaaS.Infrastructure.Repositories.Base;
+﻿namespace CaaS.Infrastructure.Ado;
 
 public record RelationalOptions {
     public const string Key = "ConnectionStrings:Main";

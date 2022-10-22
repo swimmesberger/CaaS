@@ -1,25 +1,37 @@
 ﻿using System.Data;
 using CaaS.Core.Entities;
 using CaaS.Core.Repositories;
-using CaaS.Core.Repositories.Base;
+using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Repositories.Base;
+using CaaS.Infrastructure.Repositories.Base.Mapping;
 
 namespace CaaS.Infrastructure.Repositories; 
 
 public class ShopRepository : Repository<Shop>, IShopRepository {
     private const string TableName = "shop";
-    private const string ColumnName = "name";
-    private static readonly string[] ColumnNames = { ColumnName };
+    
+    public ShopRepository(IConnectionProvider connectionProvider) : base(connectionProvider) { }
 
-    public ShopRepository(IRelationalConnectionFactory dbProviderFactory) : base(dbProviderFactory) { }
+    public async Task<Shop?> FindByNameAsync(string name, CancellationToken cancellationToken = default) {
+        return (await QueryAsync(
+                $" WHERE name = @name",
+                new[]{new QueryParameter("name", name)}, 
+                cancellationToken)).FirstOrDefault();
+    }
 
     protected override string GetTableName() => TableName;
 
-    protected override IReadOnlyList<string> GetColumnNames() => ColumnNames;
-    
     protected override Shop SetFromRecord(Shop value, IDataRecord record) {
+        value = base.SetFromRecord(value, record);
         return value with {
-            Name = record.GetString(ColumnName)
+            Name = record.GetString(PropertyMapping.MapProperty(nameof(Shop.Name)))
         };
+    }
+
+    protected override object GetRecordValue(Shop value, string propertyName) {
+        if (propertyName.Equals(nameof(Shop.Name))) {
+            return value.Name;
+        }
+        return base.GetRecordValue(value, propertyName);
     }
 }

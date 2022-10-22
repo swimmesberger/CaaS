@@ -4,5 +4,5 @@ using CaaS.Core.Repositories.Base;
 namespace CaaS.Core.Repositories; 
 
 public interface IShopRepository : IRepository<Shop> {
-    
+    Task<Shop?> FindByNameAsync(string name, CancellationToken cancellationToken = default);
 }

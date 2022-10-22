@@ -1,10 +1,12 @@
 ﻿using System.Globalization;
 using System.Text;
 
-namespace CaaS.Infrastructure;
+namespace CaaS.Infrastructure.Repositories.Base.Mapping;
 
-public static class StringExtensions {
-    public static string ToSnakeCase(this string name) {
+public class PropertySnakeCaseNamingPolicy : PropertyNamingPolicy {
+    public override string ConvertName(string name) => ToSnakeCase(name);
+
+    private static string ToSnakeCase(string name) {
         if (string.IsNullOrEmpty(name))
             return name;
 
