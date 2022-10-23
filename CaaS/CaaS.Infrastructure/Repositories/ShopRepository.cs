@@ -10,7 +10,8 @@ namespace CaaS.Infrastructure.Repositories;
 public class ShopRepository : Repository<Shop>, IShopRepository {
     private const string TableName = "shop";
     
-    public ShopRepository(IConnectionProvider connectionProvider) : base(connectionProvider) { }
+    public ShopRepository(IQueryExecutor queryExecutor, 
+            IPropertyMappingProvider<Shop> propertyMappingProvider) : base(queryExecutor, propertyMappingProvider) { }
 
     public async Task<Shop?> FindByNameAsync(string name, CancellationToken cancellationToken = default) {
         return (await QueryAsync(

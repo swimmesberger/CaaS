@@ -2,6 +2,6 @@
 
 namespace CaaS.Core.Request; 
 
-public interface IRequestDataAccessor {
+public interface ITenantIdAccessor {
     bool TryGetTenant([MaybeNullWhen(false)] out string tenantId);
 }

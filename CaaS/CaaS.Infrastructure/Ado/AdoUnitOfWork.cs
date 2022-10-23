@@ -8,12 +8,11 @@ public sealed class AdoUnitOfWork : IUnitOfWork, IConnectionProvider {
 
     private DbConnection? _dbConnection;
     private DbTransaction? _dbTransaction;
-    private bool _completed;
-    public bool Implicit { get; set; }
+    
+    internal bool Disposed { get; private set; }
 
     public AdoUnitOfWork(IConnectionFactory dbProviderFactory) {
         _dbProviderFactory = dbProviderFactory;
-        Implicit = true;
     }
 
     public async Task<DbConnection> GetDbConnectionAsync(bool transactional = false, CancellationToken cancellationToken = default) {
@@ -31,19 +30,12 @@ public sealed class AdoUnitOfWork : IUnitOfWork, IConnectionProvider {
         if (_dbTransaction != null) {
             await _dbTransaction.CommitAsync(cancellationToken);
             _dbTransaction = null;
-            _completed = true;
         }
-        Implicit = false;
     }
     
     public async ValueTask DisposeAsync() {
-        if (Implicit) {
-            await CompleteAsync();
-        }
         if (_dbTransaction != null) {
-            if (!_completed) {
-                await _dbTransaction.RollbackAsync();
-            }
+            await _dbTransaction.RollbackAsync();
             await _dbTransaction.DisposeAsync();
             _dbTransaction = null;
         }
@@ -51,5 +43,6 @@ public sealed class AdoUnitOfWork : IUnitOfWork, IConnectionProvider {
             await _dbConnection.DisposeAsync();
             _dbConnection = null;
         }
+        Disposed = true;
     }
 }

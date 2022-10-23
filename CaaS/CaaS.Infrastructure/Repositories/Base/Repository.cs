@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Text;
 using CaaS.Core.Entities.Base;
+using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories.Base;
 using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Repositories.Base.Mapping;
@@ -8,14 +9,11 @@ using CaaS.Infrastructure.Repositories.Base.Mapping;
 namespace CaaS.Infrastructure.Repositories.Base;
 
 public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
-    private readonly AdoTemplate _adoTemplate;
+    private readonly IQueryExecutor _queryExecutor;
     protected IPropertyMapping PropertyMapping { get; }
 
-    public Repository(IConnectionProvider connectionProvider, 
-            IPropertyMappingProvider? propertyMappingProvider = null) {
-        _adoTemplate = new AdoTemplate(connectionProvider);
-        // use the snake_case mapper on default
-        propertyMappingProvider ??= ReflectivePropertyMappingProvider<T>.SnakeCaseInstance;
+    public Repository(IQueryExecutor queryExecutor, IPropertyMappingProvider<T> propertyMappingProvider) {
+        _queryExecutor = queryExecutor;
         PropertyMapping = propertyMappingProvider.GetPropertyMapping();
     }
 
@@ -26,7 +24,7 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
     public async Task<T?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
         var idColumnName = PropertyMapping.MapProperty(nameof(IEntityBase.Id));
         return (await QueryAsync(
-                $" WHERE {idColumnName} = @{idColumnName}",
+                $" AND {idColumnName} = @{idColumnName}",
                 new[]{new QueryParameter(idColumnName, id)}, 
                 cancellationToken)).FirstOrDefault();
     }
@@ -42,9 +40,9 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
             LastModificationTime = DateTimeOffset.UtcNow
         };
         var statement = CreateUpdateStatement(entity, origRowVersion);
-        var updatedEntries = await _adoTemplate.ExecuteAsync(statement, cancellationToken);
+        var updatedEntries = await _queryExecutor.ExecuteAsync(statement, cancellationToken);
         if (updatedEntries == 0) {
-            throw new DbUpdateConcurrencyException();
+            throw new CaasUpdateConcurrencyDbException();
         }
         return entity;
     }
@@ -57,15 +55,20 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
         throw new NotImplementedException();
     }
 
-    protected Task<List<T>> QueryAsync(string? sqlSuffix = null, 
+    protected async Task<List<T>> QueryAsync(string? sqlSuffix = null, 
             IEnumerable<QueryParameter>? parameters = null,
             CancellationToken cancellationToken = default) {
-        var sql = $"SELECT {string.Join(',', GetColumnNames())} FROM {GetTableName()}{sqlSuffix}";
-        return _adoTemplate.QueryAsync(
-                new Statement(sql, parameters), 
+        var sql = $"SELECT {string.Join(',', GetColumnNames())} FROM {GetTableName()} WHERE 1=1{sqlSuffix}";
+        var statement = new Statement(sql, parameters);
+        statement = await PostProcessStatement(statement, cancellationToken);
+        return await _queryExecutor.QueryAsync(
+                statement, 
                 CreateFromRecord,
                 cancellationToken: cancellationToken);
     }
+
+    protected virtual Task<Statement> PostProcessStatement(Statement statement, 
+            CancellationToken cancellationToken = default) => Task.FromResult(statement);
     
     private T CreateFromRecord(IDataRecord record) {
         var entity = new T();
@@ -103,7 +106,9 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
         sb.Append(" AND ").Append(rowVersionColumnName).Append(" = ").Append("@curRowVersion").Append("");
         return new Statement(sb.ToString(), parameters);
     }
-
+    
+    protected virtual Task<string> GetWhereCondition() => Task.FromResult(string.Empty);
+    
     private IEnumerable<string> GetColumnNames() => PropertyMapping.Columns;
     
     protected abstract string GetTableName();

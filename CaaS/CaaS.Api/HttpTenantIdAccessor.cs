@@ -3,12 +3,12 @@ using CaaS.Core.Request;
 
 namespace CaaS.Api; 
 
-public class HttpRequestDataAccessor : IRequestDataAccessor {
+public class HttpTenantIdAccessor : ITenantIdAccessor {
     private const string HeaderTenantId = "x-tenant-id";
     
     private readonly HttpContext? _httpContext;
 
-    public HttpRequestDataAccessor(IHttpContextAccessor contextAccessor) {
+    public HttpTenantIdAccessor(IHttpContextAccessor contextAccessor) {
         _httpContext = contextAccessor.HttpContext;
     }
 

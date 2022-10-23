@@ -1,19 +1,19 @@
 ﻿using System.Data.Common;
-using CaaS.Infrastructure.Repositories.Base.Mapping;
 
 namespace CaaS.Infrastructure.Ado; 
 
-public class AdoTemplate {
-    private readonly IConnectionProvider _connectionProvider;
+public class AdoTemplate : IQueryExecutor {
+    private readonly IHasConnectionProvider _unitOfWorkManager;
 
-    public AdoTemplate(IConnectionProvider connectionProvider) {
-        _connectionProvider = connectionProvider;
+    public AdoTemplate(IHasConnectionProvider unitOfWorkManager) {
+        _unitOfWorkManager = unitOfWorkManager;
     }
 
     public async Task<List<T>> QueryAsync<T>(Statement statement,
             RowMapper<T> mapper,
             CancellationToken cancellationToken = default) {
-        await using var cmd = await CreateCommand(statement, cancellationToken);
+        await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
+        await using var cmd = await CreateCommand(statement, connectionProvider, transactional: false, cancellationToken);
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         var items = new List<T>();
         while (await reader.ReadAsync(cancellationToken)) {
@@ -24,17 +24,20 @@ public class AdoTemplate {
 
     public async Task<int> ExecuteAsync(Statement statement,
             CancellationToken cancellationToken = default) {
-        await using var cmd = await CreateCommand(statement, cancellationToken);
+        await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
+        await using var cmd = await CreateCommand(statement, connectionProvider, transactional: true, cancellationToken);
         var result = await cmd.ExecuteNonQueryAsync(cancellationToken);
         return result;
     }
 
     private async Task<DbCommand> CreateCommand(Statement statement,
+            IConnectionProvider connectionProvider,
+            bool transactional,
             CancellationToken cancellationToken = default) {
         var parameters = statement.Parameters;
         parameters ??= Enumerable.Empty<QueryParameter>();
-        var dbConnection = await _connectionProvider
-                .GetDbConnectionAsync(transactional: true, cancellationToken: cancellationToken);
+        var dbConnection = await connectionProvider
+                .GetDbConnectionAsync(transactional, cancellationToken: cancellationToken);
         var cmd = dbConnection.CreateCommand();
         cmd.Connection = dbConnection;
         cmd.CommandText = statement.Sql;

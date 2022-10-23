@@ -1,14 +1,11 @@
 ﻿namespace CaaS.Infrastructure.Repositories.Base.Mapping; 
 
-public class ReflectivePropertyMappingProvider<T> : IPropertyMappingProvider {
-    public static readonly IPropertyMappingProvider SnakeCaseInstance = new ReflectivePropertyMappingProvider<T>();
-    
+public class ReflectivePropertyMappingProvider<T> : IPropertyMappingProvider<T> {
     private readonly PropertyNamingPolicy _namingPolicy;
     private readonly IPropertyMapping _cachedMapping;
 
-    private ReflectivePropertyMappingProvider(PropertyNamingPolicy? namingPolicy = null) {
-        // map to snake_case on default
-        _namingPolicy = namingPolicy ?? PropertyNamingPolicy.SnakeCase;
+    public ReflectivePropertyMappingProvider(PropertyNamingPolicy namingPolicy) {
+        _namingPolicy = namingPolicy;
         _cachedMapping = GetPropertyMappingImpl();
     }
 

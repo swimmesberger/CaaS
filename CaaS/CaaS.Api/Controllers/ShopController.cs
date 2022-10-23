@@ -1,4 +1,5 @@
 using CaaS.Core.Entities;
+using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
 using CaaS.Core.Repositories.Base;
 using Microsoft.AspNetCore.Mvc;
@@ -47,10 +48,11 @@ public class ShopController : ControllerBase {
         shop = shop with { Name = name };
         try {
             shop = await _shopRepository.UpdateAsync(shop, cancellationToken);
-        } catch (DbUpdateConcurrencyException) {
+        } catch (CaasUpdateConcurrencyDbException) {
             return Conflict();
         }
         await uow.CompleteAsync(cancellationToken);
+        
         return shop;
     }
 }

@@ -5,6 +5,7 @@ using CaaS.Core.Request;
 using CaaS.Core.Tenant;
 using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Repositories;
+using CaaS.Infrastructure.Repositories.Base.Mapping;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
@@ -34,17 +35,17 @@ public static class ServiceCollectionExtensions {
 
     public static IServiceCollection AddCaaS(this IServiceCollection services, IConfiguration configuration) {
         services.AddHttpContextAccessor();
-        services.AddScoped<IRequestDataAccessor, HttpRequestDataAccessor>();
-        services.AddScoped<AdoUnitOfWork>();
-        services.AddScoped<IConnectionProvider>(sp => sp.GetRequiredService<AdoUnitOfWork>());
-        services.AddScoped<IUnitOfWork>(static sp => {
-            var uow = sp.GetRequiredService<AdoUnitOfWork>();
-            uow.Implicit = false;
-            return uow;
-        });
-        services.AddScoped<IUnitOfWorkManager, AdoUnitOfWorkManager>();
+        services.AddScoped<ITenantIdAccessor, HttpTenantIdAccessor>();
+        services.AddScoped<IUnitOfWork, AdoUnitOfWork>();
+        services.AddScoped<AdoUnitOfWorkManager>();
+        services.AddScoped<IQueryExecutor, AdoTemplate>();
+        services.AddScoped<IUnitOfWorkManager>(sp => sp.GetRequiredService<AdoUnitOfWorkManager>());
+        services.AddScoped<IHasConnectionProvider>(sp => sp.GetRequiredService<AdoUnitOfWorkManager>());
         services.AddScoped<ITenantService, ShopTenantService>();
         services.AddScoped<IShopRepository, ShopRepository>();
+        services.AddSingleton(typeof(IPropertyMappingProvider<>), 
+                typeof(ReflectivePropertyMappingProvider<>));
+        services.AddTransient<PropertyNamingPolicy, PropertySnakeCaseNamingPolicy>();
         services.AddConnectionFactory(configuration);
         return services;
     }

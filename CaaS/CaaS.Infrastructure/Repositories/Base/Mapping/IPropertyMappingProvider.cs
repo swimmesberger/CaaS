@@ -1,5 +1,6 @@
 ﻿namespace CaaS.Infrastructure.Repositories.Base.Mapping;
 
-public interface IPropertyMappingProvider {
+// ReSharper disable once UnusedTypeParameter
+public interface IPropertyMappingProvider<T> {
     IPropertyMapping GetPropertyMapping();
 }

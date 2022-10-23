@@ -6,13 +6,13 @@ namespace CaaS.Core.Tenant;
 
 public class ShopTenantService : ITenantService {
     private readonly IShopRepository _shopRepository;
-    private readonly IRequestDataAccessor _requestDataAccessor;
+    private readonly ITenantIdAccessor _tenantIdAccessor;
     
     private Tenant? _tenant; // request scoped cache
 
-    public ShopTenantService(IShopRepository shopRepository, IRequestDataAccessor requestDataAccessor) {
+    public ShopTenantService(IShopRepository shopRepository, ITenantIdAccessor tenantIdAccessor) {
         _shopRepository = shopRepository;
-        _requestDataAccessor = requestDataAccessor;
+        _tenantIdAccessor = tenantIdAccessor;
     }
 
 
@@ -39,7 +39,7 @@ public class ShopTenantService : ITenantService {
     }
     
     private async Task<Tenant> GetTenantAsyncImpl(CancellationToken cancellationToken = default) {
-        if (!_requestDataAccessor.TryGetTenant(out var tenantId)) {
+        if (!_tenantIdAccessor.TryGetTenant(out var tenantId)) {
             return Tenant.Empty;
         }
         var tenantGuid = Guid.Parse(tenantId);
