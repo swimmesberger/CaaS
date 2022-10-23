@@ -15,7 +15,7 @@ public class ShopRepository : Repository<Shop>, IShopRepository {
 
     public async Task<Shop?> FindByNameAsync(string name, CancellationToken cancellationToken = default) {
         return (await QueryAsync(
-                $" WHERE name = @name",
+                $" AND name = @name",
                 new[]{new QueryParameter("name", name)}, 
                 cancellationToken)).FirstOrDefault();
     }
