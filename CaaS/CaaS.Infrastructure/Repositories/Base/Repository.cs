@@ -29,8 +29,12 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
                 cancellationToken)).FirstOrDefault();
     }
     
-    public Task<T> AddAsync(T entity, CancellationToken cancellationToken = default) {
-        throw new NotImplementedException();
+    public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default) {
+        var changedCount = await _queryExecutor.ExecuteAsync(CreateInsertStatement(entity), cancellationToken);
+        if (changedCount == 0) {
+            throw new CaasInsertDbException();
+        }
+        return entity;
     }
     
     public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default) {
@@ -40,25 +44,33 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
             LastModificationTime = DateTimeOffset.UtcNow
         };
         var statement = CreateUpdateStatement(entity, origRowVersion);
-        var updatedEntries = await _queryExecutor.ExecuteAsync(statement, cancellationToken);
-        if (updatedEntries == 0) {
+        var changedCount = await _queryExecutor.ExecuteAsync(statement, cancellationToken);
+        if (changedCount == 0) {
             throw new CaasUpdateConcurrencyDbException();
         }
         return entity;
     }
     
-    public Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
-        throw new NotImplementedException();
+    public async Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
+        var sql = $"DELETE FROM {GetTableName()} WHERE {PropertyMapping.MapProperty(nameof(IEntityBase.Id))} = @id";
+        var changedCount = await _queryExecutor.ExecuteAsync(
+                new Statement(sql, new[] { new QueryParameter("id", entity.Id) }), 
+                cancellationToken);
+        if (changedCount == 0) {
+            throw new CaasInsertDbException();
+        }
     }
     
-    public Task<int> CountAsync(CancellationToken cancellationToken = default) {
-        throw new NotImplementedException();
+    public async Task<long> CountAsync(CancellationToken cancellationToken = default) {
+        var sql = $"SELECT COUNT(*) FROM {GetTableName()}";
+        return (long)(await _queryExecutor
+                .QueryScalarAsync(new Statement(sql), cancellationToken) ?? throw new InvalidOperationException());
     }
 
     protected async Task<List<T>> QueryAsync(string? sqlSuffix = null, 
             IEnumerable<QueryParameter>? parameters = null,
             CancellationToken cancellationToken = default) {
-        var sql = $"SELECT {string.Join(',', GetColumnNames())} FROM {GetTableName()} WHERE 1=1{sqlSuffix}";
+        var sql = $"SELECT {GetColumnNamesString()} FROM {GetTableName()} WHERE 1=1{sqlSuffix}";
         var statement = new Statement(sql, parameters);
         statement = await PostProcessStatement(statement, cancellationToken);
         return await _queryExecutor.QueryAsync(
@@ -69,11 +81,28 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
 
     protected virtual Task<Statement> PostProcessStatement(Statement statement, 
             CancellationToken cancellationToken = default) => Task.FromResult(statement);
-    
-    private T CreateFromRecord(IDataRecord record) {
+
+    private T CreateFromRecord(IDataRecord record) => CreateFromRecord(new RecordValues(record, PropertyMapping));
+
+    private T CreateFromRecord(RecordValues record) {
         var entity = new T();
         entity = SetFromRecord(entity, record);
         return entity;
+    }
+
+    private Statement CreateInsertStatement(T entity) {
+        var sb = new StringBuilder("INSERT INTO");
+        sb.Append(' ').Append(GetTableName());
+        sb.Append('(').Append(GetColumnNamesString()).Append(')');
+        sb.Append("VALUES");
+        sb.Append(' ').Append('(').Append(string.Join(',', GetColumnNames()
+                .Select(s => $"@{s}"))).Append(')');
+        var parameters = GetColumnNames()
+                .Select(columnName => new QueryParameter(
+                        columnName, 
+                        GetRecordValue(entity, PropertyMapping.MapColumn(columnName))
+                )).ToList();
+        return new Statement(sb.ToString(), parameters);
     }
 
     private Statement CreateUpdateStatement(T entity, int origRowVersion) {
@@ -106,19 +135,19 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
         sb.Append(" AND ").Append(rowVersionColumnName).Append(" = ").Append("@curRowVersion").Append("");
         return new Statement(sb.ToString(), parameters);
     }
-    
-    protected virtual Task<string> GetWhereCondition() => Task.FromResult(string.Empty);
-    
+
+    private string GetColumnNamesString() => string.Join(',', GetColumnNames());
+
     private IEnumerable<string> GetColumnNames() => PropertyMapping.Columns;
     
     protected abstract string GetTableName();
 
-    protected virtual T SetFromRecord(T value, IDataRecord record) {
+    protected virtual T SetFromRecord(T value, RecordValues record) {
         return value with {
-            Id = record.GetGuid(PropertyMapping.MapProperty(nameof(IEntityBase.Id))),
-            RowVersion = record.GetIn32(PropertyMapping.MapProperty(nameof(IEntityBase.RowVersion))),
-            CreationTime = record.GetDateTimeOffset(PropertyMapping.MapProperty(nameof(IEntityBase.CreationTime))),
-            LastModificationTime = record.GetDateTimeOffset(PropertyMapping.MapProperty(nameof(IEntityBase.LastModificationTime)))
+            Id = record.GetGuid(nameof(IEntityBase.Id)),
+            RowVersion = record.GetIn32(nameof(IEntityBase.RowVersion)),
+            CreationTime = record.GetDateTimeOffset(nameof(IEntityBase.CreationTime)),
+            LastModificationTime = record.GetDateTimeOffset(nameof(IEntityBase.LastModificationTime))
         };
     }
 
@@ -130,15 +159,5 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
                 nameof(IEntityBase.LastModificationTime) => value.LastModificationTime,
                 _ => throw new ArgumentException("Unsupported property", nameof(propertyName))
         };
-    }
-}
-
-internal static class AsyncEnumerableExtensions {
-    public static async Task<List<T>> ToListAsync<T>(this IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default) {
-        var list = new List<T>();
-        await foreach (var value in asyncEnumerable.WithCancellation(cancellationToken)) {
-            list.Add(value);
-        }
-        return list;
     }
 }

@@ -1,4 +1,5 @@
 using CaaS.Api;
+using CaaS.Api.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options => {
+    options.OperationFilter<HeaderOperationFilter>();
+    options.OperationFilter<RequireTenantOperationFilter>();
+});
 
 // register CaaS services
 builder.Services.AddCaaS(builder.Configuration);
@@ -26,6 +30,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseCaas();
 
 app.MapControllers();
 

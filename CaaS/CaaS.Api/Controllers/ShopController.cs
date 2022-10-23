@@ -1,8 +1,10 @@
+using CaaS.Api.Swagger;
 using CaaS.Core.Entities;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
 using CaaS.Core.Repositories.Base;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 
 namespace CaaS.Api.Controllers;
 
@@ -20,10 +22,13 @@ public class ShopController : ControllerBase {
         _shopRepository = shopRepository;
         _unitOfWorkManager = unitOfWorkManager;
     }
-    
+
     [HttpGet]
+    [ProducesTotalCountHeader]
     public async Task<IReadOnlyList<Shop>> Get(CancellationToken cancellationToken = default) {
         _logger.LogInformation("[GET] /Shop/ -> Get()");
+        var shopCount = await _shopRepository.CountAsync(cancellationToken);
+        Response.Headers[HeaderConstants.TotalCount] = new StringValues(shopCount.ToString());
         return await _shopRepository.FindAllAsync(cancellationToken);
     }
     

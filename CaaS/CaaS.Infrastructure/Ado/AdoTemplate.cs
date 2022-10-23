@@ -9,6 +9,12 @@ public class AdoTemplate : IQueryExecutor {
         _unitOfWorkManager = unitOfWorkManager;
     }
 
+    public async Task<object?> QueryScalarAsync(Statement statement, CancellationToken cancellationToken = default) {
+        await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
+        await using var cmd = await CreateCommand(statement, connectionProvider, transactional: false, cancellationToken);
+        return await cmd.ExecuteScalarAsync(cancellationToken);
+    }
+
     public async Task<List<T>> QueryAsync<T>(Statement statement,
             RowMapper<T> mapper,
             CancellationToken cancellationToken = default) {

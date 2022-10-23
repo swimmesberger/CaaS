@@ -11,7 +11,7 @@ using Npgsql;
 
 namespace CaaS.Api; 
 
-public static class ServiceCollectionExtensions {
+public static class CaasServiceCollectionExtensions {
     private const string PostgresProviderName = "Npgsql";
     // private const string SqlServerProviderName = "Microsoft.Data.SqlClient";
     

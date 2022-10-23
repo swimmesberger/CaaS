@@ -14,5 +14,5 @@ public interface IRepository<T> : IRepository where T : Entity {
     Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);
     Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default);
     Task DeleteAsync(T entity, CancellationToken cancellationToken = default );
-    Task<int> CountAsync(CancellationToken cancellationToken = default);
+    Task<long> CountAsync(CancellationToken cancellationToken = default);
 }

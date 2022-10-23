@@ -22,10 +22,10 @@ public class ShopRepository : Repository<Shop>, IShopRepository {
 
     protected override string GetTableName() => TableName;
 
-    protected override Shop SetFromRecord(Shop value, IDataRecord record) {
+    protected override Shop SetFromRecord(Shop value, RecordValues record) {
         value = base.SetFromRecord(value, record);
         return value with {
-            Name = record.GetString(PropertyMapping.MapProperty(nameof(Shop.Name)))
+            Name = record.GetString(nameof(Shop.Name))
         };
     }
 

@@ -4,8 +4,6 @@ using CaaS.Core.Request;
 namespace CaaS.Api; 
 
 public class HttpTenantIdAccessor : ITenantIdAccessor {
-    private const string HeaderTenantId = "x-tenant-id";
-    
     private readonly HttpContext? _httpContext;
 
     public HttpTenantIdAccessor(IHttpContextAccessor contextAccessor) {
@@ -17,7 +15,7 @@ public class HttpTenantIdAccessor : ITenantIdAccessor {
             tenantId = default;
             return false;
         }
-        if (!_httpContext.Request.Headers.TryGetValue(HeaderTenantId, out var tenantIdVals)) {
+        if (!_httpContext.Request.Headers.TryGetValue(HeaderConstants.TenantId, out var tenantIdVals)) {
             tenantId = default;
             return false;
         }
