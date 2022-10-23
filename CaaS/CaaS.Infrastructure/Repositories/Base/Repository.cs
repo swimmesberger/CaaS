@@ -24,9 +24,10 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
     }
 
     public async Task<T?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
+        var idColumnName = PropertyMapping.MapProperty(nameof(IEntityBase.Id));
         return (await QueryAsync(
-                $" WHERE id = @id",
-                new[]{new QueryParameter("id", id)}, 
+                $" WHERE {idColumnName} = @{idColumnName}",
+                new[]{new QueryParameter(idColumnName, id)}, 
                 cancellationToken)).FirstOrDefault();
     }
     
@@ -37,13 +38,46 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
     public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default) {
         var origRowVersion = entity.RowVersion;
         entity = entity with {
-                RowVersion = origRowVersion+1,
-                LastModificationTime = DateTimeOffset.UtcNow
+            RowVersion = origRowVersion+1,
+            LastModificationTime = DateTimeOffset.UtcNow
         };
+        var statement = CreateUpdateStatement(entity, origRowVersion);
+        var updatedEntries = await _adoTemplate.ExecuteAsync(statement, cancellationToken);
+        if (updatedEntries == 0) {
+            throw new DbUpdateConcurrencyException();
+        }
+        return entity;
+    }
+    
+    public Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
+        throw new NotImplementedException();
+    }
+    
+    public Task<int> CountAsync(CancellationToken cancellationToken = default) {
+        throw new NotImplementedException();
+    }
+
+    protected Task<List<T>> QueryAsync(string? sqlSuffix = null, 
+            IEnumerable<QueryParameter>? parameters = null,
+            CancellationToken cancellationToken = default) {
+        var sql = $"SELECT {string.Join(',', GetColumnNames())} FROM {GetTableName()}{sqlSuffix}";
+        return _adoTemplate.QueryAsync(
+                new Statement(sql, parameters), 
+                CreateFromRecord,
+                cancellationToken: cancellationToken);
+    }
+    
+    private T CreateFromRecord(IDataRecord record) {
+        var entity = new T();
+        entity = SetFromRecord(entity, record);
+        return entity;
+    }
+
+    private Statement CreateUpdateStatement(T entity, int origRowVersion) {
         var idColumnName = PropertyMapping.MapProperty(nameof(IEntityBase.Id));
         var rowVersionColumnName = PropertyMapping.MapProperty(nameof(IEntityBase.RowVersion));
         var creationColumnName = PropertyMapping.MapProperty(nameof(IEntityBase.CreationTime));
-    
+
         var sb = new StringBuilder("UPDATE");
         sb.Append(' ').Append(GetTableName());
         sb.Append(" SET ");
@@ -67,37 +101,7 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
         }
         sb.Append(" WHERE ").Append(idColumnName).Append(" = ").Append('@').Append(idColumnName);
         sb.Append(" AND ").Append(rowVersionColumnName).Append(" = ").Append("@curRowVersion").Append("");
-        var updatedEntries = await _adoTemplate.ExecuteAsync(sb.ToString(), 
-                parameters,
-                cancellationToken: cancellationToken);
-        if (updatedEntries == 0) {
-            throw new DbUpdateConcurrencyException();
-        }
-        return entity;
-    }
-    
-    public Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
-        throw new NotImplementedException();
-    }
-    
-    public Task<int> CountAsync(CancellationToken cancellationToken = default) {
-        throw new NotImplementedException();
-    }
-
-    protected Task<List<T>> QueryAsync(string? sqlSuffix = null, 
-            IEnumerable<QueryParameter>? parameters = null,
-            CancellationToken cancellationToken = default) {
-        return _adoTemplate.QueryAsync(
-                $"SELECT {string.Join(',', GetColumnNames())} FROM {GetTableName()}{sqlSuffix}", 
-                CreateFromRecord,
-                parameters,
-                cancellationToken: cancellationToken);
-    }
-    
-    private T CreateFromRecord(IDataRecord record) {
-        var entity = new T();
-        entity = SetFromRecord(entity, record);
-        return entity;
+        return new Statement(sb.ToString(), parameters);
     }
 
     private IEnumerable<string> GetColumnNames() => PropertyMapping.Columns;
