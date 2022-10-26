@@ -8,18 +8,14 @@ namespace CaaS.Infrastructure.Repositories.Base;
 public abstract class TenantRepository<T> : Repository<T> where T : TenantEntity, new() {
     private readonly ITenantService _tenantService;
     
-    public TenantRepository(IQueryExecutor queryExecutor, 
-            IPropertyMappingProvider<T> propertyMappingProvider, 
-            ITenantService tenantService) : base(queryExecutor, propertyMappingProvider) {
+    public TenantRepository(IStatementExecutor statementExecutor, 
+            IStatementGenerator<T> statementGenerator, 
+            ITenantService tenantService) : base(statementExecutor, statementGenerator) {
         _tenantService = tenantService;
     }
 
     protected override async Task<Statement> PostProcessStatement(Statement statement, CancellationToken cancellationToken = default) {
         var tenantId = await _tenantService.GetTenantAsync(cancellationToken);
-        var paramsList = statement.Parameters?.ToList() ?? new List<QueryParameter>();
-        var tenantIdColumnName = PropertyMapping.MapProperty(nameof(IHasTenant.TenantId));
-        paramsList.Add(new QueryParameter(tenantIdColumnName, tenantId));
-        statement = new Statement(statement.Sql + $" AND {tenantIdColumnName} = @{tenantIdColumnName}", paramsList);
-        return statement;
+        return StatementGenerator.AddFindParameterByProperty(statement, nameof(IHasTenant.TenantId), tenantId);
     }
 }

@@ -4,15 +4,12 @@ namespace CaaS.Infrastructure.Repositories.Base.Mapping;
 
 public class PropertyMapping : IPropertyMapping {
     // OrderedDictionary -> keep insertion order
-    private readonly OrderedDictionary _propertyToColumnMapping;
-    private readonly OrderedDictionary _columnToPropertyMapping;
-
-    public IEnumerable<string> Properties => _propertyToColumnMapping.Keys.Cast<string>();
-    public IEnumerable<string> Columns => _columnToPropertyMapping.Keys.Cast<string>();
+    private readonly PropertyMapper _propertyToColumnMapping;
+    private readonly PropertyMapper _columnToPropertyMapping;
 
     public PropertyMapping() {
-        _propertyToColumnMapping = new OrderedDictionary();
-        _columnToPropertyMapping = new OrderedDictionary();
+        _propertyToColumnMapping = new PropertyMapper();
+        _columnToPropertyMapping = new PropertyMapper();
     }
 
     public void AddPropertyMapping(string propertyName, string columnName) {
@@ -25,7 +22,24 @@ public class PropertyMapping : IPropertyMapping {
         _columnToPropertyMapping[columnName] = propertyName;
     }
 
-    public string MapColumn(string columnName) => (string)_columnToPropertyMapping[columnName]!;
+    public IPropertyMapper ByColumName() => _columnToPropertyMapping;
+    public IPropertyMapper ByPropertyName() => _propertyToColumnMapping;
+}
 
-    public string MapProperty(string propertyName) => (string)_propertyToColumnMapping[propertyName]!;
+public class PropertyMapper : IPropertyMapper {
+    private readonly OrderedDictionary _mapping;
+    public IEnumerable<string> Keys => _mapping.Keys.Cast<string>();
+    
+    internal string this[string key] {
+        get => (string)_mapping[key]!;
+        set => _mapping[key] = value;
+    }
+
+    public PropertyMapper(OrderedDictionary mapping) {
+        _mapping = mapping;
+    }
+
+    public PropertyMapper(): this(new OrderedDictionary()) { }
+
+    public string MapName(string key) => (string)_mapping[key]!;
 }

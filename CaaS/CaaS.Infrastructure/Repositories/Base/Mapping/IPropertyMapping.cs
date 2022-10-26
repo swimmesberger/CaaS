@@ -1,10 +1,12 @@
 ﻿namespace CaaS.Infrastructure.Repositories.Base.Mapping;
 
 public interface IPropertyMapping {
-    IEnumerable<string> Properties { get; }
-    IEnumerable<string> Columns { get; }
-    
-    string MapColumn(string columnName);
+    IPropertyMapper ByColumName();
 
-    string MapProperty(string propertyName);
+    IPropertyMapper ByPropertyName();
+}
+
+public interface IPropertyMapper {
+    IEnumerable<string> Keys { get; }
+    string MapName(string key);
 }

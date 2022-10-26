@@ -2,7 +2,7 @@
 
 namespace CaaS.Infrastructure.Ado; 
 
-public class AdoTemplate : IQueryExecutor {
+public class AdoTemplate : IStatementExecutor {
     private readonly IHasConnectionProvider _unitOfWorkManager;
 
     public AdoTemplate(IHasConnectionProvider unitOfWorkManager) {

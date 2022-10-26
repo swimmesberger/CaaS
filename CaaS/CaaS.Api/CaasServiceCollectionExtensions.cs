@@ -38,13 +38,13 @@ public static class CaasServiceCollectionExtensions {
         services.AddScoped<ITenantIdAccessor, HttpTenantIdAccessor>();
         services.AddScoped<IUnitOfWork, AdoUnitOfWork>();
         services.AddScoped<AdoUnitOfWorkManager>();
-        services.AddScoped<IQueryExecutor, AdoTemplate>();
+        services.AddScoped<IStatementExecutor, AdoTemplate>();
         services.AddScoped<IUnitOfWorkManager>(sp => sp.GetRequiredService<AdoUnitOfWorkManager>());
         services.AddScoped<IHasConnectionProvider>(sp => sp.GetRequiredService<AdoUnitOfWorkManager>());
         services.AddScoped<ITenantService, ShopTenantService>();
         services.AddScoped<IShopRepository, ShopRepository>();
-        services.AddSingleton(typeof(IPropertyMappingProvider<>), 
-                typeof(ReflectivePropertyMappingProvider<>));
+        services.AddSingleton(typeof(IRecordMapper<>), typeof(ReflectiveRecordMapper<>));
+        services.AddScoped(typeof(IStatementGenerator<>), typeof(StatementGenerator<>));
         services.AddTransient<PropertyNamingPolicy, PropertySnakeCaseNamingPolicy>();
         services.AddConnectionFactory(configuration);
         return services;
