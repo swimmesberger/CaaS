@@ -1,6 +1,6 @@
 ﻿namespace CaaS.Core.Entities.Base; 
 
-public record Entity : IEntityBase {
+public abstract record Entity : IEntityBase {
     public Guid Id { get; init; }
     // concurrencyToken
     public int RowVersion { get; init; }

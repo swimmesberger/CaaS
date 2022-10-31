@@ -1,9 +1,10 @@
-﻿using CaaS.Infrastructure.Ado;
+﻿using CaaS.Generator.Common;
+using CaaS.Infrastructure.Ado;
 
 namespace CaaS.Infrastructure.Repositories.Base.Mapping; 
 
 public interface IStatementGenerator<T> {
-    IRecordMapper<T> RecordMapper { get; }
+    IDataRecordMapper<T> DataRecordMapper { get; }
     
     Statement CreateCount();
 

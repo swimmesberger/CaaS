@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.Entities.Base;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories.Base;
+using CaaS.Generator.Common;
 using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Repositories.Base.Mapping;
 
@@ -10,7 +11,7 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
     private readonly IStatementExecutor _statementExecutor;
     
     protected IStatementGenerator<T> StatementGenerator { get; }
-    protected IRecordMapper<T> RecordMapper => StatementGenerator.RecordMapper;
+    protected IDataRecordMapper<T> DataRecordMapper => StatementGenerator.DataRecordMapper;
 
     public Repository(IStatementExecutor statementExecutor, IStatementGenerator<T> statementGenerator) {
         _statementExecutor = statementExecutor;
@@ -60,7 +61,7 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
     }
     
     protected Task<List<T>> QueryByPropertyAsync(string propertyName, object value, CancellationToken cancellationToken = default) 
-        => QueryAsync(new QueryParameter(RecordMapper.ByPropertyName().MapName(propertyName), value), cancellationToken);
+        => QueryAsync(new QueryParameter(DataRecordMapper.ByPropertyName().MapName(propertyName), value), cancellationToken);
 
     protected Task<List<T>> QueryAsync(QueryParameter parameter, CancellationToken cancellationToken = default) 
         => QueryAsync(new[] { parameter }, cancellationToken);
@@ -69,7 +70,7 @@ public abstract class Repository<T> : IRepository<T> where T : Entity, new() {
             CancellationToken cancellationToken = default) {
         var statement = StatementGenerator.CreateFind(parameters);
         statement = await PostProcessStatement(statement, cancellationToken);
-        return await _statementExecutor.QueryAsync(statement, RecordMapper.EntityFromRecord, cancellationToken: cancellationToken);
+        return await _statementExecutor.QueryAsync(statement, DataRecordMapper.EntityFromRecord, cancellationToken: cancellationToken);
     }
 
     protected virtual Task<Statement> PostProcessStatement(Statement statement, 

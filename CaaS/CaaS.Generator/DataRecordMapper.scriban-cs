@@ -1,0 +1,129 @@
+﻿using CaaS.Generator.Common;
+using {{ Entity.Namespace }};
+using System.CodeDom.Compiler;
+using System.Data;
+
+namespace {{ Namespace }};
+
+[GeneratedCode(tool: "CaaS.Generator", version: "1.0.0")]
+internal sealed class {{ Entity.TypeName }}DataRecordMapper : IDataRecordMapper<{{ Entity.TypeName }}> {
+    public Type MappedType { get; } = typeof({{ Entity.TypeName }});
+    
+    public string MappedTypeName { get; } = "{{ Entity.TableName }}";
+    
+    private readonly IPropertyMapper _propertyMapper = new {{ Entity.TypeName }}PropertyToColumnMapper();
+    private readonly IPropertyMapper _columnMapper = new {{ Entity.TypeName }}ColumnToPropertyMapper();
+    
+    public IPropertyMapper ByColumName() => _columnMapper;
+    
+    public IPropertyMapper ByPropertyName() => _propertyMapper;
+    
+    public {{ Entity.TypeName }} EntityFromRecord(IDataRecord record) {
+        return new {{ Entity.TypeName }} {
+{{ for prop in Entity.Properties ~}}
+            {{ prop.PropertyName }} = record.GetValue<{{ prop.TypeName }}>("{{ prop.ColumnName }}"),
+{{ end ~}}
+        };
+    }
+
+    public IRecord RecordFromEntity({{ Entity.TypeName }} record) 
+        => new {{ Entity.TypeName }}Record(record, this);
+}
+
+internal sealed class {{ Entity.TypeName }}Record : IRecord {
+    private readonly {{ Entity.TypeName }} _record;
+    private readonly IPropertyMapping _propertyMapping;
+
+    public {{ Entity.TypeName }}Record ({{ Entity.TypeName }} record, IPropertyMapping propertyMapping) {
+        _record = record;
+        _propertyMapping = propertyMapping;
+    }
+
+    public IRecordValues ByColumName() => new {{ Entity.TypeName }}ColumnRecordValues(_record, _propertyMapping.ByColumName());
+
+    public IRecordValues ByPropertyName() => new {{ Entity.TypeName }}PropertyRecordValues(_record, _propertyMapping.ByPropertyName());
+}
+
+internal sealed class {{ Entity.TypeName }}PropertyRecordValues : IRecordValues {
+    private readonly {{ Entity.TypeName }} _record;
+    private readonly IPropertyMapper _mapper;
+    
+    public IEnumerable<string> Keys => _mapper.Keys;
+        
+    public {{Entity.TypeName}}PropertyRecordValues({{ Entity.TypeName }} record, IPropertyMapper mapper) {
+        _record = record;
+        _mapper = mapper;
+    }
+    
+    public string MapName(string key) => _mapper.MapName(key);
+        
+    public object? GetObject(string key) {
+        switch(key) {
+{{ for prop in Entity.Properties ~}}
+            case "{{ prop.PropertyName }}": return _record.{{ prop.PropertyName }};
+{{ end ~}}
+            default: return null;
+        }
+    }
+}
+
+internal sealed class {{ Entity.TypeName }}ColumnRecordValues : IRecordValues {
+    private readonly {{ Entity.TypeName }} _record;
+    private readonly IPropertyMapper _mapper;
+    
+    public IEnumerable<string> Keys => _mapper.Keys;
+        
+    public {{Entity.TypeName}}ColumnRecordValues({{ Entity.TypeName }} record, IPropertyMapper mapper) {
+        _record = record;
+        _mapper = mapper;
+    }
+    
+    public string MapName(string key) => _mapper.MapName(key);
+        
+    public object? GetObject(string key) {
+        switch(key) {
+{{ for prop in Entity.Properties ~}}
+            case "{{ prop.ColumnName }}": return _record.{{ prop.PropertyName }};
+{{ end ~}}
+            default: return null;
+        }
+    }
+}
+
+internal sealed class {{ Entity.TypeName }}PropertyToColumnMapper : IPropertyMapper {
+    private string[] _propertyNames = new string[] {
+{{ for prop in Entity.Properties ~}}
+        "{{ prop.PropertyName }}",
+{{ end ~}}
+    };
+
+    public IEnumerable<string> Keys => _propertyNames;
+    
+    public string MapName(string key) {
+        switch(key){
+{{ for prop in Entity.Properties ~}}
+            case "{{ prop.PropertyName }}": return "{{ prop.ColumnName }}";
+{{ end ~}}
+            default: throw new ArgumentException($"Invalid property name {key}", nameof(key));
+        }
+    }
+}
+
+internal sealed class {{ Entity.TypeName }}ColumnToPropertyMapper : IPropertyMapper {
+    private string[] _columnNames = new string[] {
+{{ for prop in Entity.Properties ~}}
+        "{{ prop.ColumnName }}",
+{{ end ~}}
+    };
+
+    public IEnumerable<string> Keys => _columnNames;
+    
+    public string MapName(string key) {
+        switch(key) {
+{{ for prop in Entity.Properties ~}}
+            case "{{ prop.ColumnName }}": return "{{ prop.PropertyName }}";
+{{ end ~}}
+            default: throw new ArgumentException($"Invalid column name {key}", nameof(key));
+        }
+    }
+}

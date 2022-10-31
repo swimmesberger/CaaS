@@ -3,7 +3,9 @@ using CaaS.Core.Repositories;
 using CaaS.Core.Repositories.Base;
 using CaaS.Core.Request;
 using CaaS.Core.Tenant;
+using CaaS.Generator.Common;
 using CaaS.Infrastructure.Ado;
+using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.Repositories;
 using CaaS.Infrastructure.Repositories.Base.Mapping;
 using Microsoft.Extensions.Options;
@@ -43,10 +45,10 @@ public static class CaasServiceCollectionExtensions {
         services.AddScoped<IHasConnectionProvider>(sp => sp.GetRequiredService<AdoUnitOfWorkManager>());
         services.AddScoped<ITenantService, ShopTenantService>();
         services.AddScoped<IShopRepository, ShopRepository>();
-        services.AddSingleton(typeof(IRecordMapper<>), typeof(ReflectiveRecordMapper<>));
         services.AddScoped(typeof(IStatementGenerator<>), typeof(StatementGenerator<>));
         services.AddTransient<PropertyNamingPolicy, PropertySnakeCaseNamingPolicy>();
         services.AddConnectionFactory(configuration);
+        services.AddDataRecordMapper();
         return services;
     }
 }

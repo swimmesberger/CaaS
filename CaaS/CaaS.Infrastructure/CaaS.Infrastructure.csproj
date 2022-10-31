@@ -8,6 +8,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CaaS.Core\CaaS.Core.csproj" />
+      <ProjectReference Include="..\CaaS.Generator.Common\CaaS.Generator.Common.csproj" />
+      <ProjectReference Include="..\CaaS.Generator\CaaS.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>

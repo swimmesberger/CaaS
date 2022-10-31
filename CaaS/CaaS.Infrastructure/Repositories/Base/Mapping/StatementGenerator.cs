@@ -1,14 +1,15 @@
 ﻿using System.Text;
 using CaaS.Core.Entities.Base;
+using CaaS.Generator.Common;
 using CaaS.Infrastructure.Ado;
 
 namespace CaaS.Infrastructure.Repositories.Base.Mapping; 
 
 public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase {
-    public IRecordMapper<T> RecordMapper { get; }
+    public IDataRecordMapper<T> DataRecordMapper { get; }
 
-    public StatementGenerator(IRecordMapper<T> recordMapper) {
-        RecordMapper = recordMapper;
+    public StatementGenerator(IDataRecordMapper<T> recordMapper) {
+        DataRecordMapper = recordMapper;
     }
 
     public Statement CreateCount() {
@@ -41,10 +42,10 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase
         => AddFindParameters(statement, new[] { queryParameter });
 
     public Statement AddFindParameterByProperty(Statement statement, string propertyName, object value)
-        => AddFindParameter(statement, new QueryParameter(RecordMapper.ByPropertyName().MapName(propertyName), value));
+        => AddFindParameter(statement, new QueryParameter(DataRecordMapper.ByPropertyName().MapName(propertyName), value));
 
     public Statement CreateInsert(T entity) {
-        var record = RecordMapper.RecordFromEntity(entity).ByColumName();
+        var record = DataRecordMapper.RecordFromEntity(entity).ByColumName();
         
         var sb = new StringBuilder("INSERT INTO");
         sb.Append(' ').Append(GetTableName());
@@ -61,11 +62,11 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase
     }
 
     public Statement CreateUpdate(T entity, int origRowVersion) {
-        var propertyMapper = RecordMapper.ByPropertyName();
+        var propertyMapper = DataRecordMapper.ByPropertyName();
         var idColumnName = propertyMapper.MapName(nameof(IEntityBase.Id));
         var rowVersionColumnName = propertyMapper.MapName(nameof(IEntityBase.RowVersion));
         var creationColumnName = propertyMapper.MapName(nameof(IEntityBase.CreationTime));
-        var record = RecordMapper.RecordFromEntity(entity).ByColumName();
+        var record = DataRecordMapper.RecordFromEntity(entity).ByColumName();
         
         var sb = new StringBuilder("UPDATE");
         sb.Append(' ').Append(GetTableName());
@@ -93,14 +94,14 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase
     }
 
     public Statement CreateDelete(T entity) {
-        var propertyMapper = RecordMapper.ByPropertyName();
+        var propertyMapper = DataRecordMapper.ByPropertyName();
         var sql = $"DELETE FROM {GetTableName()} WHERE {propertyMapper.MapName(nameof(IEntityBase.Id))} = @id";
         return new Statement(sql, new[] { new QueryParameter("id", entity.Id) });
     }
 
     private string GetColumnNamesString() => string.Join(',', GetColumnNames());
 
-    private IEnumerable<string> GetColumnNames() => RecordMapper.ByColumName().Keys;
+    private IEnumerable<string> GetColumnNames() => DataRecordMapper.ByColumName().Keys;
 
-    private string GetTableName() => RecordMapper.MappedTypeName;
+    private string GetTableName() => DataRecordMapper.MappedTypeName;
 }
