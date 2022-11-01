@@ -25,6 +25,9 @@ public class ShopTenantService : ITenantService {
         return tenant;
     }
 
+    public ValueTask<object> GetTenantIdAsync(CancellationToken cancellationToken = default)
+        => new ValueTask<object>(GetTenantIdImpl());
+
     public async ValueTask<Tenant?> GetTenantOrDefaultAsync(CancellationToken cancellationToken = default) {
         var tenant = _tenant ?? await GetTenantAsyncImpl(cancellationToken);
         _tenant = tenant;
@@ -39,12 +42,14 @@ public class ShopTenantService : ITenantService {
     }
     
     private async Task<Tenant> GetTenantAsyncImpl(CancellationToken cancellationToken = default) {
-        if (!_tenantIdAccessor.TryGetTenant(out var tenantId)) {
-            return Tenant.Empty;
-        }
-        var tenantGuid = Guid.Parse(tenantId);
+        var tenantGuid = GetTenantIdImpl();
         var shop = await _shopRepository.FindByIdAsync(tenantGuid, cancellationToken);
-        var tenant = shop == null ? Tenant.Empty : new Tenant(tenantId, shop.Name);
+        var tenant = shop == null ? Tenant.Empty : new Tenant(tenantGuid.ToString(), shop.Name);
         return tenant;
+    }
+    
+    private Guid GetTenantIdImpl() {
+        return _tenantIdAccessor.TryGetTenantId(out var tenantId) ? 
+                Guid.Parse(tenantId) : Guid.Empty;
     }
 }

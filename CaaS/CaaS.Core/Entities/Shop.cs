@@ -2,6 +2,9 @@
 
 namespace CaaS.Core.Entities;
 
-public record Shop : Entity {
+public record Shop : IEntityBase {
+    public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
+    
+    public string ConcurrencyToken { get; init; } = string.Empty;
 }

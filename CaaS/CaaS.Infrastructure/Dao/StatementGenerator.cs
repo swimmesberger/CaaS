@@ -1,11 +1,12 @@
-﻿using System.Text;
-using CaaS.Core.Entities.Base;
-using CaaS.Generator.Common;
+﻿using System.Collections;
+using System.Text;
 using CaaS.Infrastructure.Ado;
+using CaaS.Infrastructure.DataMapping;
+using CaaS.Infrastructure.DataModel.Base;
 
-namespace CaaS.Infrastructure.Repositories.Base.Mapping; 
+namespace CaaS.Infrastructure.Dao; 
 
-public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase {
+public class StatementGenerator<T> : IStatementGenerator<T> where T: IDataModelBase {
     public IDataRecordMapper<T> DataRecordMapper { get; }
 
     public StatementGenerator(IDataRecordMapper<T> recordMapper) {
@@ -30,12 +31,20 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase
 
     public Statement AddFindParameters(Statement statement, IEnumerable<QueryParameter> parameters) {
         var sql = new StringBuilder(statement.Sql);
+        var newParams = new List<QueryParameter>();
         // ReSharper disable once PossibleMultipleEnumeration
         foreach (var queryParameter in parameters) {
-            sql.Append($" AND {queryParameter.Name} = @{queryParameter.Name}");
+            var explodedParams = ExplodeParameters(queryParameter).ToList();
+            if (explodedParams.Count > 1) {
+                var inParamList = string.Join(',', explodedParams.Select(p => p.Name));
+                sql.Append($" {queryParameter.Name} IN(@{inParamList})");
+            } else {
+                sql.Append($" AND {queryParameter.Name} = @{explodedParams[0].Name}");
+            }
+            newParams.AddRange(explodedParams);
         }
         // ReSharper disable once PossibleMultipleEnumeration
-        return new Statement(sql.ToString(), parameters);
+        return new Statement(sql.ToString(), newParams);
     }
 
     public Statement AddFindParameter(Statement statement, QueryParameter queryParameter)
@@ -63,9 +72,9 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase
 
     public Statement CreateUpdate(T entity, int origRowVersion) {
         var propertyMapper = DataRecordMapper.ByPropertyName();
-        var idColumnName = propertyMapper.MapName(nameof(IEntityBase.Id));
-        var rowVersionColumnName = propertyMapper.MapName(nameof(IEntityBase.RowVersion));
-        var creationColumnName = propertyMapper.MapName(nameof(IEntityBase.CreationTime));
+        var idColumnName = propertyMapper.MapName(nameof(IDataModelBase.Id));
+        var rowVersionColumnName = propertyMapper.MapName(nameof(IDataModelBase.RowVersion));
+        var creationColumnName = propertyMapper.MapName(nameof(IDataModelBase.CreationTime));
         var record = DataRecordMapper.RecordFromEntity(entity).ByColumName();
         
         var sb = new StringBuilder("UPDATE");
@@ -95,7 +104,7 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase
 
     public Statement CreateDelete(T entity) {
         var propertyMapper = DataRecordMapper.ByPropertyName();
-        var sql = $"DELETE FROM {GetTableName()} WHERE {propertyMapper.MapName(nameof(IEntityBase.Id))} = @id";
+        var sql = $"DELETE FROM {GetTableName()} WHERE {propertyMapper.MapName(nameof(IDataModelBase.Id))} = @id";
         return new Statement(sql, new[] { new QueryParameter("id", entity.Id) });
     }
 
@@ -104,4 +113,11 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IEntityBase
     private IEnumerable<string> GetColumnNames() => DataRecordMapper.ByColumName().Keys;
 
     private string GetTableName() => DataRecordMapper.MappedTypeName;
+    
+    private static IEnumerable<QueryParameter> ExplodeParameters(QueryParameter queryParameter) {
+        if (queryParameter.Value is IEnumerable enumerable) {
+            return enumerable.OfType<object>().Select((value, idx) => new QueryParameter($"{queryParameter.Name}_{idx}", value, queryParameter.TypeCode));
+        }
+        return new[] { queryParameter };
+    }
 }

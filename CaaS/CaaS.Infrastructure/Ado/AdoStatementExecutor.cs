@@ -1,11 +1,13 @@
-﻿using System.Data.Common;
+﻿using System.Collections;
+using System.Data.Common;
+using System.Runtime.CompilerServices;
 
 namespace CaaS.Infrastructure.Ado; 
 
-public class AdoTemplate : IStatementExecutor {
+public class AdoStatementExecutor : IStatementExecutor {
     private readonly IHasConnectionProvider _unitOfWorkManager;
 
-    public AdoTemplate(IHasConnectionProvider unitOfWorkManager) {
+    public AdoStatementExecutor(IHasConnectionProvider unitOfWorkManager) {
         _unitOfWorkManager = unitOfWorkManager;
     }
 
@@ -26,6 +28,16 @@ public class AdoTemplate : IStatementExecutor {
             items.Add(mapper(reader));
         }
         return items;
+    }
+
+    public async IAsyncEnumerable<T> StreamAsync<T>(Statement statement, RowMapper<T> mapper, 
+            [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+        await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
+        await using var cmd = await CreateCommand(statement, connectionProvider, transactional: false, cancellationToken);
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) {
+            yield return mapper(reader);
+        }
     }
 
     public async Task<int> ExecuteAsync(Statement statement,

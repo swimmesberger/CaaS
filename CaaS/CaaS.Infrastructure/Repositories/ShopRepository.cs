@@ -1,18 +1,47 @@
 ﻿using CaaS.Core.Entities;
 using CaaS.Core.Repositories;
-using CaaS.Generator.Common;
-using CaaS.Infrastructure.Ado;
+using CaaS.Infrastructure.Dao;
+using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories.Base;
-using CaaS.Infrastructure.Repositories.Base.Mapping;
 
 namespace CaaS.Infrastructure.Repositories;
 
-[GenerateMapper(typeof(Shop))]
-public class ShopRepository : Repository<Shop>, IShopRepository {
-    public ShopRepository(IStatementExecutor statementExecutor, 
-            IStatementGenerator<Shop> statementGenerator) : base(statementExecutor, statementGenerator) { }
+public class ShopRepository : AbstractRepository<ShopDataModel, Shop>, IShopRepository {
+    public ShopRepository(IDao<ShopDataModel> shopDao) : base(shopDao) { }
 
     public async Task<Shop?> FindByNameAsync(string name, CancellationToken cancellationToken = default) {
-        return (await QueryByPropertyAsync(nameof(Shop.Name), name, cancellationToken)).FirstOrDefault();
+        var dataModel = await Dao.FindBy(nameof(Shop.Name), name, cancellationToken)
+                .FirstOrDefaultAsync(cancellationToken);
+        if (dataModel == null) return null;
+        return await ConvertToDomain(dataModel, cancellationToken);
+    }
+
+    protected override ShopDataModel ApplyDomainModel(ShopDataModel dataModel, Shop domainModel) {
+        return dataModel with {
+            Name = domainModel.Name
+        };
+    }
+    
+    protected override ShopDataModel ConvertFromDomain(Shop domainModel) {
+        return new ShopDataModel() {
+            Id = domainModel.Id,
+            Name = domainModel.Name,
+            RowVersion = domainModel.GetRowVersion()
+        };
+    }
+
+    protected override ValueTask<Shop> ConvertToDomain(ShopDataModel dataModel, CancellationToken cancellationToken) {
+        return ValueTask.FromResult(new Shop() {
+            Id = dataModel.Id,
+            Name = dataModel.Name,
+            ConcurrencyToken = dataModel.RowVersion.ToString()
+        });
+    }
+
+    protected override async Task<List<Shop>> ConvertToDomain(IAsyncEnumerable<ShopDataModel> dataModels, 
+            CancellationToken cancellationToken = default) {
+        return await dataModels
+                .SelectAwait(ConvertToDomain)
+                .ToListAsync(cancellationToken);
     }
 }

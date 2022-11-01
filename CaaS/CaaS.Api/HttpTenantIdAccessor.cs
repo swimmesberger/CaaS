@@ -10,7 +10,7 @@ public class HttpTenantIdAccessor : ITenantIdAccessor {
         _httpContext = contextAccessor.HttpContext;
     }
 
-    public bool TryGetTenant([MaybeNullWhen(false)] out string tenantId) {
+    public bool TryGetTenantId([MaybeNullWhen(false)] out string tenantId) {
         if (_httpContext == null) {
             tenantId = default;
             return false;

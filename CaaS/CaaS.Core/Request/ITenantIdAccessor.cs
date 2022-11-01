@@ -3,5 +3,5 @@
 namespace CaaS.Core.Request; 
 
 public interface ITenantIdAccessor {
-    bool TryGetTenant([MaybeNullWhen(false)] out string tenantId);
+    bool TryGetTenantId([MaybeNullWhen(false)] out string tenantId);
 }
