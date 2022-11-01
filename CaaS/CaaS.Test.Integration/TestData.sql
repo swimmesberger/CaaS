@@ -1,2 +1,2 @@
-INSERT INTO public.shop(name) VALUES ('Amazon');
-INSERT INTO public.shop(name) VALUES ('E-Tec');
+INSERT INTO public.shop(id, name) VALUES ('AB20302A-B5ED-48C0-86F3-CB5B93E1B86F', 'Amazon');
+INSERT INTO public.shop(id, name) VALUES ('26D68595-9B17-4673-8E68-C329C576C5A6', 'E-Tec');

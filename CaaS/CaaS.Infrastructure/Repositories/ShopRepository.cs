@@ -1,5 +1,6 @@
 ﻿using CaaS.Core.Entities;
 using CaaS.Core.Repositories;
+using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Dao;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories.Base;
@@ -10,10 +11,14 @@ public class ShopRepository : AbstractRepository<ShopDataModel, Shop>, IShopRepo
     public ShopRepository(IDao<ShopDataModel> shopDao) : base(shopDao) { }
 
     public async Task<Shop?> FindByNameAsync(string name, CancellationToken cancellationToken = default) {
-        var dataModel = await Dao.FindBy(nameof(Shop.Name), name, cancellationToken)
+        var dataModel = await Dao.FindBy(StatementParameters.CreateWhere(nameof(Shop.Name), name), cancellationToken)
                 .FirstOrDefaultAsync(cancellationToken);
         if (dataModel == null) return null;
         return await ConvertToDomain(dataModel, cancellationToken);
+    }
+
+    protected override StatementParameters PreProcessFindManyParameters(StatementParameters parameters) {
+        return parameters.WithOrderBy(nameof(Shop.Name));
     }
 
     protected override ShopDataModel ApplyDomainModel(ShopDataModel dataModel, Shop domainModel) {

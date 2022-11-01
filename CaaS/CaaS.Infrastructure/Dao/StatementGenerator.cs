@@ -6,68 +6,32 @@ using CaaS.Infrastructure.DataModel.Base;
 
 namespace CaaS.Infrastructure.Dao; 
 
-public class StatementGenerator<T> : IStatementGenerator<T> where T: IDataModelBase {
+public class StatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGenerator where T: IDataModelBase {
     public IDataRecordMapper<T> DataRecordMapper { get; }
 
     public StatementGenerator(IDataRecordMapper<T> recordMapper) {
         DataRecordMapper = recordMapper;
     }
 
-    public Statement CreateCount() {
-        var sql = $"SELECT COUNT(*) FROM {GetTableName()}";
-        return new Statement(sql);
-    }
+    public Statement CreateCount() => new Statement(StatementType.Count, this);
 
-    public Statement CreateFind(IEnumerable<QueryParameter>? parameters = null) {
-        var sql = new StringBuilder($"SELECT {GetColumnNamesString()} FROM {GetTableName()} WHERE 1=1");
+    public Statement CreateFind(StatementParameters statementParameters) {
         // ReSharper disable once PossibleMultipleEnumeration
-        var statement = new Statement(sql.ToString(), parameters);
-        if (parameters != null) {
-            // ReSharper disable once PossibleMultipleEnumeration
-            statement = AddFindParameters(statement, parameters);
-        }
-        return statement;
+        return new Statement(StatementType.Find, this) {
+            Parameters = statementParameters
+        };
     }
-
-    public Statement AddFindParameters(Statement statement, IEnumerable<QueryParameter> parameters) {
-        var sql = new StringBuilder(statement.Sql);
-        var newParams = new List<QueryParameter>();
-        // ReSharper disable once PossibleMultipleEnumeration
-        foreach (var queryParameter in parameters) {
-            var explodedParams = ExplodeParameters(queryParameter).ToList();
-            if (explodedParams.Count > 1) {
-                var inParamList = string.Join(',', explodedParams.Select(p => p.Name));
-                sql.Append($" {queryParameter.Name} IN(@{inParamList})");
-            } else {
-                sql.Append($" AND {queryParameter.Name} = @{explodedParams[0].Name}");
-            }
-            newParams.AddRange(explodedParams);
-        }
-        // ReSharper disable once PossibleMultipleEnumeration
-        return new Statement(sql.ToString(), newParams);
-    }
-
-    public Statement AddFindParameter(Statement statement, QueryParameter queryParameter)
-        => AddFindParameters(statement, new[] { queryParameter });
-
-    public Statement AddFindParameterByProperty(Statement statement, string propertyName, object value)
-        => AddFindParameter(statement, new QueryParameter(DataRecordMapper.ByPropertyName().MapName(propertyName), value));
 
     public Statement CreateInsert(T entity) {
         var record = DataRecordMapper.RecordFromEntity(entity).ByColumName();
-        
-        var sb = new StringBuilder("INSERT INTO");
-        sb.Append(' ').Append(GetTableName());
-        sb.Append('(').Append(GetColumnNamesString()).Append(')');
-        sb.Append("VALUES");
-        sb.Append(' ').Append('(').Append(string.Join(',', GetColumnNames()
-                .Select(s => $"@{s}"))).Append(')');
         var parameters = GetColumnNames()
-                .Select(columnName => new QueryParameter(
-                        columnName, 
-                        record.GetObject(columnName)
-                )).ToList();
-        return new Statement(sb.ToString(), parameters);
+                .Select(columnName => new QueryParameter(columnName, record.GetObject(columnName)))
+                .ToList();
+        return new Statement(StatementType.Create, this) {
+            Parameters = new StatementParameters() { 
+                Other = parameters
+            }
+        };
     }
 
     public Statement CreateUpdate(T entity, int origRowVersion) {
@@ -76,39 +40,135 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IDataModelB
         var rowVersionColumnName = propertyMapper.MapName(nameof(IDataModelBase.RowVersion));
         var creationColumnName = propertyMapper.MapName(nameof(IDataModelBase.CreationTime));
         var record = DataRecordMapper.RecordFromEntity(entity).ByColumName();
-        
-        var sb = new StringBuilder("UPDATE");
-        sb.Append(' ').Append(GetTableName());
-        sb.Append(" SET ");
-        var parameters = new List<QueryParameter> {
-                new(idColumnName, entity.Id),
-                new("curRowVersion", origRowVersion)
-        };
-        var first = true;
-        foreach (var columnName in GetColumnNames()) {
-            if(columnName == idColumnName ||
-               columnName == creationColumnName) continue;
 
-            if (first) {
-                first = false;
-            } else {
-                sb.Append(", ");
+        var updateParameters = GetColumnNames()
+                .Where(columnName => columnName != idColumnName && columnName != creationColumnName)
+                .Select(columnName => new QueryParameter(columnName, record.GetObject(columnName)))
+                .ToList();
+        var whereParameters = new List<QueryParameter>() {
+                new(idColumnName, entity.Id),
+                new(rowVersionColumnName, origRowVersion) { ParameterName = "curRowVersion" }
+        };
+        return new Statement(StatementType.Update, this) {
+            Parameters = new StatementParameters() {
+                Where = whereParameters,
+                Other = updateParameters
             }
-            sb.Append(' ').Append(columnName).Append(" = ").Append('@').Append(columnName);
-            parameters.Add(new QueryParameter(columnName, record.GetObject(columnName)));
-        }
-        sb.Append(" WHERE ").Append(idColumnName).Append(" = ").Append('@').Append(idColumnName);
-        sb.Append(" AND ").Append(rowVersionColumnName).Append(" = ").Append("@curRowVersion").Append("");
-        return new Statement(sb.ToString(), parameters);
+        };
     }
 
     public Statement CreateDelete(T entity) {
         var propertyMapper = DataRecordMapper.ByPropertyName();
-        var sql = $"DELETE FROM {GetTableName()} WHERE {propertyMapper.MapName(nameof(IDataModelBase.Id))} = @id";
-        return new Statement(sql, new[] { new QueryParameter("id", entity.Id) });
+        return new Statement(StatementType.Delete, this) {
+            Parameters = new StatementParameters() {
+                Where = new List<QueryParameter>(){ new(propertyMapper.MapName(nameof(IDataModelBase.Id)), entity.Id) }
+            }
+        };
+    }
+
+    public MaterializedStatement MaterializeStatement(Statement statement) {
+        return statement.Type switch {
+            StatementType.Count => new MaterializedStatement($"SELECT COUNT(*) FROM {GetTableName()}"),
+            StatementType.Create => new MaterializedStatement(
+                    $"INSERT INTO {GetTableName()} ({GetColumnNamesString()}) VALUES ({GetColumnNameParametersString()})") {
+                    Parameters = statement.Parameters.BindParameters
+            },
+            StatementType.Update => MaterializeUpdate(statement),
+            StatementType.Delete => MaterializeDelete(statement),
+            StatementType.Find => MaterializeFind(statement),
+            _ => throw new ArgumentException()
+        };
+    }
+
+    private MaterializedStatement MaterializeUpdate(Statement statement) {
+        var sql = new StringBuilder("UPDATE");
+        sql.Append(' ').Append(GetTableName());
+        sql.Append(" SET");
+        var first = true;
+        foreach (var parameter in statement.Parameters.Other) {
+            if (first) {
+                first = false;
+            } else {
+                sql.Append(',');
+            }
+            sql.Append(' ').Append(parameter.Name).Append(" = ").Append('@').Append(parameter.ParameterName);
+        }
+        var whereParams = CreateWhereClause(sql, statement.Parameters.Where);
+        return new MaterializedStatement(sql.ToString()) {
+            Parameters = statement.Parameters.Other.Concat(whereParams).ToList()
+        };
+    }
+
+    private MaterializedStatement MaterializeDelete(Statement statement) {
+        var sql = new StringBuilder($"DELETE FROM {GetTableName()}");
+        var whereParams = CreateWhereClause(sql, statement.Parameters.Where);
+        return new MaterializedStatement(sql.ToString()) {
+            Parameters = whereParams
+        };
+    }
+    
+    private MaterializedStatement MaterializeFind(Statement statement) {
+        var sql = new StringBuilder($"SELECT {GetColumnNamesString()} FROM {GetTableName()}");
+        var whereParams = CreateWhereClause(sql, statement.Parameters.Where);
+        AddOrderByClause(sql, statement.Parameters.OrderBy);
+        return new MaterializedStatement(sql.ToString()) {
+            Parameters = whereParams
+        };
+    }
+    private IEnumerable<QueryParameter> CreateWhereClause(StringBuilder sql, IEnumerable<QueryParameter> parameters) {
+        var newParams = new List<QueryParameter>();
+        AddWhereClause(sql, newParams, parameters);
+        return newParams;
+    }
+
+    private void AddWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<QueryParameter> parameters) {
+        var first = true;
+        foreach (var queryParameter in parameters) {
+            if (first) {
+                first = false;
+                sql.Append(" WHERE");
+            } else {
+                sql.Append(" AND");
+            }
+            var explodedParams = ExplodeParameters(queryParameter).ToList();
+            if (explodedParams.Count > 1) {
+                var inParamList = string.Join(',', explodedParams.Select(p => $"@{p.ParameterName}"));
+                sql.Append($" {queryParameter.Name} IN({inParamList})");
+            } else {
+                sql.Append($" {queryParameter.Name} = @{explodedParams[0].ParameterName}");
+            }
+            newParams.AddRange(explodedParams);
+        }
+    }
+    
+    private void AddOrderByClause(StringBuilder sql, IEnumerable<OrderParameter> parameters) {
+        var first = true;
+        var firstOrder = true;
+        foreach (var parameter in parameters) {
+            if (first) {
+                sql.Append(" ORDER BY");
+                first = false;
+            }
+            if (firstOrder) {
+                firstOrder = false;
+            } else {
+                sql.Append(',');
+            }
+            sql.Append($" {parameter.Name} {OrderTypeSql(parameter.OrderType)}");
+        }
+    }
+
+    private string OrderTypeSql(OrderType orderType) {
+        return orderType switch {
+            OrderType.Asc => "ASC",
+            OrderType.Desc => "DESC",
+            _ => throw new ArgumentException()
+        };
     }
 
     private string GetColumnNamesString() => string.Join(',', GetColumnNames());
+    
+    private string GetColumnNameParametersString() => string.Join(',', GetColumnNames().Select(s => $"@{s}"));
 
     private IEnumerable<string> GetColumnNames() => DataRecordMapper.ByColumName().Keys;
 
@@ -116,7 +176,9 @@ public class StatementGenerator<T> : IStatementGenerator<T> where T: IDataModelB
     
     private static IEnumerable<QueryParameter> ExplodeParameters(QueryParameter queryParameter) {
         if (queryParameter.Value is IEnumerable enumerable) {
-            return enumerable.OfType<object>().Select((value, idx) => new QueryParameter($"{queryParameter.Name}_{idx}", value, queryParameter.TypeCode));
+            return enumerable.OfType<object>().Select((value, idx) => new QueryParameter(queryParameter.Name, value, queryParameter.TypeCode) {
+                ParameterName = $"{queryParameter.Name}_{idx}"
+            });
         }
         return new[] { queryParameter };
     }

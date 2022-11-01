@@ -8,13 +8,13 @@ public class AdoUnitOfWorkManager : IUnitOfWorkManager, IHasConnectionProvider {
 
     private AdoUnitOfWork? _current;
     public IUnitOfWork? Current => _current;
-
+    
     public IConnectionProvider ConnectionProvider {
         get {
             if (_current != null && !_current.Disposed) {
                 return new ShieldedConnectionProvider(_current);
             }
-            return new AdoUnitOfWork(_dbProviderFactory);
+            return new AdoUnitOfWork(_dbProviderFactory, transactional: false);
         }
     }
 
@@ -26,7 +26,7 @@ public class AdoUnitOfWorkManager : IUnitOfWorkManager, IHasConnectionProvider {
         if (_current != null && !_current.Disposed) {
             return _current;
         }
-        var uow = new AdoUnitOfWork(_dbProviderFactory);
+        var uow = new AdoUnitOfWork(_dbProviderFactory, transactional: true);
         _current = uow;
         return uow;
     }
@@ -38,8 +38,8 @@ public class AdoUnitOfWorkManager : IUnitOfWorkManager, IHasConnectionProvider {
             _connectionProvider = connectionProvider;
         }
 
-        public Task<DbConnection> GetDbConnectionAsync(bool transactional = false, CancellationToken cancellationToken = default) =>
-                _connectionProvider.GetDbConnectionAsync(transactional, cancellationToken);
+        public Task<DbConnection> GetDbConnectionAsync(CancellationToken cancellationToken = default) =>
+                _connectionProvider.GetDbConnectionAsync(cancellationToken);
         
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }

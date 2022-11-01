@@ -1,11 +1,15 @@
 ﻿using CaaS.Core.Entities.Base;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories.Base;
+using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Dao;
+using CaaS.Infrastructure.DataModel.Base;
 
 namespace CaaS.Infrastructure.Repositories.Base; 
 
-public abstract class AbstractRepository<TData, TDomain> : IRepository<TDomain> where TDomain : class, IEntityBase {
+public abstract class AbstractRepository<TData, TDomain> : IRepository<TDomain> 
+        where TDomain : class, IEntityBase
+        where TData: IDataModelBase {
     protected IDao<TData> Dao { get; }
 
     public AbstractRepository(IDao<TData> dao) {
@@ -13,7 +17,7 @@ public abstract class AbstractRepository<TData, TDomain> : IRepository<TDomain> 
     }
     
     public async Task<IReadOnlyList<TDomain>> FindAllAsync(CancellationToken cancellationToken = default) 
-        => await ConvertToDomain(Dao.FindAllAsync(cancellationToken), cancellationToken);
+        => await ConvertToDomain(Dao.FindBy(PreProcessFindManyParameters(StatementParameters.Empty), cancellationToken), cancellationToken);
 
     public async Task<TDomain?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
         var dataModel = await Dao.FindByIdAsync(id, cancellationToken);
@@ -47,6 +51,10 @@ public abstract class AbstractRepository<TData, TDomain> : IRepository<TDomain> 
 
     public async Task<long> CountAsync(CancellationToken cancellationToken = default)
         => await Dao.CountAsync(cancellationToken);
+
+    protected virtual StatementParameters PreProcessFindManyParameters(StatementParameters parameters) {
+        return parameters.WithOrderBy(nameof(IEntityBase.Id));
+    }
 
     protected ValueTask<TDomain> ConvertToDomain(TData dataModel) => ConvertToDomain(dataModel, default);
 

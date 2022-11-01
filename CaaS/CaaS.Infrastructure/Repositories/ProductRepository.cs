@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.Entities;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
+using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Dao;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories.Base;
@@ -11,6 +12,10 @@ public class ProductRepository : AbstractRepository<ProductDataModel, Product>, 
 
     public ProductRepository(IDao<ProductDataModel> productDao, IShopRepository shopRepository) : base(productDao) {
         _shopRepository = shopRepository;
+    }
+    
+    protected override StatementParameters PreProcessFindManyParameters(StatementParameters parameters) {
+        return parameters.WithOrderBy(nameof(Shop.Name));
     }
     
     protected override ProductDataModel ApplyDomainModel(ProductDataModel dataModel, Product domainModel) {

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Data.Common;
+﻿using System.Data.Common;
 using System.Runtime.CompilerServices;
 
 namespace CaaS.Infrastructure.Ado; 
@@ -13,7 +12,7 @@ public class AdoStatementExecutor : IStatementExecutor {
 
     public async Task<object?> QueryScalarAsync(Statement statement, CancellationToken cancellationToken = default) {
         await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
-        await using var cmd = await CreateCommand(statement, connectionProvider, transactional: false, cancellationToken);
+        await using var cmd = await CreateCommand(statement, connectionProvider, cancellationToken);
         return await cmd.ExecuteScalarAsync(cancellationToken);
     }
 
@@ -21,7 +20,7 @@ public class AdoStatementExecutor : IStatementExecutor {
             RowMapper<T> mapper,
             CancellationToken cancellationToken = default) {
         await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
-        await using var cmd = await CreateCommand(statement, connectionProvider, transactional: false, cancellationToken);
+        await using var cmd = await CreateCommand(statement, connectionProvider, cancellationToken);
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         var items = new List<T>();
         while (await reader.ReadAsync(cancellationToken)) {
@@ -33,7 +32,7 @@ public class AdoStatementExecutor : IStatementExecutor {
     public async IAsyncEnumerable<T> StreamAsync<T>(Statement statement, RowMapper<T> mapper, 
             [EnumeratorCancellation] CancellationToken cancellationToken = default) {
         await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
-        await using var cmd = await CreateCommand(statement, connectionProvider, transactional: false, cancellationToken);
+        await using var cmd = await CreateCommand(statement, connectionProvider, cancellationToken);
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken)) {
             yield return mapper(reader);
@@ -43,27 +42,25 @@ public class AdoStatementExecutor : IStatementExecutor {
     public async Task<int> ExecuteAsync(Statement statement,
             CancellationToken cancellationToken = default) {
         await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
-        await using var cmd = await CreateCommand(statement, connectionProvider, transactional: true, cancellationToken);
+        await using var cmd = await CreateCommand(statement, connectionProvider, cancellationToken);
         var result = await cmd.ExecuteNonQueryAsync(cancellationToken);
         return result;
     }
 
     private async Task<DbCommand> CreateCommand(Statement statement,
             IConnectionProvider connectionProvider,
-            bool transactional,
             CancellationToken cancellationToken = default) {
-        var parameters = statement.Parameters;
-        parameters ??= Enumerable.Empty<QueryParameter>();
+        var materializedStatement = statement.Materialize();
         var dbConnection = await connectionProvider
-                .GetDbConnectionAsync(transactional, cancellationToken: cancellationToken);
+                .GetDbConnectionAsync(cancellationToken: cancellationToken);
         var cmd = dbConnection.CreateCommand();
         cmd.Connection = dbConnection;
-        cmd.CommandText = statement.Sql;
-        foreach (var queryParameter in parameters) {
+        cmd.CommandText = materializedStatement.Sql;
+        foreach (var queryParameter in materializedStatement.Parameters) {
             cmd.Parameters.Add(cmd.AddParameter(
-                    queryParameter.Name, 
-                    queryParameter.Value,
-                    queryParameter.TypeCode
+                queryParameter.ParameterName, 
+                queryParameter.Value,
+                queryParameter.TypeCode
             ));
         }
         return cmd;

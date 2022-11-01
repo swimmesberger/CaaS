@@ -7,7 +7,7 @@ public abstract record DataModel : IDataModelBase {
     public DateTimeOffset CreationTime { get; init; }
     public DateTimeOffset LastModificationTime { get; init; }
 
-    public DataModel() {
+    protected DataModel() {
         Id = Guid.NewGuid();
         RowVersion = 0;
         CreationTime = DateTimeOffset.UtcNow;

@@ -8,12 +8,8 @@ public interface IStatementGenerator<T> {
     
     Statement CreateCount();
 
-    Statement CreateFind(IEnumerable<QueryParameter>? parameters = null);
+    Statement CreateFind(StatementParameters statementParameters);
 
-    Statement AddFindParameters(Statement statement, IEnumerable<QueryParameter> parameters);
-    Statement AddFindParameter(Statement statement, QueryParameter queryParameter);
-    Statement AddFindParameterByProperty(Statement statement, string propertyName, object value);
-    
     Statement CreateInsert(T entity);
 
     Statement CreateUpdate(T entity, int origRowVersion);

@@ -1,4 +1,5 @@
-﻿using CaaS.Infrastructure.Ado;
+﻿using System.Diagnostics.CodeAnalysis;
+using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Dao;
 using CaaS.Infrastructure.DataModel.Base;
 
@@ -23,28 +24,36 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
         var idSet = ids.ToHashSet();
         return _data.Where(d => idSet.Contains(d.Id)).ToAsyncEnumerable();
     }
-    
-    public IAsyncEnumerable<T> FindBy(string propertyName, object value, CancellationToken cancellationToken = default) {
-        return FindBy(new QueryParameter(propertyName, value), cancellationToken);
-    }
-    
-    public IAsyncEnumerable<T> FindBy(QueryParameter parameter, CancellationToken cancellationToken = default) {
-        return FindBy(new[] {parameter}, cancellationToken);
-    }
-    
-    public IAsyncEnumerable<T> FindBy(IEnumerable<QueryParameter> parameters, CancellationToken cancellationToken = default) {
-        var paramsList = parameters.ToList();
-        var propertyNames = paramsList.Select(p => p.Name).ToHashSet();
+
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    public IAsyncEnumerable<T> FindBy(StatementParameters parameters, CancellationToken cancellationToken = default) {
+        var propertyNames = parameters.ParameterNames.ToHashSet();
         var properties = typeof(T).GetProperties()
                 .Where(p => propertyNames.Contains(p.Name)).ToDictionary(p => p.Name, p => p);
-        return _data.Where(d => {
-            foreach (var param in paramsList) {
+        var enumerable = _data.Where(d => {
+            foreach (var param in parameters.Where) {
                 var prop = properties[param.Name];
                 if (!prop.GetValue(d)!.Equals(param.Value))
                     return false;
             }
             return true;
-        }).ToAsyncEnumerable();
+        });
+        
+        IOrderedEnumerable<T>? orderedEnumerable = null;
+        foreach (var orderParameter in parameters.OrderBy) {
+            object? KeySelector(T d) => properties[orderParameter.Name].GetValue(d);
+            if (orderedEnumerable == null) {
+                orderedEnumerable = orderParameter.OrderType == OrderType.Asc ? 
+                        enumerable.OrderBy(KeySelector) : 
+                        enumerable.OrderByDescending(KeySelector);
+            } else {
+                orderedEnumerable = orderParameter.OrderType == OrderType.Asc ? 
+                        orderedEnumerable.ThenBy(KeySelector) : 
+                        orderedEnumerable.ThenByDescending(KeySelector);
+            }
+            enumerable = orderedEnumerable;
+        }
+        return enumerable.ToAsyncEnumerable();
     }
 
     public Task<long> CountAsync(CancellationToken cancellationToken = default) => Task.FromResult<long>(_data.Count);
