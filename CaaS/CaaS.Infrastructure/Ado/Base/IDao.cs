@@ -1,6 +1,6 @@
-﻿using CaaS.Infrastructure.Ado;
+﻿using CaaS.Infrastructure.Ado.Model;
 
-namespace CaaS.Infrastructure.Dao; 
+namespace CaaS.Infrastructure.Ado.Base; 
 
 public interface IDao<T> {
     IAsyncEnumerable<T> FindAllAsync(CancellationToken cancellationToken = default);

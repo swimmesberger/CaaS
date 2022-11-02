@@ -1,15 +1,17 @@
 ﻿using System.Collections;
 using System.Text;
-using CaaS.Infrastructure.Ado;
+using CaaS.Infrastructure.Ado.Base;
+using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataMapping;
+using CaaS.Infrastructure.DataMapping.Base;
 using CaaS.Infrastructure.DataModel.Base;
 
-namespace CaaS.Infrastructure.Dao; 
+namespace CaaS.Infrastructure.Ado; 
 
-public class StatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGenerator where T: IDataModelBase {
+public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGenerator where T: IDataModelBase {
     public IDataRecordMapper<T> DataRecordMapper { get; }
 
-    public StatementGenerator(IDataRecordMapper<T> recordMapper) {
+    public AdoStatementGenerator(IDataRecordMapper<T> recordMapper) {
         DataRecordMapper = recordMapper;
     }
 

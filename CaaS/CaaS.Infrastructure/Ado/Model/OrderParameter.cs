@@ -1,4 +1,4 @@
-﻿namespace CaaS.Infrastructure.Ado; 
+﻿namespace CaaS.Infrastructure.Ado.Model; 
 
 public record OrderParameter(string Name, OrderType OrderType = OrderType.Asc);
 

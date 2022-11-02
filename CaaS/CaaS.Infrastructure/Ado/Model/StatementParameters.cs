@@ -1,4 +1,4 @@
-﻿namespace CaaS.Infrastructure.Ado;
+﻿namespace CaaS.Infrastructure.Ado.Model;
 
 public record StatementParameters {
     public static readonly StatementParameters Empty = new StatementParameters();

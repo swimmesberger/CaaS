@@ -1,4 +1,4 @@
-﻿using CaaS.Infrastructure.Dao;
+﻿using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
 

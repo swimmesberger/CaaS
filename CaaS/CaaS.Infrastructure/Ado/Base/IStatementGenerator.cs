@@ -1,7 +1,8 @@
-﻿using CaaS.Infrastructure.Ado;
+﻿using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataMapping;
+using CaaS.Infrastructure.DataMapping.Base;
 
-namespace CaaS.Infrastructure.Dao; 
+namespace CaaS.Infrastructure.Ado.Base; 
 
 public interface IStatementGenerator<T> {
     IDataRecordMapper<T> DataRecordMapper { get; }

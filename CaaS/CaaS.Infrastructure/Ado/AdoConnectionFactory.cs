@@ -1,13 +1,15 @@
 ﻿using System.Data.Common;
 using CaaS.Core.Exceptions;
+using CaaS.Infrastructure.Ado.Base;
+using CaaS.Infrastructure.Ado.Model;
 
 namespace CaaS.Infrastructure.Ado; 
 
-public class ConnectionFactory : IConnectionFactory {
+public class AdoConnectionFactory : IConnectionFactory {
     private readonly DbProviderFactory _dbProviderFactory;
     private readonly RelationalOptions _options;
 
-    public ConnectionFactory(DbProviderFactory dbProviderFactory, RelationalOptions options) {
+    public AdoConnectionFactory(DbProviderFactory dbProviderFactory, RelationalOptions options) {
         _dbProviderFactory = dbProviderFactory;
         _options = options;
     }

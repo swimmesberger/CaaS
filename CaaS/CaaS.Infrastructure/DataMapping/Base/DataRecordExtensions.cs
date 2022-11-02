@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace CaaS.Infrastructure.DataMapping; 
+namespace CaaS.Infrastructure.DataMapping.Base; 
 
 public static class DataRecordExtensions {
     public static T GetValue<T>(this IDataRecord record, string key)
@@ -49,8 +49,7 @@ public static class DataRecordExtensions {
     private static object? GetObject(this IDataRecord record, string key) {
         try {
             return record[key];
-        }
-        catch (IndexOutOfRangeException) {
+        } catch (IndexOutOfRangeException) {
             return null;
         }
     }

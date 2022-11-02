@@ -1,5 +1,7 @@
 ﻿using System.Data.Common;
 using System.Runtime.CompilerServices;
+using CaaS.Infrastructure.Ado.Base;
+using CaaS.Infrastructure.Ado.Model;
 
 namespace CaaS.Infrastructure.Ado; 
 

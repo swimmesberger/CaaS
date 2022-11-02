@@ -4,7 +4,8 @@ using CaaS.Core.Repositories.Base;
 using CaaS.Core.Request;
 using CaaS.Core.Tenant;
 using CaaS.Infrastructure.Ado;
-using CaaS.Infrastructure.Dao;
+using CaaS.Infrastructure.Ado.Base;
+using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.Di;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.Repositories;
@@ -21,7 +22,7 @@ public static class CaasServiceCollectionExtensions {
         services.Configure<RelationalOptions>(configuration.GetSection(RelationalOptions.Key));
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<RelationalOptions>>().Value);
         services.AddSingleton(GetDbProviderFactory);
-        services.AddSingleton<IConnectionFactory, ConnectionFactory>();
+        services.AddSingleton<IConnectionFactory, AdoConnectionFactory>();
         return services;
     }
 
@@ -47,7 +48,7 @@ public static class CaasServiceCollectionExtensions {
         services.AddScoped<IShopRepository, ShopRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped(typeof(IDao<>), typeof(GenericDao<>));
-        services.AddScoped(typeof(IStatementGenerator<>), typeof(StatementGenerator<>));
+        services.AddScoped(typeof(IStatementGenerator<>), typeof(AdoStatementGenerator<>));
         services.AddScoped(typeof(IServiceProvider<>), typeof(DefaultTypedServiceProvider<>));
         services.AddConnectionFactory(configuration);
         services.AddDataRecordMapper();

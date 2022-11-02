@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace CaaS.Infrastructure.DataMapping; 
+namespace CaaS.Infrastructure.DataMapping.Base; 
 
 public interface IDataRecordMapper<T> : IPropertyMapping {
     string MappedTypeName { get; }

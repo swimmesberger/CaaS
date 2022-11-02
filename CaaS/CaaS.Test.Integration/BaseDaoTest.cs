@@ -1,8 +1,9 @@
 ﻿using System.Data.Common;
 using System.Text;
 using CaaS.Infrastructure.Ado;
-using CaaS.Infrastructure.Dao;
-using CaaS.Infrastructure.DataMapping;
+using CaaS.Infrastructure.Ado.Base;
+using CaaS.Infrastructure.Ado.Model;
+using CaaS.Infrastructure.DataMapping.Base;
 using CaaS.Infrastructure.DataModel.Base;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
@@ -84,7 +85,7 @@ public class BaseDaoTest : IAsyncLifetime {
     protected GenericDao<T> GetDao<T>(IDataRecordMapper<T> dataRecordMapper) where T : DataModel, new() {
         var unitOfWorkManager = GetAdoUnitOfWorkManager();
         var statementExecutor = new AdoStatementExecutor(unitOfWorkManager);
-        var statementGenerator = new StatementGenerator<T>(dataRecordMapper);
+        var statementGenerator = new AdoStatementGenerator<T>(dataRecordMapper);
         return new GenericDao<T>(statementExecutor, statementGenerator);
     }
 
@@ -94,7 +95,7 @@ public class BaseDaoTest : IAsyncLifetime {
                 ProviderName = PostgresProviderName
         };
         var dbFactory = GetDbProviderFactory(dbOptions);
-        var connectionFactory = new ConnectionFactory(dbFactory, dbOptions);
+        var connectionFactory = new AdoConnectionFactory(dbFactory, dbOptions);
         return new AdoUnitOfWorkManager(connectionFactory);
     }
     

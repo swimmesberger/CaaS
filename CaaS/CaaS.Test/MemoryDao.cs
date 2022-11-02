@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CaaS.Infrastructure.Ado;
-using CaaS.Infrastructure.Dao;
+using CaaS.Infrastructure.Ado.Base;
+using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel.Base;
 
 namespace CaaS.Test; 

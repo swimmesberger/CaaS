@@ -1,4 +1,6 @@
-﻿namespace CaaS.Infrastructure.Ado;
+﻿using CaaS.Infrastructure.Ado.Base;
+
+namespace CaaS.Infrastructure.Ado.Model;
 
 public record Statement {
     private readonly IStatementSqlGenerator _sqlGenerator;

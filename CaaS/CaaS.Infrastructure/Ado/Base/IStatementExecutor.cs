@@ -1,4 +1,6 @@
-﻿namespace CaaS.Infrastructure.Ado; 
+﻿using CaaS.Infrastructure.Ado.Model;
+
+namespace CaaS.Infrastructure.Ado.Base; 
 
 public interface IStatementExecutor {
     Task<object?> QueryScalarAsync(Statement statement, CancellationToken cancellationToken = default);

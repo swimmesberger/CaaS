@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using CaaS.Core.Repositories.Base;
+using CaaS.Infrastructure.Ado.Base;
 
 namespace CaaS.Infrastructure.Ado; 
 

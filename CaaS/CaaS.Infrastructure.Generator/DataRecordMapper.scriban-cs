@@ -1,4 +1,4 @@
-﻿using CaaS.Infrastructure.DataMapping;
+﻿using CaaS.Infrastructure.DataMapping.Base;
 using {{ Entity.Namespace }};
 using System.CodeDom.Compiler;
 using System.Data;

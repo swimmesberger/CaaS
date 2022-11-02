@@ -1,7 +1,8 @@
 ﻿using CaaS.Core.Entities;
 using CaaS.Core.Repositories;
 using CaaS.Infrastructure.Ado;
-using CaaS.Infrastructure.Dao;
+using CaaS.Infrastructure.Ado.Base;
+using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories.Base;
 
