@@ -2,6 +2,7 @@
 using {{ Entity.Namespace }};
 using System.CodeDom.Compiler;
 using System.Data;
+using System.Text.Json;
 
 namespace {{ Namespace }};
 

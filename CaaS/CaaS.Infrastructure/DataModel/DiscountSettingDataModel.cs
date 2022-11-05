@@ -1,4 +1,5 @@
-﻿using CaaS.Infrastructure.DataMapping;
+﻿using System.Text.Json;
+using CaaS.Infrastructure.DataMapping;
 
 namespace CaaS.Infrastructure.DataModel;
 
@@ -6,9 +7,9 @@ namespace CaaS.Infrastructure.DataModel;
 public record DiscountSettingDataModel() : Base.DataModel {
     [TenantIdColumn]
     public Guid ShopId { get; init; }
-    public string Name { get; init; } = String.Empty;
+    public string Name { get; init; } = string.Empty;
     public Guid Rule { get; init; }
     public Guid Action { get; init; }
-    public string RuleParameters { get; init; } = String.Empty;
-    public string ActionParameters { get; init; } = String.Empty;
+    public JsonDocument? RuleParameters { get; init; } = null;
+    public JsonDocument? ActionParameters { get; init; } = null;
 }

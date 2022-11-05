@@ -49,7 +49,17 @@ ALTER TABLE IF EXISTS coupon
 ALTER TABLE IF EXISTS coupon
     DROP CONSTRAINT "FK_coupon.order_id";
 
---test
+ALTER TABLE IF EXISTS product_order_discount
+    DROP CONSTRAINT "FK_product_order_discount.product_order_id";
+
+ALTER TABLE IF EXISTS product_order_discount
+    DROP CONSTRAINT "FK_product_order_discount.shop_id";
+
+ALTER TABLE IF EXISTS order_discount
+    DROP CONSTRAINT "FK_order_discount.order_id";
+
+ALTER TABLE IF EXISTS order_discount
+    DROP CONSTRAINT "FK_order_discount.shop_id";
 
 DROP TABLE IF EXISTS shop;
 DROP TABLE IF EXISTS shop_admin;
@@ -61,6 +71,8 @@ DROP TABLE IF EXISTS cart;
 DROP TABLE IF EXISTS product_cart;
 DROP TABLE IF EXISTS discount_setting;
 DROP TABLE IF EXISTS coupon;
+DROP TABLE IF EXISTS product_order_discount;
+DROP TABLE IF EXISTS order_discount;
 
 -- add create table statements here
 
@@ -111,7 +123,7 @@ CREATE TABLE "customer" (
     "shop_id" uuid NOT NULL,
     "name" varchar(255) NOT NULL,
     "e_mail" varchar(255) UNIQUE NOT NULL,
-    "credit_card_number" bigint,
+    "credit_card_number" varchar(19),
     CONSTRAINT "FK_customer.shop_id"
         FOREIGN KEY ("shop_id")
             REFERENCES "shop"("id") ON DELETE CASCADE
@@ -202,8 +214,8 @@ CREATE TABLE "discount_setting" (
     "name" varchar(255),
     "rule" uuid NOT NULL,
     "action" uuid NOT NULL,
-    "rule_parameters" json,
-    "action_parameters" json,
+    "rule_parameters" jsonb,
+    "action_parameters" jsonb,
     CONSTRAINT "FK_discount_setting.shop_id"
         FOREIGN KEY ("shop_id")
             REFERENCES "shop"("id") ON DELETE CASCADE
@@ -230,6 +242,40 @@ CREATE TABLE "coupon" (
           REFERENCES "order"("id") ON DELETE NO ACTION
 );
 
+CREATE TABLE "product_order_discount" (
+    "id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    "row_version" int DEFAULT 0 NOT NULL,
+    "creation_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "last_modification_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "discount_name" varchar(255) NOT NULL ,
+    "discount" decimal NOT NULL ,
+    "product_order_id" uuid NOT NULL,
+    "shop_id" uuid NOT NULL,
+    CONSTRAINT "FK_product_order_discount.product_order_id"
+      FOREIGN KEY ("product_order_id")
+          REFERENCES "product_order"("id") ON DELETE CASCADE,
+    CONSTRAINT "FK_product_order_discount.shop_id"
+      FOREIGN KEY ("shop_id")
+          REFERENCES "shop"("id") ON DELETE CASCADE 
+);
+
+CREATE TABLE "order_discount" (
+    "id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    "row_version" int DEFAULT 0 NOT NULL,
+    "creation_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "last_modification_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "discount_name" varchar(255) NOT NULL,
+    "discount" decimal NOT NULL,
+    "order_id" uuid NOT NULL,
+    "shop_id" uuid NOT NULL,
+    CONSTRAINT "FK_order_discount.order_id"
+      FOREIGN KEY ("order_id")
+          REFERENCES "order"("id") ON DELETE CASCADE,
+    CONSTRAINT "FK_order_discount.shop_id"
+      FOREIGN KEY ("shop_id")
+          REFERENCES "shop"("id") ON DELETE CASCADE
+);
+
 ALTER TABLE IF EXISTS public.shop OWNER to caas;
 ALTER TABLE IF EXISTS public.shop_admin OWNER to caas;
 ALTER TABLE IF EXISTS public.product OWNER to caas;
@@ -240,5 +286,5 @@ ALTER TABLE IF EXISTS public.cart OWNER to caas;
 ALTER TABLE IF EXISTS public.product_cart OWNER to caas;
 ALTER TABLE IF EXISTS public.discount_setting OWNER to caas;
 ALTER TABLE IF EXISTS public.coupon OWNER to caas;
-
-
+ALTER TABLE IF EXISTS public.product_order_discount OWNER to caas;
+ALTER TABLE IF EXISTS public.order_discount OWNER to caas;

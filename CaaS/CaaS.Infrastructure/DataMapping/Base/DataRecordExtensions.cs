@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Text.Json;
 
 namespace CaaS.Infrastructure.DataMapping.Base; 
 
@@ -18,6 +19,9 @@ public static class DataRecordExtensions {
         }
         if (targetType == typeof(string)) {
             return record.GetString(key);
+        }
+        if (targetType == typeof(JsonDocument)) {
+            return record.GetJsonDocument(key);
         }
         return record.GetObject(key);
     }
@@ -46,6 +50,12 @@ public static class DataRecordExtensions {
         return (string?)obj;
     }
 
+    private static JsonDocument? GetJsonDocument(this IDataRecord record, string key) {
+        var obj = record.GetString(key);
+        if (obj == null) return null;
+        return JsonDocument.Parse(obj);
+    }
+    
     private static object? GetObject(this IDataRecord record, string key) {
         try {
             return record[key];
@@ -53,4 +63,5 @@ public static class DataRecordExtensions {
             return null;
         }
     }
+
 }
