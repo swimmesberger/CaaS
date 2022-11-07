@@ -50,21 +50,24 @@ public class AdoStatementExecutor : IStatementExecutor {
         return result;
     }
 
-    private async Task<DbCommand> CreateCommand(Statement statement,
-            IConnectionProvider connectionProvider,
-            CancellationToken cancellationToken = default) {
-        var materializedStatement = statement.Materialize();
+    private async Task<DbBatch> CreateCommand(Statement statement, IConnectionProvider connectionProvider, 
+        CancellationToken cancellationToken = default) {
+        var materializedStatements = statement.Materialize();
         var dbConnection = await connectionProvider
                 .GetDbConnectionAsync(cancellationToken: cancellationToken);
-        var cmd = dbConnection.CreateCommand();
-        cmd.Connection = dbConnection;
-        cmd.CommandText = materializedStatement.Sql;
-        foreach (var queryParameter in materializedStatement.Parameters) {
-            cmd.Parameters.Add(cmd.AddParameter(
-                queryParameter.ParameterName, 
-                queryParameter.TypedValue
-            ));
+        var batch = dbConnection.CreateBatch();
+        batch.Connection = dbConnection;
+        batch.Transaction = connectionProvider.CurrentTransaction;
+        foreach (var materializedStatement in materializedStatements.Statements) {
+            var cmd = batch.CreateBatchCommand();
+            cmd.CommandText = materializedStatement.Sql;
+            foreach (var queryParameter in materializedStatement.Parameters) {
+                var parameter = connectionProvider.Factory.CreateParameter();
+                parameter = parameter.SetParameter(queryParameter.ParameterName, queryParameter.TypedValue);
+                cmd.Parameters.Add(parameter);
+            }
+            batch.BatchCommands.Add(cmd);
         }
-        return cmd;
+        return batch;
     }
 }

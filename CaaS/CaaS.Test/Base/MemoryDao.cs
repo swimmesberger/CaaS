@@ -68,9 +68,11 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
         return Task.FromResult(entity);
     }
 
-    public Task<IReadOnlyCollection<T>> AddAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
-        _data.AddRange(entities);
-        return Task.FromResult(entities);
+    public async Task<IReadOnlyCollection<T>> AddAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        foreach (var entity in entities) {
+            await AddAsync(entity, cancellationToken);
+        }
+        return entities;
     }
 
     public Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default) {
@@ -90,5 +92,11 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
         var dIdx = _data.FindIndex(d => d.Id == entity.Id);
         _data.RemoveAt(dIdx);
         return Task.CompletedTask;
+    }
+
+    public async Task DeleteAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        foreach (var entity in entities) {
+            await DeleteAsync(entity, cancellationToken);
+        }
     }
 }

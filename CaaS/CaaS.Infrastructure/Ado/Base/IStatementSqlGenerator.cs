@@ -3,5 +3,5 @@
 namespace CaaS.Infrastructure.Ado.Base; 
 
 public interface IStatementSqlGenerator {
-    MaterializedStatement MaterializeStatement(Statement statement);
+    MaterializedStatements MaterializeStatement(Statement statement);
 }

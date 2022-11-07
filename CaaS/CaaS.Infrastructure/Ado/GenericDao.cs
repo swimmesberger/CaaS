@@ -98,8 +98,7 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel.Base.DataModel, 
         }).ToList();
         var statement = _statementGenerator.CreateUpdate(versionedEntities);
         var changedCount = await ExecuteAsync(statement, cancellationToken);
-        // TODO: Check count for batch updates
-        if (changedCount == 0) {
+        if (changedCount < versionedEntities.Count) {
             throw new CaasUpdateConcurrencyDbException();
         }
         return versionedEntities.Select(e => e.Entity).ToList();
@@ -107,6 +106,13 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel.Base.DataModel, 
 
     public async Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
         var changedCount = await ExecuteAsync(_statementGenerator.CreateDelete(entity), cancellationToken);
+        if (changedCount == 0) {
+            throw new CaasInsertDbException();
+        }
+    }
+
+    public async Task DeleteAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        var changedCount = await ExecuteAsync(_statementGenerator.CreateDelete(entities), cancellationToken);
         if (changedCount == 0) {
             throw new CaasInsertDbException();
         }

@@ -34,8 +34,21 @@ public class CartServiceTest {
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
         updatedCart.Items.Should().HaveCount(1);
-        updatedCart.Items[0].Product.Id.Should().Be(ProductAId);
-        updatedCart.Items[0].Amount.Should().Be(4);
+        var productA = updatedCart.Items.FirstOrDefault(i => i.Product.Id == ProductAId);
+        productA.Should().NotBeNull();
+        productA!.Amount.Should().Be(4);
+        updatedCart.LastAccess.Should().BeAfter(curTime);
+    }
+    
+    [Fact]
+    public async Task RemoveProductFromCartExistingOptimistic() {
+        var cartService = CreateCartService();
+
+        var curTime = DateTimeOffset.UtcNow;
+        var updatedCart = await cartService.RemoveProductFromCart(ExistingCartId, ProductAId);
+        updatedCart.Should().NotBeNull();
+        updatedCart.ShopId.Should().Be(TestShopId);
+        updatedCart.Items.Should().BeEmpty();
         updatedCart.LastAccess.Should().BeAfter(curTime);
     }
 

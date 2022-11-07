@@ -19,4 +19,6 @@ public interface IStatementGenerator<T> {
     Statement CreateUpdate(IEnumerable<VersionedEntity<T>> entities);
 
     Statement CreateDelete(T entity);
+    
+    Statement CreateDelete(IEnumerable<T> entities);
 }

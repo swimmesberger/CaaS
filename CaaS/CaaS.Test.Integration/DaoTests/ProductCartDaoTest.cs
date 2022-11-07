@@ -118,5 +118,15 @@ public class ProductCartDaoTest : BaseDaoTest {
         cartItem.Should().BeNull();
     }
     
+        
+    [Fact]
+    public async Task DeleteMultipleEntitiesBatch() {
+        var productDao = GetProductCartDao(ShopTenantId);
+        var products = await productDao.FindAllAsync().ToListAsync();
+        await productDao.DeleteAsync(products);
+        products = await productDao.FindAllAsync().ToListAsync();
+        products.Should().BeEmpty();
+    }
+    
     private IDao<ProductCartDataModel> GetProductCartDao(string tenantId) => GetDao(new ProductCartDataRecordMapper(), tenantId);
 }

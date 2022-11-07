@@ -66,7 +66,7 @@ public class DefaultCartService : ICartService {
         if (cart == null) {
             throw new CaasModelNotFoundException();
         }
-        var changedProducts = cart.Items.RemoveAll(p => p.Id == productId);
+        var changedProducts = cart.Items.RemoveAll(p => p.Product.Id == productId);
         if (cart.Items.Count == changedProducts.Count) {
             return cart;
         }

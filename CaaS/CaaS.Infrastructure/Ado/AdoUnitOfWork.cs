@@ -10,7 +10,10 @@ public sealed class AdoUnitOfWork : IUnitOfWork, IConnectionProvider {
     
     private DbConnection? _dbConnection;
     private DbTransaction? _dbTransaction;
-    
+
+    public DbTransaction? CurrentTransaction => _dbTransaction;
+    public IConnectionFactory Factory => _dbProviderFactory;
+
     internal bool Disposed { get; private set; }
 
     public AdoUnitOfWork(IConnectionFactory dbProviderFactory, bool transactional = true) {
@@ -20,7 +23,7 @@ public sealed class AdoUnitOfWork : IUnitOfWork, IConnectionProvider {
 
     public async Task<DbConnection> GetDbConnectionAsync(CancellationToken cancellationToken = default) {
         if (_dbConnection == null) {
-            _dbConnection = _dbProviderFactory.CreateDbConnection();
+            _dbConnection = _dbProviderFactory.CreateConnection();
             await _dbConnection.OpenAsync(cancellationToken);
         }
         if (_transactional && _dbTransaction == null) {

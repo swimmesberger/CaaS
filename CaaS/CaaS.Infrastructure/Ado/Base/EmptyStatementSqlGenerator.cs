@@ -6,5 +6,6 @@ public sealed class EmptyStatementSqlGenerator : IStatementSqlGenerator {
     public static readonly IStatementSqlGenerator Instance = new EmptyStatementSqlGenerator();
     
     private EmptyStatementSqlGenerator() { }
-    public MaterializedStatement MaterializeStatement(Statement statement) => MaterializedStatement.Empty;
+    
+    public MaterializedStatements MaterializeStatement(Statement statement) => MaterializedStatements.Empty;
 }

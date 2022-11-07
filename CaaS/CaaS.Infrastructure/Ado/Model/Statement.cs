@@ -26,5 +26,5 @@ public record Statement {
         return AddParameters(new StatementParameters() { Where = new List<QueryParameter>() { QueryParameter.From(name, value) } });
     }
 
-    public MaterializedStatement Materialize() => _sqlGenerator.MaterializeStatement(this);
+    public MaterializedStatements Materialize() => _sqlGenerator.MaterializeStatement(this);
 }

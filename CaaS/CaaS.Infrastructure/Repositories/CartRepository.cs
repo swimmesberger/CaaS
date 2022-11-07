@@ -49,13 +49,28 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     }
 
     private async Task UpdateProductsAsync(Cart entity, CancellationToken cancellationToken = default) {
-        var productIds = entity.Items.Select(p => p.Id).ToHashSet();
-        var itemDict = (await Converter.CartItemRepository
-                .FindByIdsAsync(productIds, cancellationToken)).ToDictionary(i => i.Id);
-        var addItems = entity.Items.Where(cartItem => !itemDict.ContainsKey(cartItem.Id)).ToList();
-        var updateItems = entity.Items.Where(cartItem => itemDict.ContainsKey(cartItem.Id)).ToList();
-        await Converter.CartItemRepository.AddAsync(addItems, cancellationToken);
-        await Converter.CartItemRepository.UpdateAsync(updateItems, cancellationToken);
+        var currentItemsDict = (await Converter.CartItemRepository
+                .FindByCartId(entity.Id, cancellationToken)).ToDictionary(i => i.Id);
+        var addedItems = entity.Items.Where(cartItem => !currentItemsDict.ContainsKey(cartItem.Id));
+        var updatedItems = entity.Items.Where(cartItem => currentItemsDict.ContainsKey(cartItem.Id));
+        var removedItems = currentItemsDict.Values.Except(entity.Items, CartItemIdComparer.Instance);
+        await Converter.CartItemRepository.AddAsync(addedItems, cancellationToken);
+        await Converter.CartItemRepository.UpdateAsync(updatedItems, cancellationToken);
+        await Converter.CartItemRepository.DeleteAsync(removedItems, cancellationToken);
+    }
+
+    private class CartItemIdComparer : IEqualityComparer<CartItem> {
+        public static readonly CartItemIdComparer Instance = new CartItemIdComparer();
+        
+        public bool Equals(CartItem? x, CartItem? y) {
+            if (ReferenceEquals(x, y)) return true;
+            if (ReferenceEquals(x, null)) return false;
+            if (ReferenceEquals(y, null)) return false;
+            if (x.GetType() != y.GetType()) return false;
+            return x.Id.Equals(y.Id);
+        }
+        
+        public int GetHashCode(CartItem obj) => obj.Id.GetHashCode();
     }
 }
 

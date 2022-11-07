@@ -7,8 +7,7 @@ using NpgsqlTypes;
 namespace CaaS.Infrastructure.Ado; 
 
 public static class DbCommandExtensions {
-    public static DbParameter AddParameter(this DbCommand command, string name, TypedValue typedValue = default) {
-        var parameter = command.CreateParameter();
+    public static DbParameter SetParameter(this DbParameter parameter, string name, TypedValue typedValue = default) {
         parameter.ParameterName = name;
         if (typedValue.IsJson && parameter is NpgsqlParameter npgsqlParameter) {
             npgsqlParameter.NpgsqlDbType = NpgsqlDbType.Jsonb;

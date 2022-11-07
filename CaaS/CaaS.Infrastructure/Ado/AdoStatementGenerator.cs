@@ -84,22 +84,30 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
 
     public Statement CreateUpdate(T entity, int origRowVersion) => CreateUpdate(new[] { new VersionedEntity<T>(entity, origRowVersion) });
 
-    public Statement CreateDelete(T entity) {
+    public Statement CreateDelete(T entity) => CreateDelete(new[] { entity });
+
+    public Statement CreateDelete(IEnumerable<T> entities) {
         var propertyMapper = DataRecordMapper.ByPropertyName();
+        
         return new Statement(StatementType.Delete, this) {
             Parameters = new StatementParameters() {
-                Where = new List<QueryParameter>(){ QueryParameter.From(propertyMapper.MapName(nameof(IDataModelBase.Id)), entity.Id) }
+                Where = new List<QueryParameter>(){ 
+                    QueryParameter.From(
+                        propertyMapper.MapName(nameof(IDataModelBase.Id)), 
+                        entities.Select(e => e.Id)
+                    ) 
+                }
             }
         };
     }
 
-    public MaterializedStatement MaterializeStatement(Statement statement) {
+    public MaterializedStatements MaterializeStatement(Statement statement) {
         return statement.Type switch {
-            StatementType.Count => new MaterializedStatement($"SELECT COUNT(*) FROM {GetTableName()}"),
-            StatementType.Create => MaterializeInsert(statement),
+            StatementType.Count => new MaterializedStatements(new MaterializedStatement($"SELECT COUNT(*) FROM {GetTableName()}")),
+            StatementType.Create => new MaterializedStatements(MaterializeInsert(statement)),
             StatementType.Update => MaterializeUpdate(statement),
-            StatementType.Delete => MaterializeDelete(statement),
-            StatementType.Find => MaterializeFind(statement),
+            StatementType.Delete => new MaterializedStatements(MaterializeDelete(statement)),
+            StatementType.Find => new MaterializedStatements(MaterializeFind(statement)),
             _ => throw new ArgumentException()
         };
     }
@@ -116,25 +124,12 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         };
     }
 
-    private MaterializedStatement MaterializeUpdate(Statement statement) {
-        var sql = new StringBuilder();
-        var parameters = new List<QueryParameter>();
-        var first = true;
-        foreach (var updateParameter in statement.Parameters.Update.Values) {
-            if (first) {
-                first = false;
-            } else {
-                sql.Append("; ");
-            }
-            MaterializeUpdate(updateParameter, sql, parameters);
-        }
-        return new MaterializedStatement(sql.ToString()) {
-            Parameters = parameters
-        };
+    private MaterializedStatements MaterializeUpdate(Statement statement) {
+        return new MaterializedStatements(statement.Parameters.Update.Values.Select(MaterializeUpdate).ToList());
     }
 
-    private void MaterializeUpdate(UpdateParameter updateParameter, StringBuilder sql, List<QueryParameter> parameters) {
-        sql.Append("UPDATE");
+    private MaterializedStatement MaterializeUpdate(UpdateParameter updateParameter) {
+        var sql = new StringBuilder("UPDATE");
         sql.Append(' ').Append(GetTableName());
         sql.Append(" SET");
         var first = true;
@@ -146,9 +141,13 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
             }
             sql.Append(' ').Append(parameter.Name).Append(" = ").Append('@').Append(parameter.ParameterName);
         }
+        var parameters = new List<QueryParameter>();
         var whereParams = CreateWhereClause(sql, updateParameter.Where);
         parameters.AddRange(updateParameter.Values);
         parameters.AddRange(whereParams);
+        return new MaterializedStatement(sql.ToString()) {
+            Parameters = parameters
+        };
     }
 
     private MaterializedStatement MaterializeDelete(Statement statement) {

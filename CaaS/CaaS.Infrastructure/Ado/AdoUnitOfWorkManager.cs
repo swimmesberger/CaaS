@@ -35,10 +35,13 @@ public class AdoUnitOfWorkManager : IUnitOfWorkManager, IHasConnectionProvider {
     private class ShieldedConnectionProvider : IConnectionProvider {
         private readonly IConnectionProvider _connectionProvider;
 
+        public DbTransaction? CurrentTransaction => _connectionProvider.CurrentTransaction;
+        public IConnectionFactory Factory => _connectionProvider.Factory;
+
         public ShieldedConnectionProvider(IConnectionProvider connectionProvider) {
             _connectionProvider = connectionProvider;
         }
-
+        
         public Task<DbConnection> GetDbConnectionAsync(CancellationToken cancellationToken = default) =>
                 _connectionProvider.GetDbConnectionAsync(cancellationToken);
         

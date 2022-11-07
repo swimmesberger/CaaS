@@ -14,12 +14,20 @@ public class AdoConnectionFactory : IConnectionFactory {
         _options = options;
     }
 
-    public DbConnection CreateDbConnection() {
+    public DbConnection CreateConnection() {
         var dbConnection = _dbProviderFactory.CreateConnection();
         if (dbConnection == null) {
             throw new CaasDbException("Database Factory does not return a connection");
         }
         dbConnection.ConnectionString = _options.ConnectionString;
         return dbConnection;
+    }
+
+    public DbParameter CreateParameter() {
+        var dbParameter = _dbProviderFactory.CreateParameter();
+        if (dbParameter == null) {
+            throw new CaasDbException("Database Factory does not return a parameter");
+        }
+        return dbParameter;
     }
 }

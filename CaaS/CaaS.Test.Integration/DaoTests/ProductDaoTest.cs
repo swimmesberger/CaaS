@@ -110,6 +110,6 @@ public class ProductDaoTest : BaseDaoTest {
             .ToListAsync();
         await productDao.UpdateAsync(products);
     }
-    
+
     private IDao<ProductDataModel> GetProductDao(string tenantId) => GetDao(new ProductDataRecordMapper(), tenantId);
 }

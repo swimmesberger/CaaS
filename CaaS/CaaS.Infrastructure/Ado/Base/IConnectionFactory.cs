@@ -3,5 +3,7 @@
 namespace CaaS.Infrastructure.Ado.Base; 
 
 public interface IConnectionFactory {
-    DbConnection CreateDbConnection();
+    DbConnection CreateConnection();
+    
+    DbParameter CreateParameter();
 }

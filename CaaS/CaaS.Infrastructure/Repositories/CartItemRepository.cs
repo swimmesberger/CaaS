@@ -28,6 +28,13 @@ internal class CartItemRepository {
         var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
+    
+    public async Task<IReadOnlyList<CartItem>> FindByCartId(Guid cartId, CancellationToken cancellationToken = default) {
+        return (await Converter
+                .ConvertToDomain(Dao
+                    .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartId), cancellationToken), cancellationToken))
+                .ToImmutableList();
+    }
 
     public async Task<Dictionary<Guid, IReadOnlyList<CartItem>>> FindByCartIds(IEnumerable<Guid> cartIds, CancellationToken cancellationToken = default) {
         return (await Converter
@@ -45,6 +52,11 @@ internal class CartItemRepository {
     public async Task UpdateAsync(IEnumerable<CartItem> entities, CancellationToken cancellationToken = default) {
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.UpdateAsync(dataModels, cancellationToken);
+    }
+    
+    public async Task DeleteAsync(IEnumerable<CartItem> entities, CancellationToken cancellationToken = default) {
+        var dataModels = Converter.ConvertFromDomain(entities);
+        await Dao.DeleteAsync(dataModels, cancellationToken);
     }
 
     private class CartItemDomainModelConvert : IDomainReadModelConverter<ProductCartDataModel, CartItem> {
