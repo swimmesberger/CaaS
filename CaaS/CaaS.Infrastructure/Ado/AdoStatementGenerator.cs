@@ -174,12 +174,13 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
 
     private IEnumerable<string> GetColumnNames() => DataRecordMapper.ByColumName().Keys;
 
-    private string GetTableName() => DataRecordMapper.MappedTypeName;
+    private string GetTableName() => $"\"{DataRecordMapper.MappedTypeName}\"" ;
     
     private static IEnumerable<QueryParameter> ExplodeParameters(QueryParameter queryParameter) {
-        if (queryParameter.Value is IEnumerable enumerable) {
-            return enumerable.OfType<object>().Select((value, idx) => new QueryParameter(queryParameter.Name, value, queryParameter.TypeCode) {
-                ParameterName = $"{queryParameter.Name}_{idx}"
+        if (queryParameter.Value is IEnumerable enumerable and not string) {
+            return enumerable.OfType<object>().Select((value, idx) => queryParameter with {
+                    Value = value, 
+                    ParameterName = $"{queryParameter.Name}_{idx}"
             });
         }
         return new[] { queryParameter };

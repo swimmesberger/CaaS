@@ -58,7 +58,9 @@ public static class DataRecordExtensions {
     
     private static object? GetObject(this IDataRecord record, string key) {
         try {
-            return record[key];
+            var position = record.GetOrdinal(key);
+            var isEmpty = record.IsDBNull(position);
+            return isEmpty ? null : record[key];
         } catch (IndexOutOfRangeException) {
             return null;
         }

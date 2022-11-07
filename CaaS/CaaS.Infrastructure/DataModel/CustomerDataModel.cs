@@ -9,5 +9,5 @@ public record CustomerDataModel() : Base.DataModel {
     public Guid ShopId { get; init; }
     public string Name { get; init; } = String.Empty;
     public string EMail { get; init; } = String.Empty;
-    public string CreditCartNumber { get; init; } = String.Empty;
+    public string CreditCardNumber { get; init; } = String.Empty;
 }

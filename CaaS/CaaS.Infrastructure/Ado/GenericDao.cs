@@ -3,7 +3,6 @@ using CaaS.Core.Exceptions;
 using CaaS.Core.Tenant;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
-using CaaS.Infrastructure.DataMapping;
 using CaaS.Infrastructure.DataMapping.Base;
 using CaaS.Infrastructure.DataModel.Base;
 using CaaS.Infrastructure.Di;
@@ -17,13 +16,13 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel.Base.DataModel, 
     private readonly ITenantIdProvider<T>? _tenantIdProvider;
 
     private IDataRecordMapper<T> DataRecordMapper => _statementGenerator.DataRecordMapper;
-
+    
     public GenericDao(IStatementExecutor statementExecutor, IStatementGenerator<T> statementGenerator, 
             IServiceProvider<ITenantService>? tenantService = null) {
+        tenantService ??= IServiceProvider<ITenantService>.Empty;
         _statementExecutor = statementExecutor;
         _statementGenerator = statementGenerator;
         if (DataRecordMapper is ITenantIdProvider<T> tenantIdProvider) {
-            if (tenantService == null) throw new ArgumentException("No tenant service", nameof(tenantService));
             _tenantIdProvider = tenantIdProvider;
             _tenantService = tenantService.GetRequiredService();
         }

@@ -1,0 +1,106 @@
+﻿using CaaS.Core.Entities;
+using CaaS.Infrastructure.Ado.Base;
+using CaaS.Infrastructure.Ado.Model;
+using CaaS.Infrastructure.DataModel;
+using CaaS.Infrastructure.Gen;
+
+namespace CaaS.Test.Integration; 
+
+public class ProductDaoTest : BaseDaoTest {
+    private const string ShopTenantId = "a468d796-db09-496d-9794-f6b42f8c7c0b";
+    
+    [Fact]
+    public async Task FindAllWhenDbHasEntries() {
+        var productDao = GetProductDao(ShopTenantId);
+        var products = await productDao.FindAllAsync().ToListAsync();
+        products[0].Name.Should().Be("USB cable");
+        products[1].Name.Should().Be("HDMI cable");
+    }
+    
+    [Fact]
+    public async Task FindByIdsWhenIdsAreValidReturnsEntities() {
+        var productDao = GetProductDao(ShopTenantId);
+        var idList = new List<Guid> {
+                Guid.Parse("fcb3c98d-4392-4e4c-8d31-f89f0ebe3c83"),
+                Guid.Parse("ff66c1f5-d79e-4797-a03c-a665ae26b171")
+        };
+        
+        var shops = await productDao.FindByIdsAsync(idList).ToListAsync();
+        
+        shops[0].Name.Should().Be("USB cable");
+        shops[1].Name.Should().Be("HDMI cable");
+    }
+    
+    [Fact]
+    public async Task FindByNameAndPriceReturnsEntities() {
+        var productDao = GetProductDao(ShopTenantId);
+        
+        var parameters = new List<QueryParameter> {
+                new(nameof(Product.Name), "HDMI cable"),
+                new(nameof(Product.Price), 5.99),
+        };
+
+        var products = await productDao.FindBy(StatementParameters
+                .CreateWhere(parameters)).ToListAsync();
+        
+        products.Count.Should().NotBe(0);
+        products[0].Id.Should().Be("ff66c1f5-d79e-4797-a03c-a665ae26b171");
+    }
+    
+    [Fact]
+    public async Task CountReturnsNumberOfEntitiesInDb() {
+        var productDao = GetProductDao(ShopTenantId);
+        (await productDao.CountAsync()).Should().Be(3);
+    }
+    
+    [Fact]
+    public async Task AddAddsNewEntityToDb() {
+        var productDao = GetProductDao(ShopTenantId);
+        var product = new ProductDataModel() {
+                Id = Guid.Parse("7A819343-23A1-4AD9-8798-64D1047CF01F"),
+                Name = "AddTest",
+                Description = "a new product",
+                DownloadLink = "download/file",
+                ShopId = Guid.Parse(ShopTenantId),
+                Price = 50,
+                Deleted = false
+        };
+        await productDao.AddAsync(product);
+        
+        product = await productDao.FindByIdAsync(product.Id);
+        product.Should().NotBeNull();
+        product!.Name.Should().Be("AddTest");
+    }
+
+    [Fact]
+    public async Task UpdateEntityWhenEntityIsExisting() {
+        var productId = Guid.Parse("fcb3c98d-4392-4e4c-8d31-f89f0ebe3c83");
+        var productDao = GetProductDao(ShopTenantId);
+        var product = await productDao.FindByIdAsync(productId);
+        product.Should().NotBeNull();
+        product!.Name.Should().Be("USB cable");
+        product = product with {
+                Name = "TV"
+        };
+        await productDao.UpdateAsync(product);
+        
+        product = await productDao.FindByIdAsync(productId);
+        product.Should().NotBeNull();
+        product!.Name.Should().Be("TV");
+    }
+    
+    [Fact]
+    public async Task DeleteEntityWhenEntityIsExisting() {
+        var productId = Guid.Parse("587c3437-b430-405a-99dd-a0ce9ebde0a4");
+        var productDao = GetProductDao(ShopTenantId);
+        var product = await productDao.FindByIdAsync(productId);
+        product.Should().NotBeNull();
+        product!.Name.Should().Be("LAN cable");
+        await productDao.DeleteAsync(product);
+        
+        product = await productDao.FindByIdAsync(productId);
+        product.Should().BeNull();
+    }
+    
+    private IDao<ProductDataModel> GetProductDao(string tenantId) => GetDao(new ProductDataRecordMapper(), tenantId);
+}

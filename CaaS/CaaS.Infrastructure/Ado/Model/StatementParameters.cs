@@ -56,7 +56,7 @@ public record StatementParameters {
         return new StatementParameters() {
             Where = Where.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList(),
             OrderBy = OrderBy.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList(),
-            Other = Where.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList()
+            Other = Other.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList()
         };
     }
 
