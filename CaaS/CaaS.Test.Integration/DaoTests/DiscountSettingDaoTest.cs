@@ -1,13 +1,11 @@
-﻿using System.Text.Json;
-using CaaS.Core.Entities;
+﻿using System.Collections.Immutable;
 using CaaS.Core.Exceptions;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
-using NpgsqlTypes;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.DaoTests; 
 
 public class DiscountSettingDaoTest : BaseDaoTest {
     private const string ShopTenantId = "a468d796-db09-496d-9794-f6b42f8c7c0b";
@@ -39,7 +37,7 @@ public class DiscountSettingDaoTest : BaseDaoTest {
         var discountSettingDao = GetDiscountSettingDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-                new(nameof(DiscountSettingDataModel.Name), "Christmas2022")
+            QueryParameter.From(nameof(DiscountSettingDataModel.Name), "Christmas2022")
         };
 
         var discountSettings = await discountSettingDao.FindBy(StatementParameters
@@ -64,16 +62,15 @@ public class DiscountSettingDaoTest : BaseDaoTest {
                 Name = "Krampus",
                 Rule = Guid.Parse("4904887e-7761-432d-a36e-efc112246818"),
                 Action = Guid.Parse("934cf35e-8875-4984-b942-ff6ec2f2df6b"),
-                RuleParameters = JsonDocument.Parse("{\"Rule\": 3}"),
-                ActionParameters = JsonDocument.Parse("{\"Action\": 7}"),
-
+                RuleParameters = new Dictionary<string, object>() { ["Rule"] = 3 }.ToImmutableDictionary(),
+                ActionParameters = new Dictionary<string, object>() { ["Action"] = 7 }.ToImmutableDictionary()
         };
         await discountSettingDao.AddAsync(discountSetting);
         
         discountSetting = await discountSettingDao.FindByIdAsync(discountSetting.Id);
         discountSetting.Should().NotBeNull();
         discountSetting!.Id.Should().Be("7A819343-23A1-4AD9-8798-64D1047CF01F");
-        discountSetting!.Name.Should().Be("Krampus");
+        discountSetting.Name.Should().Be("Krampus");
     }
 
     [Fact]

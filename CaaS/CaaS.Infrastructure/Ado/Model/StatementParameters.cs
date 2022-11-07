@@ -2,15 +2,12 @@
 
 public record StatementParameters {
     public static readonly StatementParameters Empty = new StatementParameters();
+    
     public IEnumerable<QueryParameter> Where { get; init; } = Enumerable.Empty<QueryParameter>();
     public IEnumerable<OrderParameter> OrderBy { get; init; } = Enumerable.Empty<OrderParameter>();
-    public IEnumerable<QueryParameter> Other { get; init; } = Enumerable.Empty<QueryParameter>();
-
-    public IEnumerable<QueryParameter> BindParameters => Where.Concat(Other);
-    public IEnumerable<string> ParameterNames => Where.Select(p => p.Name)
-            .Concat(OrderBy.Select(p => p.Name))
-            .Concat(Other.Select(p => p.Name));
-
+    public InsertParameters Insert { get; init; } = InsertParameters.Empty;
+    public UpdateParameters Update { get; init; } = UpdateParameters.Empty;
+    
     public StatementParameters Add(StatementParameters parameters) {
         var where = new List<QueryParameter>();
         where.AddRange(Where);
@@ -18,18 +15,25 @@ public record StatementParameters {
         var orderBy = new List<OrderParameter>();
         orderBy.AddRange(OrderBy);
         orderBy.AddRange(parameters.OrderBy);
-        var other = new List<QueryParameter>();
-        other.AddRange(Other);
-        other.AddRange(parameters.Other);
         return this with {
             Where = where,
             OrderBy = orderBy,
-            Other = other
+            Insert = Insert.Add(parameters.Insert),
+            Update = Update.Add(parameters.Update)
+        };
+    }
+    
+    public StatementParameters MapParameterNames(Func<string, string> selector) {
+        return new StatementParameters() {
+            Where = Where.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList(),
+            OrderBy = OrderBy.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList(),
+            Insert = Insert.MapParameterNames(selector),
+            Update = Update.MapParameterNames(selector)
         };
     }
 
     public StatementParameters WithWhere(string name, object value) {
-        return WithWhere(new QueryParameter(name, value));
+        return WithWhere(QueryParameter.From(name, value));
     }
     
     public StatementParameters WithWhere(QueryParameter parameter) {
@@ -50,14 +54,6 @@ public record StatementParameters {
     
     public StatementParameters WithOrderBy(IEnumerable<OrderParameter> parameters) {
         return Add(new StatementParameters() { OrderBy = parameters });
-    }
-
-    public StatementParameters MapParameterNames(Func<string, string> selector) {
-        return new StatementParameters() {
-            Where = Where.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList(),
-            OrderBy = OrderBy.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList(),
-            Other = Other.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList()
-        };
     }
 
     public static StatementParameters CreateWhere(string name, object value)

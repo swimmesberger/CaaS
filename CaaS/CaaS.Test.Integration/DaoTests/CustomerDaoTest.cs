@@ -5,7 +5,7 @@ using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.DaoTests; 
 
 public class CustomerDaoTest : BaseDaoTest {
     private const string ShopTenantId = "a468d796-db09-496d-9794-f6b42f8c7c0b";
@@ -37,8 +37,8 @@ public class CustomerDaoTest : BaseDaoTest {
         var customerDao = GetCustomerDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-                new(nameof(Customer.Name), "Frances Hallums"),
-                new(nameof(Customer.EMail), "fhallums2r@edublogs.org"),
+            QueryParameter.From(nameof(Customer.Name), "Frances Hallums"),
+            QueryParameter.From(nameof(Customer.EMail), "fhallums2r@edublogs.org"),
         };
 
         var customers = await customerDao.FindBy(StatementParameters

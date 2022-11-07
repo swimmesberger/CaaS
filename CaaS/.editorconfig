@@ -17,6 +17,9 @@ csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_new_line_before_else = false
 csharp_new_line_before_catch = false
+csharp_align_multiline_array_and_object_initializer = false
+csharp_space_within_single_line_array_initializer_braces = true
+csharp_continuous_indent_multiplier = 1
 
 dotnet_naming_rule.unity_serialized_field_rule.import_to_resharper = True
 dotnet_naming_rule.unity_serialized_field_rule.resharper_description = Unity serialized field
@@ -66,6 +69,9 @@ resharper_place_simple_anonymousmethod_on_single_line = false
 resharper_remove_blank_lines_near_braces_in_code = false
 resharper_show_autodetect_configure_formatting_tip = false
 resharper_use_indent_from_vs = false
+resharper_align_multiline_array_and_object_initializer = false
+resharper_space_within_single_line_array_initializer_braces = true
+resharper_csharp_continuous_indent_multiplier = 1
 
 # ReSharper inspection severities
 resharper_arrange_redundant_parentheses_highlighting = hint

@@ -1,13 +1,12 @@
-﻿using System.Numerics;
-using CaaS.Infrastructure.DataMapping;
+﻿using CaaS.Infrastructure.DataMapping;
 
 namespace CaaS.Infrastructure.DataModel;
 
 [GenerateMapper]
-public record CustomerDataModel() : Base.DataModel {
+public record CustomerDataModel : Base.DataModel {
     [TenantIdColumn]
     public Guid ShopId { get; init; }
-    public string Name { get; init; } = String.Empty;
-    public string EMail { get; init; } = String.Empty;
-    public string CreditCardNumber { get; init; } = String.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string EMail { get; init; } = string.Empty;
+    public string CreditCardNumber { get; init; } = string.Empty;
 }

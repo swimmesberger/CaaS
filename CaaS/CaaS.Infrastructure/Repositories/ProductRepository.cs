@@ -1,32 +1,34 @@
 ﻿using CaaS.Core.Entities;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
-using CaaS.Infrastructure.Ado;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories.Base;
 
 namespace CaaS.Infrastructure.Repositories; 
-public class ProductRepository : AbstractRepository<ProductDataModel, Product>, IProductRepository {
+public class ProductRepository : CrudRepository<ProductDataModel, Product>, IProductRepository {
+    public ProductRepository(IDao<ProductDataModel> productDao, IShopRepository shopRepository) : 
+            base(productDao, new ProductDomainModelConvert(shopRepository)) {}
+}
+
+internal class ProductDomainModelConvert : IDomainModelConverter<ProductDataModel, Product> {
+    public IEnumerable<OrderParameter> DefaultOrderParameters { get; } = OrderParameter.From(nameof(ProductDataModel.Name));
+    
     private readonly IShopRepository _shopRepository;
 
-    public ProductRepository(IDao<ProductDataModel> productDao, IShopRepository shopRepository) : base(productDao) {
+    public ProductDomainModelConvert(IShopRepository shopRepository) {
         _shopRepository = shopRepository;
     }
     
-    protected override StatementParameters PreProcessFindManyParameters(StatementParameters parameters) {
-        return parameters.WithOrderBy(nameof(Shop.Name));
-    }
-    
-    protected override ProductDataModel ApplyDomainModel(ProductDataModel dataModel, Product domainModel) {
+    public ProductDataModel ApplyDomainModel(ProductDataModel dataModel, Product domainModel) {
         return dataModel with {
             Name = domainModel.Name,
             Price = domainModel.Price,
         };
     }
 
-    protected override ProductDataModel ConvertFromDomain(Product product) {
+    public ProductDataModel ConvertFromDomain(Product product) {
         return new ProductDataModel() {
             Id = product.Id,
             Name = product.Name,
@@ -36,17 +38,17 @@ public class ProductRepository : AbstractRepository<ProductDataModel, Product>, 
         };
     }
     
-    protected override async ValueTask<Product> ConvertToDomain(ProductDataModel dataModel, CancellationToken cancellationToken) {
+    public async ValueTask<Product> ConvertToDomain(ProductDataModel dataModel, CancellationToken cancellationToken) {
         return (await ConvertToDomain(new List<ProductDataModel>() { dataModel }, cancellationToken)).First();
     }
 
-    protected override async Task<List<Product>> ConvertToDomain(IAsyncEnumerable<ProductDataModel> dataModels, 
+    public async Task<List<Product>> ConvertToDomain(IAsyncEnumerable<ProductDataModel> dataModels, 
             CancellationToken cancellationToken = default) {
         var products = await dataModels.ToListAsync(cancellationToken);
         return await ConvertToDomain(products, cancellationToken);
     }
 
-    private async Task<List<Product>> ConvertToDomain(IReadOnlyCollection<ProductDataModel> products, 
+    public async Task<List<Product>> ConvertToDomain(IReadOnlyCollection<ProductDataModel> products, 
             CancellationToken cancellationToken = default) {
         var shopIds = products.Select(p => p.ShopId).ToHashSet();
         var shopDict = (await _shopRepository.FindByIdsAsync(shopIds, cancellationToken))
@@ -54,7 +56,7 @@ public class ProductRepository : AbstractRepository<ProductDataModel, Product>, 
         return products.Select(dataModel => ConvertToDomain(dataModel, shopDict)).ToList();
     }
     
-    private Product ConvertToDomain(ProductDataModel dataModel, IReadOnlyDictionary<Guid, Shop> shopDict) {
+    public Product ConvertToDomain(ProductDataModel dataModel, IReadOnlyDictionary<Guid, Shop> shopDict) {
         if (!shopDict.TryGetValue(dataModel.ShopId, out var shop)) {
             throw new CaasDomainMappingException($"Failed to find shop {dataModel.ShopId} for product {dataModel.Id}");
         }

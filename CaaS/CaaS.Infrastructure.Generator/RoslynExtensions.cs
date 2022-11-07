@@ -13,17 +13,16 @@ namespace CaaS.Infrastructure.Generator {
                 current = current.BaseType;
             }
         }
+
+        public static bool HasAttribute(this ISymbol symbol, string attributeName) {
+            return symbol.GetAttributes().Any(a => attributeName.Equals(a.AttributeClass?.ToString()));
+        }
         
         public static bool HasGenerateAttributes(this SyntaxList<AttributeListSyntax> attributes) {
             return attributes.Any(a => a.Attributes
                     .Any(x => x.Name.ToString() == InitializationContext.GenerateMapperSimpleAttributeName));
         }
-
-        public static INamedTypeSymbol[] GetAttributeTypes(this AttributeArgumentListSyntax attributes, SemanticModel model) {
-            return attributes.Arguments.Select(a => a.Expression)
-                    .SelectMany(e => e.GetNamedTypeSymbol(model)).ToArray();
-        }
-
+        
         public static object? GetConstantValue(this AttributeArgumentSyntax argument, SemanticModel model) {
             return argument.Expression.GetConstantValue(model);
         }

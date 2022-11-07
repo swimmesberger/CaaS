@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Data.Common;
+using System.Runtime.CompilerServices;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Tenant;
 using CaaS.Infrastructure.Ado.Base;
@@ -37,6 +38,14 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel.Base.DataModel, 
     }
 
     public IAsyncEnumerable<T> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
+        if (!ids.TryGetNonEnumeratedCount(out var count)) {
+            var colSet = ids.ToHashSet();
+            count = colSet.Count;
+            ids = colSet;
+        }
+        if (count == 0) {
+            return AsyncEnumerable.Empty<T>();
+        }
         return FindBy(StatementParameters.CreateWhere(nameof(IDataModelBase.Id), ids), cancellationToken);
     }
 
@@ -45,18 +54,26 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel.Base.DataModel, 
     }
 
     public async Task<long> CountAsync(CancellationToken cancellationToken = default) {
-        return (long)(await _statementExecutor
-                .QueryScalarAsync(_statementGenerator.CreateCount(), cancellationToken) ?? throw new InvalidOperationException());
+        return (long)(await QueryScalarAsync(_statementGenerator.CreateCount(), cancellationToken) ?? throw new InvalidOperationException());
     }
     
     public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default) {
-        var changedCount = await _statementExecutor.ExecuteAsync(_statementGenerator.CreateInsert(entity), cancellationToken);
+        var changedCount = await ExecuteAsync(_statementGenerator.CreateInsert(entity), cancellationToken);
         if (changedCount == 0) {
             throw new CaasInsertDbException();
         }
         return entity;
     }
     
+    public async Task<IReadOnlyCollection<T>> AddAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        if (entities.Count == 0) return entities;
+        var changedCount = await ExecuteAsync(_statementGenerator.CreateInsert(entities), cancellationToken);
+        if (changedCount == 0) {
+            throw new CaasInsertDbException();
+        }
+        return entities;
+    }
+
     public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default) {
         var origRowVersion = entity.RowVersion;
         entity = entity with {
@@ -64,27 +81,65 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel.Base.DataModel, 
             LastModificationTime = DateTimeOffset.UtcNow
         };
         var statement = _statementGenerator.CreateUpdate(entity, origRowVersion);
-        var changedCount = await _statementExecutor.ExecuteAsync(statement, cancellationToken);
+        var changedCount = await ExecuteAsync(statement, cancellationToken);
         if (changedCount == 0) {
             throw new CaasUpdateConcurrencyDbException();
         }
         return entity;
     }
-    
+
+    public async Task<IReadOnlyCollection<T>> UpdateAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        var versionedEntities = entities.Select(e => {
+            var origRowVersion = e.RowVersion;
+            return new VersionedEntity<T>(e with {
+                RowVersion = origRowVersion + 1,
+                LastModificationTime = DateTimeOffset.UtcNow
+            }, origRowVersion);
+        }).ToList();
+        var statement = _statementGenerator.CreateUpdate(versionedEntities);
+        var changedCount = await ExecuteAsync(statement, cancellationToken);
+        // TODO: Check count for batch updates
+        if (changedCount == 0) {
+            throw new CaasUpdateConcurrencyDbException();
+        }
+        return versionedEntities.Select(e => e.Entity).ToList();
+    }
+
     public async Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
-        var changedCount = await _statementExecutor.ExecuteAsync(_statementGenerator.CreateDelete(entity), cancellationToken);
+        var changedCount = await ExecuteAsync(_statementGenerator.CreateDelete(entity), cancellationToken);
         if (changedCount == 0) {
             throw new CaasInsertDbException();
         }
     }
-    
+
+    private async Task<object?> QueryScalarAsync(Statement statement, CancellationToken cancellationToken = default) {
+        try {
+            return await _statementExecutor.QueryScalarAsync(statement, cancellationToken);
+        } catch (DbException ex) {
+            throw new CaasDbException("Failed to execute statement", ex);
+        }
+    }
+
+    private async Task<int> ExecuteAsync(Statement statement, CancellationToken cancellationToken = default) {
+        try {
+            return await _statementExecutor.ExecuteAsync(statement, cancellationToken);
+        } catch (DbException ex) {
+            throw new CaasDbException("Failed to execute statement", ex);
+        }
+    }
+
     private async IAsyncEnumerable<T> QueryAsync(StatementParameters? parameters = null, 
             [EnumeratorCancellation] CancellationToken cancellationToken = default) {
         parameters ??= StatementParameters.Empty;
         var statement = _statementGenerator.CreateFind(parameters);
         statement = await PostProcessStatement(statement, cancellationToken);
-        var enumerable = _statementExecutor
-                .StreamAsync(statement, DataRecordMapper.EntityFromRecord, cancellationToken: cancellationToken);
+        IAsyncEnumerable<T> enumerable;
+        try {
+            enumerable = _statementExecutor
+                    .StreamAsync(statement, DataRecordMapper.EntityFromRecordAsync, cancellationToken: cancellationToken);
+        } catch (DbException ex) {
+            throw new CaasDbException("Failed to execute statement", ex);
+        }
         await foreach (var dataModel in enumerable.WithCancellation(cancellationToken)) {
             yield return dataModel;
         }

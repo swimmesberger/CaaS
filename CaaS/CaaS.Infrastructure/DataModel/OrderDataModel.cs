@@ -3,7 +3,7 @@
 namespace CaaS.Infrastructure.DataModel;
 
 [GenerateMapper]
-public record OrderDataModel() : Base.DataModel {
+public record OrderDataModel : Base.DataModel {
     [TenantIdColumn]
     public Guid ShopId { get; init; }
     public int OrderNumber { get; init; }

@@ -1,31 +1,32 @@
 ﻿using System.Data;
 using System.Data.Common;
+using CaaS.Infrastructure.Ado.Model;
+using Npgsql;
+using NpgsqlTypes;
 
 namespace CaaS.Infrastructure.Ado; 
 
 public static class DbCommandExtensions {
-    public static DbParameter AddParameter(this DbCommand command, string name, object? value, DbType type) {
-        if (type is DbType.Object && value is Guid) {
-            type = DbType.Guid;
-        }
+    public static DbParameter AddParameter(this DbCommand command, string name, TypedValue typedValue = default) {
         var parameter = command.CreateParameter();
         parameter.ParameterName = name;
-        parameter.DbType = type;
-        parameter.Value = value ?? DBNull.Value;
+        if (typedValue.IsJson && parameter is NpgsqlParameter npgsqlParameter) {
+            npgsqlParameter.NpgsqlDbType = NpgsqlDbType.Jsonb;
+        } else {
+            parameter.DbType = typedValue.DbType ?? GetDbType(typedValue.Value);
+        }
+        parameter.Value = typedValue.Value ?? DBNull.Value;
         return parameter;
     }
-    
-    public static DbParameter AddParameter(this DbCommand command, string name, object? value, TypeCode? type = null) {
-        type ??= value.GetTypeCode();
-        return command.AddParameter(name, value, type.Value.GetDbType());
+
+    private static DbType GetDbType(object? value) {
+        if (value is Guid) {
+            return DbType.Guid;
+        }
+        return value == null ? DbType.Object : GetDbType(Type.GetTypeCode(value.GetType()));
     }
 
-    private static TypeCode GetTypeCode(this object? value) {
-        return value == null ? 
-                TypeCode.DBNull : Type.GetTypeCode(value.GetType());
-    }
-    
-    private static DbType GetDbType(this TypeCode typeCode) {
+    private static DbType GetDbType(TypeCode typeCode) {
         // no TypeCode equivalent for TimeSpan or DateTimeOffset
         switch (typeCode) {
             case TypeCode.Boolean:

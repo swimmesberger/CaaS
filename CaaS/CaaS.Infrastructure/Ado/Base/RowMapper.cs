@@ -1,5 +1,5 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 
 namespace CaaS.Infrastructure.Ado.Base; 
 
-public delegate T RowMapper<out T>(IDataRecord record);
+public delegate ValueTask<T> RowMapper<T>(DbDataReader record, CancellationToken cancellationToken = default);

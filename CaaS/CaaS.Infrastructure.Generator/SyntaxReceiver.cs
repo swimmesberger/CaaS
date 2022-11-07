@@ -62,8 +62,7 @@ namespace CaaS.Infrastructure.Generator {
                     .OfType<IPropertySymbol>()
                     .Where(p => p.GetMethod != null && p.Name != "EqualityContract").ToList();
             var tenantIdProperty = propertySymbols
-                    .Where(s => s.GetAttributes()
-                            .Any(a => InitializationContext.TenantIdColumnAttributeName.Equals(a.AttributeClass?.ToString())))
+                    .Where(s => s.HasAttribute(InitializationContext.TenantIdColumnAttributeName))
                     .Select(s => CreateEntityProperty(s, namingPolicy))
                     .FirstOrDefault();
             var properties = propertySymbols
@@ -86,10 +85,12 @@ namespace CaaS.Infrastructure.Generator {
         }
 
         private MapperEntityProperty CreateEntityProperty(IPropertySymbol propertySymbol, PropertyNamingPolicy namingPolicy) {
+            var isJson = propertySymbol.HasAttribute(InitializationContext.JsonColumnAttributeName);
             return new MapperEntityProperty() {
                     PropertyName = propertySymbol.Name,
                     ColumnName = namingPolicy.ConvertName(propertySymbol.Name),
-                    TypeName = propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)
+                    TypeName = propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                    IsJson = isJson
             };
         }
         

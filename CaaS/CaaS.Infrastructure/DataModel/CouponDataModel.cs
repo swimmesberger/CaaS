@@ -3,7 +3,7 @@
 namespace CaaS.Infrastructure.DataModel;
 
 [GenerateMapper]
-public record CouponDataModel() : Base.DataModel {
+public record CouponDataModel : Base.DataModel {
     [TenantIdColumn]
     public Guid ShopId { get; init; }
     public decimal Value { get; init; }

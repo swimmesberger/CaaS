@@ -2,7 +2,6 @@
 using System.Text;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
-using CaaS.Infrastructure.DataMapping;
 using CaaS.Infrastructure.DataMapping.Base;
 using CaaS.Infrastructure.DataModel.Base;
 
@@ -25,45 +24,71 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
     }
 
     public Statement CreateInsert(T entity) {
-        var record = DataRecordMapper.RecordFromEntity(entity).ByColumName();
-        var parameters = GetColumnNames()
-                .Select(columnName => new QueryParameter(columnName, record.GetObject(columnName)))
+        return CreateInsert(new[] { entity });
+    }
+
+    public Statement CreateInsert(IEnumerable<T> entities) {
+        var insertValues = entities
+                .Select(entity => DataRecordMapper.RecordFromEntity(entity).ByColumName())
+                .Select(record => GetColumnNames()
+                        .Select(columnName => QueryParameter.FromTyped(columnName, record.GetTypedValue(columnName)))
+                        .ToList())
                 .ToList();
+        if (insertValues.Count == 0) return Statement.Empty;
+        var insertParameters = new InsertParameters() {
+            ColumnNames = DataRecordMapper.ByColumName().Keys,
+            Values = insertValues
+        };
         return new Statement(StatementType.Create, this) {
             Parameters = new StatementParameters() { 
-                Other = parameters
+                Insert = insertParameters
             }
         };
     }
 
-    public Statement CreateUpdate(T entity, int origRowVersion) {
+    public Statement CreateUpdate(IEnumerable<VersionedEntity<T>> versionedEntities) {
         var propertyMapper = DataRecordMapper.ByPropertyName();
         var idColumnName = propertyMapper.MapName(nameof(IDataModelBase.Id));
         var rowVersionColumnName = propertyMapper.MapName(nameof(IDataModelBase.RowVersion));
         var creationColumnName = propertyMapper.MapName(nameof(IDataModelBase.CreationTime));
-        var record = DataRecordMapper.RecordFromEntity(entity).ByColumName();
+        
+        var updateParameterList = new List<UpdateParameter>();
+        var idx = 0;
+        foreach (var versionedEntity in versionedEntities) {
+            var record = DataRecordMapper.RecordFromEntity(versionedEntity.Entity).ByColumName();
 
-        var updateParameters = GetColumnNames()
+            var updateParameterValues = GetColumnNames()
                 .Where(columnName => columnName != idColumnName && columnName != creationColumnName)
-                .Select(columnName => new QueryParameter(columnName, record.GetObject(columnName)))
+                .Select(columnName => QueryParameter.FromTyped(columnName, record.GetTypedValue(columnName), $"{columnName}_{idx}"))
                 .ToList();
-        var whereParameters = new List<QueryParameter>() {
-                new(idColumnName, entity.Id),
-                new(rowVersionColumnName, origRowVersion) { ParameterName = "curRowVersion" }
+            var whereParameters = new List<QueryParameter>() {
+                QueryParameter.From(idColumnName, versionedEntity.Entity.Id),
+                QueryParameter.From(rowVersionColumnName, versionedEntity.RowVersion, $"curRowVersion_{idx}")
+            };
+            updateParameterList.Add(new UpdateParameter() {
+                Values = updateParameterValues,
+                Where = whereParameters
+            });
+            idx += 1;
+        }
+        var updateParameters = new UpdateParameters() {
+            ColumnNames = GetColumnNames(),
+            Values = updateParameterList
         };
         return new Statement(StatementType.Update, this) {
             Parameters = new StatementParameters() {
-                Where = whereParameters,
-                Other = updateParameters
+                Update = updateParameters
             }
         };
     }
+
+    public Statement CreateUpdate(T entity, int origRowVersion) => CreateUpdate(new[] { new VersionedEntity<T>(entity, origRowVersion) });
 
     public Statement CreateDelete(T entity) {
         var propertyMapper = DataRecordMapper.ByPropertyName();
         return new Statement(StatementType.Delete, this) {
             Parameters = new StatementParameters() {
-                Where = new List<QueryParameter>(){ new(propertyMapper.MapName(nameof(IDataModelBase.Id)), entity.Id) }
+                Where = new List<QueryParameter>(){ QueryParameter.From(propertyMapper.MapName(nameof(IDataModelBase.Id)), entity.Id) }
             }
         };
     }
@@ -71,10 +96,7 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
     public MaterializedStatement MaterializeStatement(Statement statement) {
         return statement.Type switch {
             StatementType.Count => new MaterializedStatement($"SELECT COUNT(*) FROM {GetTableName()}"),
-            StatementType.Create => new MaterializedStatement(
-                    $"INSERT INTO {GetTableName()} ({GetColumnNamesString()}) VALUES ({GetColumnNameParametersString()})") {
-                    Parameters = statement.Parameters.BindParameters
-            },
+            StatementType.Create => MaterializeInsert(statement),
             StatementType.Update => MaterializeUpdate(statement),
             StatementType.Delete => MaterializeDelete(statement),
             StatementType.Find => MaterializeFind(statement),
@@ -82,12 +104,41 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         };
     }
 
+    private MaterializedStatement MaterializeInsert(Statement statement) {
+        var insertValues = string.Join(',', statement.Parameters.Insert.Values.Select((values, idx) => 
+                "(" + GetColumnNameParametersString(values.Select(v => $"{v.ParameterName}_{idx}")) + ")"));
+        var sql = $"INSERT INTO {GetTableName()} ({GetColumnNamesString(statement.Parameters.Insert.ColumnNames)}) VALUES {insertValues}";
+        var parameters = statement.Parameters.Insert.Values.SelectMany((values, idx) => {
+            return values.Select(q => q with { ParameterName = $"{q.ParameterName}_{idx}" });
+        });
+        return new MaterializedStatement(sql) {
+            Parameters = parameters
+        };
+    }
+
     private MaterializedStatement MaterializeUpdate(Statement statement) {
-        var sql = new StringBuilder("UPDATE");
+        var sql = new StringBuilder();
+        var parameters = new List<QueryParameter>();
+        var first = true;
+        foreach (var updateParameter in statement.Parameters.Update.Values) {
+            if (first) {
+                first = false;
+            } else {
+                sql.Append("; ");
+            }
+            MaterializeUpdate(updateParameter, sql, parameters);
+        }
+        return new MaterializedStatement(sql.ToString()) {
+            Parameters = parameters
+        };
+    }
+
+    private void MaterializeUpdate(UpdateParameter updateParameter, StringBuilder sql, List<QueryParameter> parameters) {
+        sql.Append("UPDATE");
         sql.Append(' ').Append(GetTableName());
         sql.Append(" SET");
         var first = true;
-        foreach (var parameter in statement.Parameters.Other) {
+        foreach (var parameter in updateParameter.Values) {
             if (first) {
                 first = false;
             } else {
@@ -95,10 +146,9 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
             }
             sql.Append(' ').Append(parameter.Name).Append(" = ").Append('@').Append(parameter.ParameterName);
         }
-        var whereParams = CreateWhereClause(sql, statement.Parameters.Where);
-        return new MaterializedStatement(sql.ToString()) {
-            Parameters = statement.Parameters.Other.Concat(whereParams).ToList()
-        };
+        var whereParams = CreateWhereClause(sql, updateParameter.Where);
+        parameters.AddRange(updateParameter.Values);
+        parameters.AddRange(whereParams);
     }
 
     private MaterializedStatement MaterializeDelete(Statement statement) {
@@ -126,20 +176,27 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
     private void AddWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<QueryParameter> parameters) {
         var first = true;
         foreach (var queryParameter in parameters) {
+            var explodedParams = ExplodeParameters(queryParameter).ToList();
+            if (explodedParams.Count <= 0) continue;
             if (first) {
                 first = false;
                 sql.Append(" WHERE");
             } else {
                 sql.Append(" AND");
             }
-            var explodedParams = ExplodeParameters(queryParameter).ToList();
             if (explodedParams.Count > 1) {
                 var inParamList = string.Join(',', explodedParams.Select(p => $"@{p.ParameterName}"));
                 sql.Append($" {queryParameter.Name} IN({inParamList})");
+                newParams.AddRange(explodedParams);
             } else {
-                sql.Append($" {queryParameter.Name} = @{explodedParams[0].ParameterName}");
+                var parameter = explodedParams[0];
+                if (parameter.Value == null) {
+                    sql.Append($" {queryParameter.Name} IS NULL");
+                } else {
+                    sql.Append($" {queryParameter.Name} = @{parameter.ParameterName}");
+                    newParams.Add(parameter);
+                }
             }
-            newParams.AddRange(explodedParams);
         }
     }
     
@@ -168,9 +225,11 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         };
     }
 
-    private string GetColumnNamesString() => string.Join(',', GetColumnNames());
+    private string GetColumnNamesString() => GetColumnNamesString(GetColumnNames());
     
-    private string GetColumnNameParametersString() => string.Join(',', GetColumnNames().Select(s => $"@{s}"));
+    private string GetColumnNamesString(IEnumerable<string> columnNames) => string.Join(',', columnNames);
+
+    private string GetColumnNameParametersString(IEnumerable<string> columnNames) => string.Join(',', columnNames.Select(s => $"@{s}"));
 
     private IEnumerable<string> GetColumnNames() => DataRecordMapper.ByColumName().Keys;
 

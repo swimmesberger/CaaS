@@ -3,6 +3,8 @@
 namespace CaaS.Infrastructure.Ado.Model;
 
 public record Statement {
+    public static readonly Statement Empty = new Statement(StatementType.Find, EmptyStatementSqlGenerator.Instance);
+    
     private readonly IStatementSqlGenerator _sqlGenerator;
     
     public StatementType Type { get; }
@@ -21,7 +23,7 @@ public record Statement {
     }
 
     public Statement AddWhereParameter(string name, object value) {
-        return AddParameters(new StatementParameters() { Where = new List<QueryParameter>() { new QueryParameter(name, value) } });
+        return AddParameters(new StatementParameters() { Where = new List<QueryParameter>() { QueryParameter.From(name, value) } });
     }
 
     public MaterializedStatement Materialize() => _sqlGenerator.MaterializeStatement(this);

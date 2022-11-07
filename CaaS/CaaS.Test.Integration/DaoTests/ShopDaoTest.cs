@@ -4,7 +4,7 @@ using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.DaoTests; 
 
 public class ShopDaoTest : BaseDaoTest {
     
@@ -35,8 +35,8 @@ public class ShopDaoTest : BaseDaoTest {
         var shopDao = GetShopDao();
 
         var parameters = new List<QueryParameter> {
-                new(nameof(Shop.CartLifetimeMinutes), 44415),
-                new(nameof(Shop.Name), "Amazon"),
+            QueryParameter.From(nameof(Shop.CartLifetimeMinutes), 44415),
+            QueryParameter.From(nameof(Shop.Name), "Amazon"),
         };
 
         var shops = await shopDao.FindBy(StatementParameters

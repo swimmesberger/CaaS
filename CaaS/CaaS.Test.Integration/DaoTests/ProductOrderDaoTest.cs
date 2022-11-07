@@ -1,11 +1,10 @@
-﻿using CaaS.Core.Entities;
-using CaaS.Core.Exceptions;
+﻿using CaaS.Core.Exceptions;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.DaoTests; 
 
 public class ProductOrderDaoTest : BaseDaoTest {
     private const string ShopTenantId = "a468d796-db09-496d-9794-f6b42f8c7c0b";
@@ -37,7 +36,7 @@ public class ProductOrderDaoTest : BaseDaoTest {
         var productOrderDao = GetProductOrderDao(ShopTenantId);
 
         var parameters = new List<QueryParameter> {
-                new(nameof(ProductOrderDataModel.Amount), 4)
+            QueryParameter.From(nameof(ProductOrderDataModel.Amount), 4)
         };
 
         var orderItems = await productOrderDao.FindBy(StatementParameters

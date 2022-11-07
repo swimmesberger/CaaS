@@ -3,13 +3,12 @@
 namespace CaaS.Core.Entities; 
 
 public record CartItem : IEntityBase {
-    public Guid Id { get; init; }
+    public Guid Id { get; init; } = Guid.NewGuid();
     
     public Product Product { get; init; } = null!;
-    public int Amount { get; init; }
-    public decimal DiscountPerPiece { get; init; } = 0;
-    public decimal DiscountedPricePerPiece { get; init; } = 0;
-    public decimal SumPerPosition { get; init; } = 0;
-    public decimal DiscountedSumPerPosition { get; init; } = 0;
-    public string ConcurrencyToken { get; init; }
+    public Guid ShopId { get; init; } = default;
+    public Guid CartId { get; init; } = default;
+    public int Amount { get; init; } = 0;
+    
+    public string ConcurrencyToken { get; init; } = string.Empty;
 }

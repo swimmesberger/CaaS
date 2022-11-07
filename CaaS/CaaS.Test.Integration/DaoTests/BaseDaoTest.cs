@@ -14,7 +14,7 @@ using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Npgsql;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.DaoTests; 
 
 public class BaseDaoTest : IAsyncLifetime {
     private const string PostgresProviderName = "Npgsql";
@@ -93,7 +93,7 @@ public class BaseDaoTest : IAsyncLifetime {
         IServiceProvider<ITenantService> spTenantService = IServiceProvider<ITenantService>.Empty;
         if (tenantId != null) {
             spTenantService = new ShopTenantService(
-                    new ShopRepository(GetDao(new ShopDataRecordMapper())),
+                    new ShopRepository(GetDao(new ShopDataRecordMapper()), GetDao(new ShopAdminDataRecordMapper())),
                     new StaticTenantIdAccessor(tenantId)
             ).AsTypedService();
         }

@@ -83,7 +83,7 @@ CREATE TABLE "shop_admin" (
     "last_modification_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "shop_id" uuid NOT NULL,
     "name" varchar(255) NOT NULL,
-    "e_mail" varchar(255) UNIQUE NOT NULL
+    "e_mail" varchar(255) UNIQUE NOT NULL -- should be email
 );
 
 CREATE TABLE shop (
@@ -92,7 +92,7 @@ CREATE TABLE shop (
     "creation_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "last_modification_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "name" varchar(255) NOT NULL,
-    "cart_lifetime_minutes" int default 1000 NOT NULL,
+    "cart_lifetime_minutes" int default 120 NOT NULL,
     "admin_id" uuid,
     CONSTRAINT "FK_shop.admin_id"
         FOREIGN KEY ("admin_id")

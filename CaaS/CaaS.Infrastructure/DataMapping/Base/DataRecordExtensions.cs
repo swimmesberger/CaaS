@@ -1,69 +1,12 @@
 ﻿using System.Data;
-using System.Text.Json;
+using System.Data.Common;
 
 namespace CaaS.Infrastructure.DataMapping.Base; 
 
 public static class DataRecordExtensions {
-    public static T GetValue<T>(this IDataRecord record, string key)
-        => (T)GetObject(record, key, typeof(T))!;
-
-    private static object? GetObject(this IDataRecord record, string key, Type targetType) {
-        if (targetType == typeof(DateTimeOffset)) {
-            return record.GetDateTimeOffset(key);
-        }
-        if (targetType == typeof(int)) {
-            return record.GetIn32(key);
-        }
-        if (targetType == typeof(Guid)) {
-            return record.GetGuid(key);
-        }
-        if (targetType == typeof(string)) {
-            return record.GetString(key);
-        }
-        if (targetType == typeof(JsonDocument)) {
-            return record.GetJsonDocument(key);
-        }
-        return record.GetObject(key);
+    // ReSharper disable once UnusedParameter.Global
+    public static ValueTask<T> GetValueAsync<T>(this DbDataReader record, string key, CancellationToken cancellationToken = default) {
+        // Possibility for async access when Command is created with CommandBehavior.SequentialAccess
+        return new ValueTask<T>(record.GetFieldValue<T>(key));
     }
-
-    private static DateTimeOffset? GetDateTimeOffset(this IDataRecord record, string key) {
-        var obj = record.GetObject(key);
-        if (obj == null) return null;
-        if (obj is DateTimeOffset dateTimeOffset) return dateTimeOffset;
-        if (obj is DateTime dateTime) return new DateTimeOffset(dateTime);
-
-        throw new InvalidCastException();
-    }
-
-    private static int? GetIn32(this IDataRecord record, string key) {
-        var obj = record.GetObject(key);
-        return (int?)obj;
-    }
-
-    private static Guid? GetGuid(this IDataRecord record, string key) {
-        var obj = record.GetObject(key);
-        return (Guid?)obj;
-    }
-
-    private static string? GetString(this IDataRecord record, string key) {
-        var obj = record.GetObject(key);
-        return (string?)obj;
-    }
-
-    private static JsonDocument? GetJsonDocument(this IDataRecord record, string key) {
-        var obj = record.GetString(key);
-        if (obj == null) return null;
-        return JsonDocument.Parse(obj);
-    }
-    
-    private static object? GetObject(this IDataRecord record, string key) {
-        try {
-            var position = record.GetOrdinal(key);
-            var isEmpty = record.IsDBNull(position);
-            return isEmpty ? null : record[key];
-        } catch (IndexOutOfRangeException) {
-            return null;
-        }
-    }
-
 }

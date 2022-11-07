@@ -1,10 +1,12 @@
 ﻿using CaaS.Core.Repositories;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.Repositories;
+using CaaS.Test.Integration.DaoTests;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.RepositoryTests; 
 
 public class ShopRepositoryTest : BaseDaoTest {
+    
     [Fact]
     public async Task FindAllOptimistic() {
         var shopRepository = GetShopRepository();
@@ -13,5 +15,8 @@ public class ShopRepositoryTest : BaseDaoTest {
         shops[1].Name.Should().Be("E-Tec");
     }
     
-    private IShopRepository GetShopRepository() => new ShopRepository(GetDao(new ShopDataRecordMapper()));
+    private IShopRepository GetShopRepository() => new ShopRepository(
+        GetDao(new ShopDataRecordMapper()), 
+        GetDao(new ShopAdminDataRecordMapper())
+    );
 }

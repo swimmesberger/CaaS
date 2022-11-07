@@ -1,10 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using CaaS.Infrastructure.Ado;
+﻿using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel.Base;
 
-namespace CaaS.Test; 
+namespace CaaS.Test.Base; 
 
 public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
     private readonly List<T> _data;
@@ -28,14 +28,18 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public IAsyncEnumerable<T> FindBy(StatementParameters parameters, CancellationToken cancellationToken = default) {
-        var propertyNames = parameters.ParameterNames.ToHashSet();
-        var properties = typeof(T).GetProperties()
-                .Where(p => propertyNames.Contains(p.Name)).ToDictionary(p => p.Name, p => p);
+        var properties = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p);
         var enumerable = _data.Where(d => {
             foreach (var param in parameters.Where) {
                 var prop = properties[param.Name];
-                if (!prop.GetValue(d)!.Equals(param.Value))
-                    return false;
+                if (param.Value is IEnumerable enumerable and not string) {
+                    var lookup = enumerable.Cast<object?>().ToHashSet();
+                    if (!lookup.Contains(prop.GetValue(d)))
+                        return false;
+                } else {
+                    if (!prop.GetValue(d)!.Equals(param.Value))
+                        return false;
+                }
             }
             return true;
         });
@@ -63,13 +67,25 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
         _data.Add(entity);
         return Task.FromResult(entity);
     }
-    
+
+    public Task<IReadOnlyCollection<T>> AddAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        _data.AddRange(entities);
+        return Task.FromResult(entities);
+    }
+
     public Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default) {
         var dIdx = _data.FindIndex(d => d.Id == entity.Id);
         _data[dIdx] = entity;
         return Task.FromResult(entity);
     }
-    
+
+    public async Task<IReadOnlyCollection<T>> UpdateAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        foreach (var entity in entities) {
+            await UpdateAsync(entity, cancellationToken);
+        }
+        return entities;
+    }
+
     public Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
         var dIdx = _data.FindIndex(d => d.Id == entity.Id);
         _data.RemoveAt(dIdx);

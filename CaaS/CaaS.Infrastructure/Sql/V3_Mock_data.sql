@@ -4,8 +4,8 @@ INSERT INTO shop_admin(id,row_version,creation_time,last_modification_time,shop_
 INSERT INTO shop_admin(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail) VALUES ('a5c992d5-5065-41fe-b2d0-2fa4b5945b56',5,'2022-05-31 18:29:50','2022-09-06 14:01:03','ba86a395-51ca-4f29-a047-5296ce90ab79','Kanya Pavey','kpavey0@google.ca');
 
 
-INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id) VALUES ('a468d796-db09-496d-9794-f6b42f8c7c0b',1,'2022-06-29 21:22:51','2022-10-06 14:30:53','Devify',44415,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236');
-INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id) VALUES ('ba86a395-51ca-4f29-a047-5296ce90ab79',3,'2022-01-25 05:39:19','2022-09-30 15:40:10','Kanoodle',32382,'a5c992d5-5065-41fe-b2d0-2fa4b5945b56');
+INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id) VALUES ('a468d796-db09-496d-9794-f6b42f8c7c0b',1,'2022-06-29 21:22:51','2022-10-06 14:30:53','Devify',120,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236');
+INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id) VALUES ('ba86a395-51ca-4f29-a047-5296ce90ab79',3,'2022-01-25 05:39:19','2022-09-30 15:40:10','Kanoodle',120,'a5c992d5-5065-41fe-b2d0-2fa4b5945b56');
 
 
 INSERT INTO customer(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail,credit_card_number) VALUES ('709262d7-3b8c-4b90-b005-a698599c82b0',4,'2022-05-22 23:17:57','2022-10-19 04:52:25','a468d796-db09-496d-9794-f6b42f8c7c0b','Gennie Schiefersten','gschiefersten0@scientificamerican.com','4405100664466647');

@@ -1,11 +1,11 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 
 namespace CaaS.Infrastructure.DataMapping.Base; 
 
 public interface IDataRecordMapper<T> : IPropertyMapping {
     string MappedTypeName { get; }
 
-    T EntityFromRecord(IDataRecord record);
+    ValueTask<T> EntityFromRecordAsync(DbDataReader record, CancellationToken cancellationToken = default);
 
     IRecord RecordFromEntity(T record);
 }

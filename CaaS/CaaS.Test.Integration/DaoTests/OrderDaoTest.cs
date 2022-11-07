@@ -5,7 +5,7 @@ using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.DaoTests; 
 
 public class OrderDaoTest : BaseDaoTest {
     private const string ShopTenantId = "a468d796-db09-496d-9794-f6b42f8c7c0b";
@@ -37,8 +37,8 @@ public class OrderDaoTest : BaseDaoTest {
         var orderDao = GetOrderDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-                new(nameof(Order.Id), Guid.Parse("aca58853-bd61-4517-9907-ca51a50b7225")),
-                new(nameof(Order.OrderNumber), 7785),
+            QueryParameter.From(nameof(Order.Id), Guid.Parse("aca58853-bd61-4517-9907-ca51a50b7225")),
+            QueryParameter.From(nameof(Order.OrderNumber), 7785),
         };
 
         var products = await orderDao.FindBy(StatementParameters
@@ -62,7 +62,7 @@ public class OrderDaoTest : BaseDaoTest {
                 ShopId = Guid.Parse(ShopTenantId),
                 OrderNumber = 49538,
                 CustomerId = Guid.Parse("9234a988-0abd-4b44-808a-9e7a8852e19c"),
-                OrderDate = DateTimeOffset.Now
+                OrderDate = DateTimeOffset.UtcNow
         };
         await orderDao.AddAsync(order);
         

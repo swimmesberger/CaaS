@@ -5,7 +5,7 @@ using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.DaoTests; 
 
 public class CouponDaoTest : BaseDaoTest {
     private const string ShopTenantId = "a468d796-db09-496d-9794-f6b42f8c7c0b";
@@ -37,7 +37,7 @@ public class CouponDaoTest : BaseDaoTest {
         var couponDao = GetCouponDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-                new(nameof(Coupon.Value), 7)
+            QueryParameter.From(nameof(Coupon.Value), 7)
         };
 
         var products = await couponDao.FindBy(StatementParameters

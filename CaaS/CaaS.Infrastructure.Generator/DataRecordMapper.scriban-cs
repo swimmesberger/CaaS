@@ -2,7 +2,10 @@
 using {{ Entity.Namespace }};
 using System.CodeDom.Compiler;
 using System.Data;
+using System.Data.Common;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Collections.Immutable;
 
 namespace {{ Namespace }};
 
@@ -19,10 +22,10 @@ public sealed class {{ Entity.EntityName }}DataRecordMapper : IDataRecordMapper<
     
     public IPropertyMapper ByPropertyName() => _propertyMapper;
     
-    public {{ Entity.TypeName }} EntityFromRecord(IDataRecord record) {
+    public async ValueTask<{{ Entity.TypeName }}> EntityFromRecordAsync(DbDataReader record, CancellationToken cancellationToken = default) {
         return new {{ Entity.TypeName }} {
 {{ for prop in Entity.Properties ~}}
-            {{ prop.PropertyName }} = record.GetValue<{{ prop.TypeName }}>("{{ prop.ColumnName }}"),
+            {{ prop.PropertyName }} = await record.GetValueAsync<{{ prop.TypeName }}>("{{ prop.ColumnName }}", cancellationToken),
 {{ end ~}}
         };
     }
@@ -47,7 +50,7 @@ internal sealed class {{ Entity.EntityName }}Record : IRecord {
         _propertyMapping = propertyMapping;
     }
 
-    public IRecordValues ByColumName() => new {{ Entity.EntityName }}ColumnRecordValues(_record, _propertyMapping.ByColumName());
+    public IRecordValues ByColumName() => new {{ Entity.EntityName }}ColumnRecordValues(ByPropertyName(), _propertyMapping.ByColumName());
 
     public IRecordValues ByPropertyName() => new {{ Entity.EntityName }}PropertyRecordValues(_record, _propertyMapping.ByPropertyName());
 }
@@ -64,6 +67,15 @@ internal sealed class {{ Entity.EntityName }}PropertyRecordValues : IRecordValue
     }
     
     public string MapName(string key) => _mapper.MapName(key);
+    
+    public int? GetObjectType(string key) {
+        switch(key) {
+{{ for prop in Entity.Properties ~}}{{ if (prop.IsJson) }}            
+            case "{{ prop.PropertyName }}": return IRecordValues.DbTypeJson;
+{{ end }}{{ end ~}}
+            default: return null;
+        }
+    }
         
     public object? GetObject(string key) {
         switch(key) {
@@ -76,25 +88,26 @@ internal sealed class {{ Entity.EntityName }}PropertyRecordValues : IRecordValue
 }
 
 internal sealed class {{ Entity.EntityName }}ColumnRecordValues : IRecordValues {
-    private readonly {{ Entity.TypeName }} _record;
+    private readonly IRecordValues _record;
     private readonly IPropertyMapper _mapper;
     
     public IEnumerable<string> Keys => _mapper.Keys;
         
-    public {{Entity.EntityName}}ColumnRecordValues({{ Entity.TypeName }} record, IPropertyMapper mapper) {
+    public {{Entity.EntityName}}ColumnRecordValues(IRecordValues record, IPropertyMapper mapper) {
         _record = record;
         _mapper = mapper;
     }
     
     public string MapName(string key) => _mapper.MapName(key);
+    
+    public int? GetObjectType(string key) {
+        key = _mapper.MapName(key);
+        return _record.GetObjectType(key);
+    }
         
     public object? GetObject(string key) {
-        switch(key) {
-{{ for prop in Entity.Properties ~}}
-            case "{{ prop.ColumnName }}": return _record.{{ prop.PropertyName }};
-{{ end ~}}
-            default: return null;
-        }
+        key = _mapper.MapName(key);
+        return _record.GetObject(key);
     }
 }
 

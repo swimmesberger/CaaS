@@ -16,7 +16,7 @@ builder.Services.AddSwaggerGen(options => {
 });
 
 // register CaaS services
-builder.Services.AddCaaS(builder.Configuration);
+builder.Services.AddCaas(builder.Configuration);
 
 var app = builder.Build();
 
@@ -35,4 +35,4 @@ app.UseCaas();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

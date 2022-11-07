@@ -26,7 +26,7 @@ public class AdoStatementExecutor : IStatementExecutor {
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         var items = new List<T>();
         while (await reader.ReadAsync(cancellationToken)) {
-            items.Add(mapper(reader));
+            items.Add(await mapper(reader, cancellationToken));
         }
         return items;
     }
@@ -37,12 +37,13 @@ public class AdoStatementExecutor : IStatementExecutor {
         await using var cmd = await CreateCommand(statement, connectionProvider, cancellationToken);
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken)) {
-            yield return mapper(reader);
+            yield return await mapper(reader, cancellationToken);
         }
     }
 
     public async Task<int> ExecuteAsync(Statement statement,
             CancellationToken cancellationToken = default) {
+        if (statement == Statement.Empty) return 0;
         await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
         await using var cmd = await CreateCommand(statement, connectionProvider, cancellationToken);
         var result = await cmd.ExecuteNonQueryAsync(cancellationToken);
@@ -61,8 +62,7 @@ public class AdoStatementExecutor : IStatementExecutor {
         foreach (var queryParameter in materializedStatement.Parameters) {
             cmd.Parameters.Add(cmd.AddParameter(
                 queryParameter.ParameterName, 
-                queryParameter.Value,
-                queryParameter.TypeCode
+                queryParameter.TypedValue
             ));
         }
         return cmd;

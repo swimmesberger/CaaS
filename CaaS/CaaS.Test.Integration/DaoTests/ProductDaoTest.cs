@@ -4,7 +4,7 @@ using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Integration.DaoTests; 
 
 public class ProductDaoTest : BaseDaoTest {
     private const string ShopTenantId = "a468d796-db09-496d-9794-f6b42f8c7c0b";
@@ -36,8 +36,8 @@ public class ProductDaoTest : BaseDaoTest {
         var productDao = GetProductDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-                new(nameof(Product.Name), "HDMI cable"),
-                new(nameof(Product.Price), 5.99),
+            QueryParameter.From(nameof(Product.Name), "HDMI cable"),
+            QueryParameter.From(nameof(Product.Price), 5.99),
         };
 
         var products = await productDao.FindBy(StatementParameters
@@ -100,6 +100,15 @@ public class ProductDaoTest : BaseDaoTest {
         
         product = await productDao.FindByIdAsync(productId);
         product.Should().BeNull();
+    }
+    
+    [Fact]
+    public async Task UpdateMultipleEntitiesBatch() {
+        var productDao = GetProductDao(ShopTenantId);
+        var products = await productDao.FindAllAsync()
+            .Select((p, idx) => p with { Name = $"{p.Name}_{idx}" })
+            .ToListAsync();
+        await productDao.UpdateAsync(products);
     }
     
     private IDao<ProductDataModel> GetProductDao(string tenantId) => GetDao(new ProductDataRecordMapper(), tenantId);
