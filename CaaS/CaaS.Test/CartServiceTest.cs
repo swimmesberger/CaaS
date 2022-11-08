@@ -1,8 +1,7 @@
 ﻿using CaaS.Core.Services;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories;
-using CaaS.Test.Base;
-using CaaS.Test.Integration;
+using CaaS.Test.Common;
 
 namespace CaaS.Test; 
 

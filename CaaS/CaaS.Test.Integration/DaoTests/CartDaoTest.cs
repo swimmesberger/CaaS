@@ -3,12 +3,15 @@ using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
+using Xunit.Abstractions;
 
 namespace CaaS.Test.Integration.DaoTests;
 
 public class CartDaoTest : BaseDaoTest {
     private const string ShopTenantId = "a468d796-db09-496d-9794-f6b42f8c7c0b";
 
+    public CartDaoTest(ITestOutputHelper output) : base(output) { }
+    
     [Fact]
     public async Task FindAllWhenDbHasEntries() {
         var cartDao = GetCartDao(ShopTenantId);

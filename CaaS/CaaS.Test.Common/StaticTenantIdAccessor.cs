@@ -1,6 +1,6 @@
 ﻿using CaaS.Core.Request;
 
-namespace CaaS.Test.Integration; 
+namespace CaaS.Test.Common; 
 
 public class StaticTenantIdAccessor : ITenantIdAccessor {
     private readonly string _tenantId;

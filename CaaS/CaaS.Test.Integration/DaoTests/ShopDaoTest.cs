@@ -3,10 +3,12 @@ using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Gen;
+using Xunit.Abstractions;
 
 namespace CaaS.Test.Integration.DaoTests; 
 
 public class ShopDaoTest : BaseDaoTest {
+    public ShopDaoTest(ITestOutputHelper output) : base(output) { }
     
     [Fact]
     public async Task FindAllWhenDbHasEntries() {

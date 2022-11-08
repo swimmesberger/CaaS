@@ -2,10 +2,12 @@
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.Repositories;
 using CaaS.Test.Integration.DaoTests;
+using Xunit.Abstractions;
 
 namespace CaaS.Test.Integration.RepositoryTests; 
 
 public class ShopRepositoryTest : BaseDaoTest {
+    public ShopRepositoryTest(ITestOutputHelper output) : base(output) { }
     
     [Fact]
     public async Task FindAllOptimistic() {

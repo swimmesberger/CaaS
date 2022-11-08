@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Test", "CaaS.Test\CaaS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Test.Integration", "CaaS.Test.Integration\CaaS.Test.Integration.csproj", "{F2C9CE85-95E4-4070-871B-DE8317466FA6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Test.Common", "CaaS.Test.Common\CaaS.Test.Common.csproj", "{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{F2C9CE85-95E4-4070-871B-DE8317466FA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2C9CE85-95E4-4070-871B-DE8317466FA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2C9CE85-95E4-4070-871B-DE8317466FA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

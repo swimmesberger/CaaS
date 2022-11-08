@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories;
-using CaaS.Test.Base;
+using CaaS.Test.Common;
 
 namespace CaaS.Test;
 

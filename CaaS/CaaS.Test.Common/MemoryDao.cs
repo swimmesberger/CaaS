@@ -4,7 +4,7 @@ using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel.Base;
 
-namespace CaaS.Test.Base; 
+namespace CaaS.Test.Common; 
 
 public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
     private readonly List<T> _data;
