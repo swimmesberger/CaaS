@@ -15,7 +15,7 @@ internal class ShopAdminRepository {
         Converter = new ShopAdminDomainModelConvert();
     }
 
-    public async Task<List<ShopAdmin>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<ShopAdmin>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
         var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
@@ -35,7 +35,7 @@ internal class ShopAdminRepository {
             });
         }
         
-        public async Task<List<ShopAdmin>> ConvertToDomain(IAsyncEnumerable<ShopAdminDataModel> dataModels, CancellationToken cancellationToken = default) {
+        public async Task<IReadOnlyList<ShopAdmin>> ConvertToDomain(IAsyncEnumerable<ShopAdminDataModel> dataModels, CancellationToken cancellationToken = default) {
             return await dataModels
                     .SelectAwait(ConvertToDomain)
                     .ToListAsync(cancellationToken);

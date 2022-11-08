@@ -59,7 +59,7 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
         return dataModels.Select(dataModel => ConvertToDomain(dataModel, shopAdminDomainModels)).ToList();
     }
 
-    public async Task<List<Shop>> ConvertToDomain(IAsyncEnumerable<ShopDataModel> dataModels, 
+    public async Task<IReadOnlyList<Shop>> ConvertToDomain(IAsyncEnumerable<ShopDataModel> dataModels, 
             CancellationToken cancellationToken = default) {
         return await dataModels
                 .SelectAwait(ConvertToDomain)

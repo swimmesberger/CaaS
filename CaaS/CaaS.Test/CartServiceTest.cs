@@ -26,7 +26,7 @@ public class CartServiceTest {
     }
     
     [Fact]
-    public async Task AddProductToCartExistingOptimistic() {
+    public async Task AddProductToCartWhenProductExistsOptimistic() {
         var cartService = CreateCartService();
 
         var curTime = DateTimeOffset.UtcNow;
@@ -37,6 +37,24 @@ public class CartServiceTest {
         var productA = updatedCart.Items.FirstOrDefault(i => i.Product.Id == ProductAId);
         productA.Should().NotBeNull();
         productA!.Amount.Should().Be(4);
+        updatedCart.LastAccess.Should().BeAfter(curTime);
+    }
+    
+    [Fact]
+    public async Task AddProductToCartWhenProductNotExistingOptimistic() {
+        var cartService = CreateCartService();
+
+        var curTime = DateTimeOffset.UtcNow;
+        var updatedCart = await cartService.AddProductToCart(ExistingCartId, ProductBId, 2);
+        updatedCart.Should().NotBeNull();
+        updatedCart.ShopId.Should().Be(TestShopId);
+        updatedCart.Items.Should().HaveCount(2);
+        var productA = updatedCart.Items.FirstOrDefault(i => i.Product.Id == ProductAId);
+        productA.Should().NotBeNull();
+        productA!.Amount.Should().Be(2);
+        var productB = updatedCart.Items.FirstOrDefault(i => i.Product.Id == ProductBId);
+        productB.Should().NotBeNull();
+        productB!.Amount.Should().Be(2);
         updatedCart.LastAccess.Should().BeAfter(curTime);
     }
     

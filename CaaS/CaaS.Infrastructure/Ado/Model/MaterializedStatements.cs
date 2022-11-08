@@ -5,15 +5,15 @@ namespace CaaS.Infrastructure.Ado.Model;
 public record MaterializedStatements {
     public static readonly MaterializedStatements Empty = new MaterializedStatements();
     
-    public ImmutableList<MaterializedStatement> Statements { get; init; } = ImmutableList<MaterializedStatement>.Empty;
+    public ImmutableArray<MaterializedStatement> Statements { get; init; } = ImmutableArray<MaterializedStatement>.Empty;
 
-    public int Count => Statements.Count;
+    public int Count => Statements.Length;
 
-    public MaterializedStatements(ImmutableList<MaterializedStatement> statements) {
+    public MaterializedStatements(ImmutableArray<MaterializedStatement> statements) {
         Statements = statements;
     }
     
-    public MaterializedStatements(IEnumerable<MaterializedStatement> statements) : this(statements.ToImmutableList()) { }
+    public MaterializedStatements(IEnumerable<MaterializedStatement> statements) : this(statements.ToImmutableArray()) { }
     
     public MaterializedStatements(MaterializedStatement statement) : this(ImmutableList.Create(statement)) { }
 

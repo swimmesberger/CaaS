@@ -26,12 +26,11 @@ public class CrudReadRepository<TData, TDomain> : ICrudReadRepository<TDomain>
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
 
-    public async Task<List<TDomain>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<TDomain>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
         var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
-
-
+    
     public async Task<long> CountAsync(CancellationToken cancellationToken = default)
         => await Dao.CountAsync(cancellationToken);
 

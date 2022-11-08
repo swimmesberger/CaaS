@@ -7,5 +7,5 @@ public interface IDomainReadModelConverter<in TData, TDomain> {
 
     ValueTask<TDomain> ConvertToDomain(TData dataModel, CancellationToken cancellationToken);
 
-    Task<List<TDomain>> ConvertToDomain(IAsyncEnumerable<TData> dataModels, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<TDomain>> ConvertToDomain(IAsyncEnumerable<TData> dataModels, CancellationToken cancellationToken = default);
 }

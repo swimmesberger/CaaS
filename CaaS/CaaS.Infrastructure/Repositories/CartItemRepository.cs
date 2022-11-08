@@ -2,6 +2,7 @@
 using CaaS.Core.Entities;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
+using CaaS.Core.Repositories.Base;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
@@ -9,7 +10,7 @@ using CaaS.Infrastructure.Repositories.Base;
 
 namespace CaaS.Infrastructure.Repositories;
 
-internal class CartItemRepository {
+internal class CartItemRepository : ICrudBulkWriteRepository<CartItem> {
     private IDao<ProductCartDataModel> Dao { get; }
     private CartItemDomainModelConvert Converter { get; }
 
@@ -24,24 +25,23 @@ internal class CartItemRepository {
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
     
-    public async Task<List<CartItem>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<CartItem>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
         var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
     
     public async Task<IReadOnlyList<CartItem>> FindByCartId(Guid cartId, CancellationToken cancellationToken = default) {
-        return (await Converter
-                .ConvertToDomain(Dao
-                    .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartId), cancellationToken), cancellationToken))
-                .ToImmutableList();
+        return await Converter
+            .ConvertToDomain(Dao
+                .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartId), cancellationToken), cancellationToken);
     }
 
-    public async Task<Dictionary<Guid, IReadOnlyList<CartItem>>> FindByCartIds(IEnumerable<Guid> cartIds, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<CartItem>>> FindByCartIds(IEnumerable<Guid> cartIds, CancellationToken cancellationToken = default) {
         return (await Converter
                         .ConvertToDomain(Dao
                         .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartIds), cancellationToken), cancellationToken))
                 .GroupBy(i => i.CartId)
-                .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<CartItem>)grp.ToImmutableList());
+                .ToImmutableDictionary(grp => grp.Key, grp => (IReadOnlyList<CartItem>)grp.ToImmutableArray());
     }
 
     public async Task AddAsync(IEnumerable<CartItem> entities, CancellationToken cancellationToken = default) {
@@ -59,6 +59,13 @@ internal class CartItemRepository {
         await Dao.DeleteAsync(dataModels, cancellationToken);
     }
 
+    public async Task UpdateProductsAsync(IEnumerable<CartItem> oldDomainModels, IEnumerable<CartItem> newDomainModels,
+        CancellationToken cancellationToken = default) {
+        var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
+        var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
+        await Dao.ApplyAsync(oldDataModels, newDataModels.ToImmutableArray(), cancellationToken);
+    }
+
     private class CartItemDomainModelConvert : IDomainReadModelConverter<ProductCartDataModel, CartItem> {
         // CreationTime = time added to cart
         public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = OrderParameter.From(nameof(ProductCartDataModel.CreationTime));
@@ -69,20 +76,20 @@ internal class CartItemRepository {
         }
 
         public async ValueTask<CartItem> ConvertToDomain(ProductCartDataModel dataModel, CancellationToken cancellationToken) {
-            return (await ConvertToDomain(new List<ProductCartDataModel>() { dataModel }, cancellationToken)).First();
+            return (await ConvertToDomain(ImmutableList.Create(dataModel), cancellationToken)).First();
         }
         
-        public async Task<List<CartItem>> ConvertToDomain(IAsyncEnumerable<ProductCartDataModel> dataModels, CancellationToken cancellationToken = default) {
-            var items = await dataModels.ToListAsync(cancellationToken);
+        public async Task<IReadOnlyList<CartItem>> ConvertToDomain(IAsyncEnumerable<ProductCartDataModel> dataModels, CancellationToken cancellationToken = default) {
+            var items = await dataModels.ToImmutableArrayAsync(cancellationToken);
             return await ConvertToDomain(items, cancellationToken);
         }
 
-        public async Task<List<CartItem>> ConvertToDomain(IReadOnlyCollection<ProductCartDataModel> dataModels, CancellationToken cancellationToken = default) {
-            var productIds = dataModels.Select(p => p.ProductId).ToHashSet();
+        public async Task<IReadOnlyList<CartItem>> ConvertToDomain(IReadOnlyCollection<ProductCartDataModel> dataModels, CancellationToken cancellationToken = default) {
+            var productIds = dataModels.Select(p => p.ProductId).ToImmutableHashSet();
             var productDict = (await _productRepository
                             .FindByIdsAsync(productIds, cancellationToken))
-                    .ToDictionary(s => s.Id, s => s);
-            var domainModels = new List<CartItem>();
+                    .ToImmutableDictionary(s => s.Id, s => s);
+            var domainModels = ImmutableList.CreateBuilder<CartItem>();
             foreach (var dataModel in dataModels) {
                 if (!productDict.TryGetValue(dataModel.ProductId, out var product)) {
                     throw new CaasDomainMappingException($"Failed to find product {dataModel.ProductId} for cart-item {dataModel.Id}");
@@ -96,11 +103,11 @@ internal class CartItemRepository {
                     ConcurrencyToken = dataModel.GetConcurrencyToken()
                 });
             }
-            return domainModels;
+            return domainModels.ToImmutable();
         }
 
-        public List<ProductCartDataModel> ConvertFromDomain(IEnumerable<CartItem> domainModels)
-            => domainModels.Select(ConvertFromDomain).ToList();
+        public IReadOnlyList<ProductCartDataModel> ConvertFromDomain(IEnumerable<CartItem> domainModels)
+            => domainModels.Select(ConvertFromDomain).ToImmutableArray();
         
         public ProductCartDataModel ConvertFromDomain(CartItem domainModel) {
             return new ProductCartDataModel() {

@@ -1,9 +1,9 @@
-﻿namespace CaaS.Infrastructure.DataModel.Base; 
+﻿using CaaS.Core;
+using CaaS.Core.Entities.Base;
 
-public interface IDataModelBase {
-    // guid to ensure we have a artificial primary key for each entity
-    Guid Id { get; }
-    
+namespace CaaS.Infrastructure.DataModel.Base; 
+
+public interface IDataModelBase : IHasId {
     // optimistic locking
     int RowVersion { get; } 
     

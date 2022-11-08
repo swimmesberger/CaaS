@@ -23,7 +23,7 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
                 ConcurrencyToken = dataModel.GetConcurrencyToken()
         });
     }
-    public async Task<List<Customer>> ConvertToDomain(IAsyncEnumerable<CustomerDataModel> dataModels, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Customer>> ConvertToDomain(IAsyncEnumerable<CustomerDataModel> dataModels, CancellationToken cancellationToken = default) {
         return await dataModels.SelectAwait(m => ConvertToDomain(m, cancellationToken)).ToListAsync(cancellationToken);
     }
     

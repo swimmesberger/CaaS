@@ -42,13 +42,13 @@ internal class ProductDomainModelConvert : IDomainModelConverter<ProductDataMode
         return (await ConvertToDomain(new List<ProductDataModel>() { dataModel }, cancellationToken)).First();
     }
 
-    public async Task<List<Product>> ConvertToDomain(IAsyncEnumerable<ProductDataModel> dataModels, 
+    public async Task<IReadOnlyList<Product>> ConvertToDomain(IAsyncEnumerable<ProductDataModel> dataModels, 
             CancellationToken cancellationToken = default) {
         var products = await dataModels.ToListAsync(cancellationToken);
         return await ConvertToDomain(products, cancellationToken);
     }
 
-    public async Task<List<Product>> ConvertToDomain(IReadOnlyCollection<ProductDataModel> products, 
+    public async Task<IReadOnlyList<Product>> ConvertToDomain(IReadOnlyCollection<ProductDataModel> products, 
             CancellationToken cancellationToken = default) {
         var shopIds = products.Select(p => p.ShopId).ToHashSet();
         var shopDict = (await _shopRepository.FindByIdsAsync(shopIds, cancellationToken))

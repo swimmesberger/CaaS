@@ -2,8 +2,4 @@
 
 namespace CaaS.Core.Repositories.Base;
 
-public interface ICrudRepository<T> : ICrudReadRepository<T> where T : IEntityBase {
-    Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);
-    Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default);
-    Task DeleteAsync(T entity, CancellationToken cancellationToken = default);
-}
+public interface ICrudRepository<T> : ICrudReadRepository<T>, ICurdWriteRepository<T> where T : IEntityBase { }

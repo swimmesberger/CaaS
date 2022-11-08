@@ -10,7 +10,7 @@ public interface ICrudReadRepository<T> : IRepository where T : IEntityBase {
     
     Task<T?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
     
-    Task<List<T>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<T>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
     
     Task<long> CountAsync(CancellationToken cancellationToken = default);
 }

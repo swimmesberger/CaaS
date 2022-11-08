@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.Entities;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
+using CaaS.Core.Repositories.Base;
 using CaaS.Core.Request;
 
 namespace CaaS.Core.Services; 
@@ -67,7 +68,7 @@ public class DefaultCartService : ICartService {
             throw new CaasModelNotFoundException();
         }
         var changedProducts = cart.Items.RemoveAll(p => p.Product.Id == productId);
-        if (cart.Items.Count == changedProducts.Count) {
+        if (cart.Items.Length == changedProducts.Length) {
             return cart;
         }
         cart = cart with {
