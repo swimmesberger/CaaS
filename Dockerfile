@@ -5,7 +5,7 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["CaaS", "."]
+COPY [".", "."]
 RUN dotnet restore "CaaS.Api/CaaS.Api.csproj"
 COPY . .
 WORKDIR "/src/CaaS.Api"

@@ -22,13 +22,13 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      working-directory: ./CaaS
+      working-directory: .
       run: dotnet restore
     - name: Build
-      working-directory: ./CaaS
+      working-directory: .
       run: dotnet build --no-restore
     - name: Test
-      working-directory: ./CaaS
+      working-directory: .
       run: dotnet test --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
     - name: Test Report
       uses: dorny/test-reporter@v1
