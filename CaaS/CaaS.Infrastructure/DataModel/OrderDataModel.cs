@@ -8,5 +8,5 @@ public record OrderDataModel : Base.DataModel {
     public Guid ShopId { get; init; }
     public int OrderNumber { get; init; }
     public Guid CustomerId { get; init; }
-    public DateTimeOffset OrderDate { get; init; }
+    public DateTimeOffset OrderDate { get; init; } = DateTimeOffset.Now;
 }

@@ -2,4 +2,4 @@
 
 namespace CaaS.Core.Repositories.Base;
 
-public interface ICrudRepository<T> : ICrudReadRepository<T>, ICurdWriteRepository<T> where T : IEntityBase { }
+public interface ICrudRepository<T> : ICrudReadRepository<T>, ICrudWriteRepository<T> where T : IEntityBase { }

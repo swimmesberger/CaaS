@@ -20,6 +20,8 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
                 Id = dataModel.Id,
                 Name = dataModel.Name,
                 ShopId = dataModel.ShopId,
+                EMail = dataModel.EMail,
+                CreditCardNumber = dataModel.CreditCardNumber,
                 ConcurrencyToken = dataModel.GetConcurrencyToken()
         });
     }
@@ -29,7 +31,11 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
     
     public CustomerDataModel ApplyDomainModel(CustomerDataModel dataModel, Customer domainModel) {
         return dataModel with {
-            Name = domainModel.Name
+            Id = domainModel.Id,
+            Name = domainModel.Name,
+            ShopId = domainModel.ShopId,
+            EMail = domainModel.EMail,
+            CreditCardNumber = domainModel.CreditCardNumber
         };
     }
     
@@ -38,6 +44,8 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
             Id = domainModel.Id,
             Name = domainModel.Name,
             ShopId = domainModel.ShopId,
+            EMail = domainModel.EMail,
+            CreditCardNumber = domainModel.CreditCardNumber,
             RowVersion = domainModel.GetRowVersion()
         };
     }

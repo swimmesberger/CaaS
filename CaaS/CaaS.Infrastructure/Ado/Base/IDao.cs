@@ -1,4 +1,6 @@
-﻿using CaaS.Infrastructure.Ado.Model;
+﻿using System.Collections.Immutable;
+using CaaS.Core.Entities;
+using CaaS.Infrastructure.Ado.Model;
 
 namespace CaaS.Infrastructure.Ado.Base; 
 

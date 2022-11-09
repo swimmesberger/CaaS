@@ -4,11 +4,10 @@ namespace CaaS.Core.Entities;
 
 public record Coupon : IEntityBase {
     public Guid Id { get; init; } = Guid.NewGuid();
-    public string DiscountName { get; init; } = string.Empty;
-    public Shop Shop { get; init; } = null!;
+    public Guid ShopId { get; init; } = default;
     public decimal Value { get; init; }
-    public Order Order { get; init; } = null!;
-    public Cart Cart { get; init; } = null!;
-    public Customer RedeemedBy { get; init; } = null!;
+    public Guid? OrderId { get; init; } = default!;
+    public Guid? CartId { get; init; } = default!;
+    public Guid? CustomerId { get; init; } = default!;
     public string ConcurrencyToken { get; init; } = string.Empty;
 }

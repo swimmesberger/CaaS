@@ -135,7 +135,7 @@ CREATE TABLE "order" (
      "creation_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
      "last_modification_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
      "shop_id" uuid NOT NULL,
-     "order_number" int NOT NULL,
+     "order_number" SERIAL,
      "customer_id" uuid,
      "order_date" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
      CONSTRAINT "FK_order.shop_id"

@@ -6,11 +6,11 @@ using CaaS.Core.Request;
 
 namespace CaaS.Core.Services; 
 
-public class DefaultCartService : ICartService {
+public class CartService : ICartService {
     private readonly ICartRepository _cartRepository;
     private readonly ITenantIdAccessor _tenantIdAccessor;
 
-    public DefaultCartService(ICartRepository cartRepository, ITenantIdAccessor tenantIdAccessor) {
+    public CartService(ICartRepository cartRepository, ITenantIdAccessor tenantIdAccessor) {
         _cartRepository = cartRepository;
         _tenantIdAccessor = tenantIdAccessor;
     }

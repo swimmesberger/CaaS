@@ -97,6 +97,6 @@ public class CartServiceTest {
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
         var cartRepository = new CartRepository(cartDao, cartItemDao, shopRepository, productRepository, customerRepository);
-        return new DefaultCartService(cartRepository, tenantIdAccessor);
+        return new CartService(cartRepository, tenantIdAccessor);
     }
 }
