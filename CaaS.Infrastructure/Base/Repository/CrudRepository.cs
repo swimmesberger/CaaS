@@ -1,7 +1,7 @@
 ﻿using CaaS.Core.Base;
-using CaaS.Core.Exceptions;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.DataModel;
+using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Infrastructure.Base.Repository; 
 

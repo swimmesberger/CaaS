@@ -1,4 +1,4 @@
-﻿using CaaS.Core.Exceptions;
+﻿using CaaS.Core.Base.Exceptions;
 
 namespace CaaS.Core.Base.Tenant; 
 

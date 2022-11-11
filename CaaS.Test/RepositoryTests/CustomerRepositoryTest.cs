@@ -1,4 +1,4 @@
-﻿using CaaS.Infrastructure.Customer;
+﻿using CaaS.Infrastructure.CustomerData;
 using CaaS.Test.Common;
 
 namespace CaaS.Test.RepositoryTests; 

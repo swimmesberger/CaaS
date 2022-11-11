@@ -1,11 +1,8 @@
-﻿using CaaS.Core.Cart;
-using CaaS.Infrastructure.Cart;
-using CaaS.Infrastructure.Cart.DataModel;
-using CaaS.Infrastructure.Customer;
-using CaaS.Infrastructure.Product;
-using CaaS.Infrastructure.Product.DataModel;
-using CaaS.Infrastructure.Shop;
-using CaaS.Infrastructure.Shop.DataModel;
+﻿using CaaS.Core.CartAggregate;
+using CaaS.Infrastructure.CartData;
+using CaaS.Infrastructure.CustomerData;
+using CaaS.Infrastructure.ProductData;
+using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
 
 namespace CaaS.Test; 

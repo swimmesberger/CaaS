@@ -1,12 +1,9 @@
-﻿using CaaS.Core.Order;
-using CaaS.Infrastructure.Coupon;
-using CaaS.Infrastructure.Customer;
-using CaaS.Infrastructure.Order;
-using CaaS.Infrastructure.Order.DataModel;
-using CaaS.Infrastructure.Product;
-using CaaS.Infrastructure.Product.DataModel;
-using CaaS.Infrastructure.Shop;
-using CaaS.Infrastructure.Shop.DataModel;
+﻿using CaaS.Core.OrderAggregate;
+using CaaS.Infrastructure.CouponData;
+using CaaS.Infrastructure.CustomerData;
+using CaaS.Infrastructure.OrderData;
+using CaaS.Infrastructure.ProductData;
+using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
 
 namespace CaaS.Test; 

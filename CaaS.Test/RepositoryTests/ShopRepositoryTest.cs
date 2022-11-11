@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
-using CaaS.Infrastructure.Shop;
-using CaaS.Infrastructure.Shop.DataModel;
+using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
 
 namespace CaaS.Test.RepositoryTests;

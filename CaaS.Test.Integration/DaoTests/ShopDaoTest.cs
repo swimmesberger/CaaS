@@ -1,8 +1,8 @@
-﻿using CaaS.Core.Shop.Entities;
+﻿using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Gen;
-using CaaS.Infrastructure.Shop.DataModel;
+using CaaS.Infrastructure.ShopData;
 using Xunit.Abstractions;
 
 namespace CaaS.Test.Integration.DaoTests; 

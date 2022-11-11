@@ -1,8 +1,8 @@
-﻿using CaaS.Core.Coupon.Entities;
-using CaaS.Core.Exceptions;
+﻿using CaaS.Core.Base.Exceptions;
+using CaaS.Core.CouponAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Coupon;
+using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.Gen;
 using Xunit.Abstractions;
 

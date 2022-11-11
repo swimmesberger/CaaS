@@ -1,8 +1,8 @@
 ﻿using System.Collections.Immutable;
-using CaaS.Core.Exceptions;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Discount.DataModel;
+using CaaS.Infrastructure.DiscountData;
 using CaaS.Infrastructure.Gen;
 using Xunit.Abstractions;
 

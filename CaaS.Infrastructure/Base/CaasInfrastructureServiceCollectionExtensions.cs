@@ -1,19 +1,19 @@
 ﻿using System.Data.Common;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Tenant;
-using CaaS.Core.Cart;
-using CaaS.Core.Customer;
-using CaaS.Core.Product;
-using CaaS.Core.Shop;
+using CaaS.Core.CartAggregate;
+using CaaS.Core.CustomerAggregate;
+using CaaS.Core.ProductAggregate;
+using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Impl;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Di;
-using CaaS.Infrastructure.Cart;
-using CaaS.Infrastructure.Customer;
+using CaaS.Infrastructure.CartData;
+using CaaS.Infrastructure.CustomerData;
 using CaaS.Infrastructure.Gen;
-using CaaS.Infrastructure.Product;
-using CaaS.Infrastructure.Shop;
+using CaaS.Infrastructure.ProductData;
+using CaaS.Infrastructure.ShopData;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 

@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-using CaaS.Core.Exceptions;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado.Model;
 
 namespace CaaS.Infrastructure.Base.Ado.Impl; 

@@ -1,15 +1,15 @@
 ﻿using System.Data.Common;
 using System.Runtime.CompilerServices;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
-using CaaS.Core.Exceptions;
 using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.DataMapping;
-using CaaS.Infrastructure.Base.DataModel;
 using CaaS.Infrastructure.Base.Di;
+using CaaS.Infrastructure.Base.Mapping;
+using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Infrastructure.Base.Ado.Impl;
 
-public sealed class GenericDao<T> : IDao<T> where T : DataModel.DataModel, new() {
+public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
     private readonly IStatementExecutor _statementExecutor;
     private readonly IStatementGenerator<T> _statementGenerator;
     private readonly ITenantService? _tenantService;

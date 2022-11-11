@@ -1,8 +1,8 @@
-﻿using CaaS.Core.Product.Entities;
+﻿using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Gen;
-using CaaS.Infrastructure.Product.DataModel;
+using CaaS.Infrastructure.ProductData;
 using Xunit.Abstractions;
 
 namespace CaaS.Test.Integration.DaoTests; 
