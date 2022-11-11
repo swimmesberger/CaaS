@@ -1,5 +1,6 @@
 using CaaS.Api;
-using CaaS.Api.Swagger;
+using CaaS.Api.Base;
+using CaaS.Api.Base.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 

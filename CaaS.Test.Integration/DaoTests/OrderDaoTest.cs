@@ -1,9 +1,9 @@
-﻿using CaaS.Core.Entities;
-using CaaS.Core.Exceptions;
-using CaaS.Infrastructure.Ado.Base;
-using CaaS.Infrastructure.Ado.Model;
-using CaaS.Infrastructure.DataModel;
+﻿using CaaS.Core.Exceptions;
+using CaaS.Core.Order.Entities;
+using CaaS.Infrastructure.Base.Ado;
+using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Gen;
+using CaaS.Infrastructure.Order.DataModel;
 using Xunit.Abstractions;
 
 namespace CaaS.Test.Integration.DaoTests; 

@@ -1,4 +1,4 @@
-﻿using CaaS.Core.Request;
+﻿using CaaS.Core.Base.Tenant;
 
 namespace CaaS.Test.Common; 
 

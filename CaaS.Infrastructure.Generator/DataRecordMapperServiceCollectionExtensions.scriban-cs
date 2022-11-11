@@ -1,4 +1,4 @@
-﻿using CaaS.Infrastructure.DataMapping.Base;
+﻿using CaaS.Infrastructure.Base.DataMapping;
 {{ for namespace in UsingNamespaces ~}}
 using {{ namespace }};
 {{ end ~}}

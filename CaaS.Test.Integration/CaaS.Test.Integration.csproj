@@ -47,8 +47,8 @@
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
         <Message Text="Executing Copy Configuration task" Importance="High" />
-        <Copy SourceFiles="$(ProjectDir)..\CaaS.Infrastructure\Sql\V1__Database.sql" DestinationFolder="$(ProjectDir)Sql" />
-        <Copy SourceFiles="$(ProjectDir)..\CaaS.Infrastructure\Sql\V2__Initial_version.sql" DestinationFolder="$(ProjectDir)Sql" />
+        <Copy SourceFiles="$(ProjectDir)..\CaaS.Infrastructure\Base\Sql\V1__Database.sql" DestinationFolder="$(ProjectDir)Sql" />
+        <Copy SourceFiles="$(ProjectDir)..\CaaS.Infrastructure\Base\Sql\V2__Initial_version.sql" DestinationFolder="$(ProjectDir)Sql" />
     </Target>
 
 </Project>

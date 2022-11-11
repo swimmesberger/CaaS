@@ -1,6 +1,11 @@
-﻿using CaaS.Core.Services;
-using CaaS.Infrastructure.DataModel;
-using CaaS.Infrastructure.Repositories;
+﻿using CaaS.Core.Cart;
+using CaaS.Infrastructure.Cart;
+using CaaS.Infrastructure.Cart.DataModel;
+using CaaS.Infrastructure.Customer;
+using CaaS.Infrastructure.Product;
+using CaaS.Infrastructure.Product.DataModel;
+using CaaS.Infrastructure.Shop;
+using CaaS.Infrastructure.Shop.DataModel;
 using CaaS.Test.Common;
 
 namespace CaaS.Test; 

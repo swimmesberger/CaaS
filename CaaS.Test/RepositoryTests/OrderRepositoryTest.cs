@@ -1,8 +1,19 @@
 ﻿using System.Collections.Immutable;
-using CaaS.Core.Entities;
-using CaaS.Core.Repositories;
-using CaaS.Infrastructure.DataModel;
-using CaaS.Infrastructure.Repositories;
+using CaaS.Core.Coupon;
+using CaaS.Core.Coupon.Entities;
+using CaaS.Core.Customer;
+using CaaS.Core.Order;
+using CaaS.Core.Order.Entities;
+using CaaS.Core.Product;
+using CaaS.Core.Shop;
+using CaaS.Infrastructure.Coupon;
+using CaaS.Infrastructure.Customer;
+using CaaS.Infrastructure.Order;
+using CaaS.Infrastructure.Order.DataModel;
+using CaaS.Infrastructure.Product;
+using CaaS.Infrastructure.Product.DataModel;
+using CaaS.Infrastructure.Shop;
+using CaaS.Infrastructure.Shop.DataModel;
 using CaaS.Test.Common;
 
 namespace CaaS.Test.RepositoryTests; 
@@ -181,7 +192,7 @@ public class OrderRepositoryTest  {
             Value = 10,
             OrderId = orderId,
             CartId = null,
-            CustomerId = customer!.Id
+            CustomerId = customer.Id
         };
 
         var orderDiscounts =  ImmutableArray.Create(orderDiscount);
@@ -295,7 +306,7 @@ public class OrderRepositoryTest  {
         await orderRepository.UpdateAsync(order, updatedOrder);
         order = await orderRepository.FindByIdAsync(ExistingOrderId);
         order!.Items.Count.Should().Be(3);
-        order!.Items[2].Id.Should().Be(newOrderItem.Id);
+        order.Items[2].Id.Should().Be(newOrderItem.Id);
     }
 
     [Fact]
