@@ -239,7 +239,7 @@ CREATE TABLE "coupon" (
           REFERENCES "cart"("id") ON DELETE SET NULL,
     CONSTRAINT "FK_coupon.order_id"
       FOREIGN KEY ("order_id")
-          REFERENCES "order"("id") ON DELETE NO ACTION
+          REFERENCES "order"("id") ON DELETE SET NULL
 );
 
 CREATE TABLE "product_order_discount" (

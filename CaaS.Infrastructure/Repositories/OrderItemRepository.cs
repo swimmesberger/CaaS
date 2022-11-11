@@ -3,6 +3,7 @@ using CaaS.Core.Discount;
 using CaaS.Core.Entities;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
+using CaaS.Core.Repositories.Base;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
@@ -53,15 +54,22 @@ internal class OrderItemRepository {
         await Dao.AddAsync(dataModel, cancellationToken);
     }
     
-    public async Task AddAsync(IReadOnlyCollection<OrderItem> entities, CancellationToken cancellationToken = default) {
-        await Converter.OrderItemDiscountRepository.AddAsync(entities.SelectMany(e => e.OrderItemDiscounts), cancellationToken);
-        var dataModels = Converter.ConvertFromDomain(entities);
+    public async Task AddAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {
+        var domainModels = entities.ToList();
+        var orderItemDiscounts = domainModels.SelectMany(e => e.OrderItemDiscounts);
+        await Converter.OrderItemDiscountRepository.AddAsync(orderItemDiscounts, cancellationToken);
+        
+        var dataModels = Converter.ConvertFromDomain(domainModels);
         await Dao.AddAsync(dataModels, cancellationToken);
     }
     
-    public async Task<OrderItem> UpdateAsync(OrderItem oldEntity, OrderItem newEntity, CancellationToken cancellationToken = default) {
-        await Converter.OrderItemDiscountRepository.UpdateDiscountsAsync(oldEntity.OrderItemDiscounts, newEntity.OrderItemDiscounts, cancellationToken);
-        return await UpdateImplAsync(newEntity, cancellationToken);
+    public async Task UpdateAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {
+        var domainModels = entities.ToList();
+        var orderItemDiscounts = domainModels.SelectMany(e => e.OrderItemDiscounts);
+        await Converter.OrderItemDiscountRepository.UpdateAsync(orderItemDiscounts, cancellationToken);
+        
+        var dataModels = Converter.ConvertFromDomain(domainModels);
+        await Dao.UpdateAsync(dataModels, cancellationToken);
     }
     
     private async Task<OrderItem> UpdateImplAsync(OrderItem entity, CancellationToken cancellationToken = default) {
@@ -82,7 +90,7 @@ internal class OrderItemRepository {
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
         await Dao.ApplyAsync(oldDataModels, newDataModels.ToImmutableArray(), cancellationToken);
     }
-    
+
     public async Task DeleteAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.DeleteAsync(dataModels, cancellationToken);

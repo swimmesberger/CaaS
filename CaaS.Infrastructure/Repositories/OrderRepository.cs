@@ -27,7 +27,7 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
                                                         customerRepository,
                                                         couponRepository)) { }
     
-    public async Task<IReadOnlyList<Order>> FindOrdersByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Order>> FindByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
         return await Converter
             .ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(OrderDataModel.CustomerId), customerId), cancellationToken), cancellationToken);
@@ -35,6 +35,9 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
     
     public async Task<Order> AddAsync(Order entity, CancellationToken cancellationToken = default) {
         await Converter.OrderItemRepository.AddAsync(entity.Items, cancellationToken);
+        await Converter.OrderDiscountRepository.AddAsync(entity.OrderDiscounts, cancellationToken);
+        await Converter.CouponRepository.AddAsync(entity.Coupons);
+            
         var dataModel =  new OrderDataModel() {
             Id = entity.Id,
             ShopId = entity.ShopId,
@@ -48,21 +51,51 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
         return entity;
     }
     
-    public async Task<Order> UpdateAsync(Order oldEntity, Order newEntity, CancellationToken cancellationToken = default) {
-        await Converter.OrderItemRepository.UpdateOrderItemsAsync(oldEntity.Items, newEntity.Items, cancellationToken);
-        return await UpdateImplAsync(newEntity, cancellationToken);
+    public async Task AddAsync(IEnumerable<Order> entities, CancellationToken cancellationToken = default) {
+        var domainModels = entities.ToList();
+        var orderItems = domainModels.SelectMany(o => o.Items);
+        await Converter.OrderItemRepository.AddAsync(orderItems, cancellationToken);
+
+        var orderDiscounts = domainModels.SelectMany(o => o.OrderDiscounts);
+        await Converter.OrderDiscountRepository.AddAsync(orderDiscounts);
+
+        var coupons = domainModels.SelectMany(o => o.Coupons);
+        await Converter.CouponRepository.AddAsync(coupons);
+
+        var dataModels = Converter.ConvertFromDomain(domainModels);
+        await Dao.AddAsync(dataModels, cancellationToken);
     }
     
+    public async Task<Order> UpdateAsync(Order oldEntity, Order newEntity, CancellationToken cancellationToken = default) {
+        await Converter.OrderItemRepository.UpdateOrderItemsAsync(oldEntity.Items, newEntity.Items, cancellationToken);
+        await Converter.CouponRepository.UpdateCouponsAsync(oldEntity.Coupons, newEntity.Coupons, cancellationToken);
+        //Todo: order discounts updaten
+        return await UpdateImplAsync(newEntity, cancellationToken);
+    }
+
+    public async Task UpdateAsync(IEnumerable<Order> entities, CancellationToken cancellationToken = default) {
+        //Todo: orderItems updaten
+        //Todo: coupons updaten
+        //Todo: order discounts updaten
+        var dataModels = Converter.ConvertFromDomain(entities);
+        await Dao.UpdateAsync(dataModels, cancellationToken);
+    }
     private async Task<Order> UpdateImplAsync(Order entity, CancellationToken cancellationToken = default) {
         var dataModel = Converter.ConvertFromDomain(entity);
         dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
         entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
         return entity;
     }
+
     
     public async Task DeleteAsync(Order entity, CancellationToken cancellationToken = default) {
         var dataModel = Converter.ConvertFromDomain(entity);
         await Dao.DeleteAsync(dataModel, cancellationToken);
+    }
+    
+    public async Task DeleteAsync(IEnumerable<Order> entities, CancellationToken cancellationToken = default) {
+        var dataModels = Converter.ConvertFromDomain(entities);
+        await Dao.DeleteAsync(dataModels, cancellationToken);
     }
 }
 
@@ -87,12 +120,16 @@ internal class OrderDomainModelConvert : IDomainReadModelConverter<OrderDataMode
         OrderDiscountRepository = new OrderDiscountRepository(orderDiscountDao);
     }
 
+    public IReadOnlyList<OrderDataModel> ConvertFromDomain(IEnumerable<Order> domainModels)
+        => domainModels.Select(ConvertFromDomain).ToList();
+    
     public OrderDataModel ConvertFromDomain(Order domainModel) {
         return new OrderDataModel {
-            Id = domainModel.Customer.Id,
+            Id = domainModel.Id,
             OrderNumber = domainModel.OrderNumber,
             OrderDate = domainModel.OrderDate,
             CustomerId = domainModel.Customer.Id,
+            ShopId = domainModel.ShopId,
             RowVersion = domainModel.GetRowVersion()
         };
     }
@@ -120,8 +157,8 @@ internal class OrderDomainModelConvert : IDomainReadModelConverter<OrderDataMode
                 orderDiscountsList.ToImmutableList() : ImmutableList<OrderDiscount>.Empty;
             var orderItems = orderItemsDict.TryGetValue(dataModel.Id, out var orderItemsList) ? 
                 orderItemsList.ToImmutableList() : ImmutableList<OrderItem>.Empty;
-            var coupons = couponsDict.TryGetValue(dataModel.Id, out var couponsLIst) ? 
-                couponsLIst.ToImmutableList() : ImmutableList<Coupon>.Empty;
+            var coupons = couponsDict.TryGetValue(dataModel.Id, out var couponsList) ? 
+                couponsList.ToImmutableList() : ImmutableList<Coupon>.Empty;
             var customer = customerDict.GetValueOrDefault(dataModel.CustomerId);
             domainModels.Add(new Order() {
                 Id = dataModel.Id,

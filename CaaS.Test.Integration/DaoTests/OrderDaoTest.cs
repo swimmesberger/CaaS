@@ -119,6 +119,111 @@ public class OrderDaoTest : BaseDaoTest {
         order = await orderDao.FindByIdAsync(orderId);
         order.Should().BeNull();
     }
+
+    [Fact]
+    public async Task DeleteExistingEntityCheckOrderItemFk() {
+        var orderDao = GetOrderDao(ShopTenantId);
+        var orderId = Guid.Parse("41b1fa55-fd34-4611-bda0-f3821f6db52b");
+        var order = await orderDao.FindByIdAsync(orderId);
+        order.Should().NotBeNull();
+        order!.OrderNumber.Should().Be(2628);
+
+        var orderItemDao = GetOrderItemDao(ShopTenantId);
+        var orderItem1Id = Guid.Parse("363bffa6-e73d-4aa1-be30-aa636fa823c0");
+        var orderItem2Id = Guid.Parse("1f3c4771-7ec1-4017-a531-10dea11c0745");
+        var orderItemIds = new List<Guid> { orderItem1Id, orderItem2Id };
+        var orderItems = await orderItemDao.FindByIdsAsync(orderItemIds).ToListAsync();
+        orderItems[0].Id.Should().Be(orderItem1Id);
+        orderItems[1].Id.Should().Be(orderItem2Id);
+
+        await orderDao.DeleteAsync(order);
+        orderItems = await orderItemDao.FindByIdsAsync(orderItemIds).ToListAsync();
+        orderItems.Should().BeEmpty();
+    }
     
+    [Fact]
+    public async Task AddBulkAddsNewEntitiesToDb() {
+        var id1 = Guid.Parse("7A819343-23A1-4AD9-8798-64D1047CF01F");
+        var id2 = Guid.Parse("9234a988-0abd-4b44-808a-9e7a8852e19c");
+        
+        var orderDao = GetOrderDao(ShopTenantId);
+        var order1 = new OrderDataModel() {
+            Id = id1,
+            ShopId = Guid.Parse(ShopTenantId),
+            OrderNumber = 49538,
+            CustomerId = id2,
+            OrderDate = DateTimeOffset.UtcNow
+        };
+        var order2 = new OrderDataModel() {
+            Id = id2,
+            ShopId = Guid.Parse(ShopTenantId),
+            OrderNumber = 102,
+            CustomerId = id2,
+            OrderDate = DateTimeOffset.UtcNow
+        };
+        var entities = new List<OrderDataModel> { order1, order2 };
+        await orderDao.AddAsync(entities);
+
+        var orders =
+            await orderDao.FindByIdsAsync(new List<Guid> { id1, id2,}).ToListAsync();
+
+        orders.Should().NotBeNull();
+        orders[0].Id.Should().Be(id1);
+        orders[1].Id.Should().Be(id2);
+    }
+
+    [Fact]
+    public async Task BulkUpdateUpdatesExistingEntities() {
+        var id1 = Guid.Parse("41b1fa55-fd34-4611-bda0-f3821f6db52b");
+        var id2 = Guid.Parse("aca58853-bd61-4517-9907-ca51a50b7225");
+        var orderDao = GetOrderDao(ShopTenantId);
+
+        var order1 = await orderDao.FindByIdAsync(id1);
+        var order2 = await orderDao.FindByIdAsync(id2);
+
+        order1.Should().NotBeNull();
+        order1!.OrderNumber.Should().Be(2628);
+        order1 = order1 with {
+            OrderNumber = 99
+        };
+
+        order2.Should().NotBeNull();
+        order2!.OrderNumber.Should().Be(7785);
+        order2 = order2 with {
+            OrderNumber = 100
+        };
+        
+        await orderDao.UpdateAsync(new List<OrderDataModel> {order1, order2});
+        
+        order1 = await orderDao.FindByIdAsync(id1);
+        order2 = await orderDao.FindByIdAsync(id2);
+        
+        order1.Should().NotBeNull();
+        order1!.OrderNumber.Should().Be(99);
+        
+        order2.Should().NotBeNull();
+        order2!.OrderNumber.Should().Be(100);
+    }
+
+    [Fact]
+    public async Task BulkDeleteDeletesExistingEntities() {
+        var orderDao = GetOrderDao(ShopTenantId);
+        var id1 = Guid.Parse("41b1fa55-fd34-4611-bda0-f3821f6db52b");
+        var id2 = Guid.Parse("aca58853-bd61-4517-9907-ca51a50b7225");
+        var nonExistingId = Guid.Parse("aef11853-bd61-4517-9907-ca51a50b7225");
+        
+        var ids = new List<Guid> { id1, id2, nonExistingId };
+        var orders = await orderDao.FindByIdsAsync(ids).ToListAsync();
+        orders.Count.Should().Be(2);
+        orders[0].Id.Should().Be(id1);
+        orders[1].Id.Should().Be(id2);
+        
+        await orderDao.DeleteAsync(orders);
+        orders = await orderDao.FindByIdsAsync(ids).ToListAsync();
+        orders.Should().BeEmpty();
+    }
+
+
     private IDao<OrderDataModel> GetOrderDao(string tenantId) => GetDao(new OrderDataRecordMapper(), tenantId);
+    private IDao<ProductOrderDataModel> GetOrderItemDao(string tenantId) => GetDao(new ProductOrderDataRecordMapper(), tenantId);
 }

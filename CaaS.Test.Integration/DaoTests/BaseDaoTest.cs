@@ -57,7 +57,7 @@ public class BaseDaoTest : IAsyncLifetime {
         var result = await _postgresqlContainer.ExecScriptAsync(script);
         Assert.Equal(0, result.ExitCode);
     }
-
+    
     protected GenericDao<T> GetDao<T>(IDataRecordMapper<T> dataRecordMapper, string? tenantId = null) where T : DataModel, new() {
         var statementExecutor = new AdoStatementExecutor(GetAdoUnitOfWorkManager());
         var statementGenerator = new AdoStatementGenerator<T>(dataRecordMapper);
