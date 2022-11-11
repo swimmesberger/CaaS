@@ -17,14 +17,15 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
     
     public ValueTask<Customer> ConvertToDomain(CustomerDataModel dataModel, CancellationToken cancellationToken) {
         return new ValueTask<Customer>(new Customer() {
-                Id = dataModel.Id,
-                Name = dataModel.Name,
-                ShopId = dataModel.ShopId,
-                EMail = dataModel.EMail,
-                CreditCardNumber = dataModel.CreditCardNumber,
-                ConcurrencyToken = dataModel.GetConcurrencyToken()
+            Id = dataModel.Id,
+            Name = dataModel.Name,
+            ShopId = dataModel.ShopId,
+            EMail = dataModel.EMail,
+            CreditCardNumber = dataModel.CreditCardNumber,
+            ConcurrencyToken = dataModel.GetConcurrencyToken()
         });
     }
+    
     public async Task<IReadOnlyList<Customer>> ConvertToDomain(IAsyncEnumerable<CustomerDataModel> dataModels, CancellationToken cancellationToken = default) {
         return await dataModels.SelectAwait(m => ConvertToDomain(m, cancellationToken)).ToListAsync(cancellationToken);
     }

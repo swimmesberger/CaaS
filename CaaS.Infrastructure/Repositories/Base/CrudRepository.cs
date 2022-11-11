@@ -1,12 +1,11 @@
 ﻿using CaaS.Core.Entities.Base;
 using CaaS.Core.Exceptions;
-using CaaS.Core.Repositories.Base;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.DataModel.Base;
 
 namespace CaaS.Infrastructure.Repositories.Base; 
 
-public class CrudRepository<TData, TDomain> : CrudReadRepository<TData, TDomain>, ICrudRepository<TDomain> 
+public class CrudRepository<TData, TDomain> : CrudReadRepository<TData, TDomain> 
         where TDomain : class, IEntityBase 
         where TData : IDataModelBase {
     internal new IDomainModelConverter<TData, TDomain> Converter => (IDomainModelConverter<TData, TDomain>)base.Converter;

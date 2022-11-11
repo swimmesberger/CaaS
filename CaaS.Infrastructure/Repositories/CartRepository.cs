@@ -9,11 +9,11 @@ using CaaS.Infrastructure.Repositories.Base;
 namespace CaaS.Infrastructure.Repositories; 
 
 public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepository {
-    internal new CartDomainModelConvert Converter => (CartDomainModelConvert)base.Converter;
+    private new CartDomainModelConvert Converter => (CartDomainModelConvert)base.Converter;
     
-    public CartRepository(IDao<CartDataModel> dao, IDao<ProductCartDataModel> cartItemDao, IShopRepository shopRepository, 
+    public CartRepository(IDao<CartDataModel> dao, IDao<ProductCartDataModel> cartItemDao, 
             IProductRepository productRepository, ICustomerRepository customerRepository) : 
-            base(dao, new CartDomainModelConvert(cartItemDao, shopRepository, productRepository, customerRepository)) { }
+            base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository)) { }
 
     public async Task<Cart?> FindCartByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
         var dataModel = await Dao.FindBy(StatementParameters.CreateWhere(nameof(CartDataModel.CustomerId), customerId), cancellationToken)
@@ -59,17 +59,15 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
         return entity;
     }
 
-    internal class CartDomainModelConvert : IDomainReadModelConverter<CartDataModel, Cart> {
+    private class CartDomainModelConvert : IDomainReadModelConverter<CartDataModel, Cart> {
         public IEnumerable<OrderParameter>? DefaultOrderParameters => null;
 
         internal CartItemRepository CartItemRepository { get; }
-        internal IShopRepository ShopRepository { get; }
-        internal ICustomerRepository CustomerRepository { get; }
+        private ICustomerRepository CustomerRepository { get; }
 
-        public CartDomainModelConvert(IDao<ProductCartDataModel> cartItemDao, IShopRepository shopRepository,
-            IProductRepository productRepository, ICustomerRepository customerRepository) {
+        public CartDomainModelConvert(IDao<ProductCartDataModel> cartItemDao, IProductRepository productRepository, 
+            ICustomerRepository customerRepository) {
             CartItemRepository = new CartItemRepository(cartItemDao, productRepository);
-            ShopRepository = shopRepository;
             CustomerRepository = customerRepository;
         }
 
@@ -88,20 +86,20 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
         }
 
         public async Task<IReadOnlyList<Cart>> ConvertToDomain(IAsyncEnumerable<CartDataModel> dataModels, CancellationToken cancellationToken = default) {
-            var items = await dataModels.ToImmutableArrayAsync(cancellationToken);
+            var items = await dataModels.ToListAsync(cancellationToken);
             return await ConvertToDomain(items, cancellationToken);
         }
 
         private async Task<IReadOnlyList<Cart>> ConvertToDomain(IReadOnlyCollection<CartDataModel> dataModels,
             CancellationToken cancellationToken = default) {
-            var cartIds = dataModels.Select(p => p.Id).ToImmutableHashSet();
+            var cartIds = dataModels.Select(p => p.Id).ToHashSet();
             var customerIds = dataModels.Select(p => p.CustomerId)
                 .Where(id => id.HasValue)
-                .Select(id => id!.Value).ToImmutableHashSet();
+                .Select(id => id!.Value).ToHashSet();
             var cartItemsDict = await CartItemRepository.FindByCartIds(cartIds, cancellationToken);
             var customerDict = (await CustomerRepository
                     .FindByIdsAsync(customerIds, cancellationToken))
-                .ToImmutableDictionary(s => s.Id, s => s);
+                .ToDictionary(s => s.Id, s => s);
             var domainModels = ImmutableList.CreateBuilder<Cart>();
             foreach (var dataModel in dataModels) {
                 var cartItems = cartItemsDict.TryGetValue(dataModel.Id, out var cartItemsList)

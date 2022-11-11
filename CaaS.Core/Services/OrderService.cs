@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.Entities;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
+using CaaS.Core.Repositories.Base;
 using CaaS.Core.Request;
 
 namespace CaaS.Core.Services; 
@@ -27,7 +28,7 @@ public class OrderService : IOrderService {
     
     public async Task<Order> CreateOrder(Guid customerId ,CancellationToken cancellationToken = default) {
         var shortenedCustomerId = customerId.ToString()[..8];
-        var customer = await _customerRepository.FindByIdAsync(customerId);
+        var customer = await _customerRepository.FindByIdAsync(customerId, cancellationToken);
         if (customer == null) {
             throw new CaasModelNotFoundException();
         }

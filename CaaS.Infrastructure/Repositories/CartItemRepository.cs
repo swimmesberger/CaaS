@@ -10,7 +10,7 @@ using CaaS.Infrastructure.Repositories.Base;
 
 namespace CaaS.Infrastructure.Repositories;
 
-internal class CartItemRepository : ICrudBulkWriteRepository<CartItem> {
+internal class CartItemRepository : IRepository {
     private IDao<ProductCartDataModel> Dao { get; }
     private CartItemDomainModelConvert Converter { get; }
 
@@ -19,17 +19,6 @@ internal class CartItemRepository : ICrudBulkWriteRepository<CartItem> {
         Converter = new CartItemDomainModelConvert(productRepository);
     }
 
-    public async Task<CartItem?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
-        var dataModel = await Dao.FindByIdAsync(id, cancellationToken);
-        if (dataModel == null) return null;
-        return await Converter.ConvertToDomain(dataModel, cancellationToken);
-    }
-    
-    public async Task<IReadOnlyList<CartItem>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
-        var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
-        return await Converter.ConvertToDomain(dataModel, cancellationToken);
-    }
-    
     public async Task<IReadOnlyList<CartItem>> FindByCartId(Guid cartId, CancellationToken cancellationToken = default) {
         return await Converter
             .ConvertToDomain(Dao
@@ -41,7 +30,7 @@ internal class CartItemRepository : ICrudBulkWriteRepository<CartItem> {
                         .ConvertToDomain(Dao
                         .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartIds), cancellationToken), cancellationToken))
                 .GroupBy(i => i.CartId)
-                .ToImmutableDictionary(grp => grp.Key, grp => (IReadOnlyList<CartItem>)grp.ToImmutableArray());
+                .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<CartItem>)grp.ToImmutableArray());
     }
 
     public async Task AddAsync(IEnumerable<CartItem> entities, CancellationToken cancellationToken = default) {
@@ -63,7 +52,7 @@ internal class CartItemRepository : ICrudBulkWriteRepository<CartItem> {
         CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
-        await Dao.ApplyAsync(oldDataModels, newDataModels.ToImmutableArray(), cancellationToken);
+        await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
     }
 
     private class CartItemDomainModelConvert : IDomainReadModelConverter<ProductCartDataModel, CartItem> {
@@ -80,16 +69,16 @@ internal class CartItemRepository : ICrudBulkWriteRepository<CartItem> {
         }
         
         public async Task<IReadOnlyList<CartItem>> ConvertToDomain(IAsyncEnumerable<ProductCartDataModel> dataModels, CancellationToken cancellationToken = default) {
-            var items = await dataModels.ToImmutableArrayAsync(cancellationToken);
+            var items = await dataModels.ToListAsync(cancellationToken);
             return await ConvertToDomain(items, cancellationToken);
         }
 
         public async Task<IReadOnlyList<CartItem>> ConvertToDomain(IReadOnlyCollection<ProductCartDataModel> dataModels, CancellationToken cancellationToken = default) {
-            var productIds = dataModels.Select(p => p.ProductId).ToImmutableHashSet();
+            var productIds = dataModels.Select(p => p.ProductId).ToHashSet();
             var productDict = (await _productRepository
                             .FindByIdsAsync(productIds, cancellationToken))
-                    .ToImmutableDictionary(s => s.Id, s => s);
-            var domainModels = ImmutableList.CreateBuilder<CartItem>();
+                    .ToDictionary(s => s.Id, s => s);
+            var domainModels = new List<CartItem>();
             foreach (var dataModel in dataModels) {
                 if (!productDict.TryGetValue(dataModel.ProductId, out var product)) {
                     throw new CaasDomainMappingException($"Failed to find product {dataModel.ProductId} for cart-item {dataModel.Id}");
@@ -103,11 +92,11 @@ internal class CartItemRepository : ICrudBulkWriteRepository<CartItem> {
                     ConcurrencyToken = dataModel.GetConcurrencyToken()
                 });
             }
-            return domainModels.ToImmutable();
+            return domainModels;
         }
 
         public IReadOnlyList<ProductCartDataModel> ConvertFromDomain(IEnumerable<CartItem> domainModels)
-            => domainModels.Select(ConvertFromDomain).ToImmutableArray();
+            => domainModels.Select(ConvertFromDomain).ToList();
         
         public ProductCartDataModel ConvertFromDomain(CartItem domainModel) {
             return new ProductCartDataModel() {

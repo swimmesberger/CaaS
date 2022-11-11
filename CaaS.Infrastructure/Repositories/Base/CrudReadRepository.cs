@@ -6,7 +6,7 @@ using CaaS.Infrastructure.DataModel.Base;
 
 namespace CaaS.Infrastructure.Repositories.Base; 
 
-public class CrudReadRepository<TData, TDomain> : ICrudReadRepository<TDomain> 
+public class CrudReadRepository<TData, TDomain> : IRepository 
         where TDomain : class, IEntityBase
         where TData: IDataModelBase {
     internal IDao<TData> Dao { get; }

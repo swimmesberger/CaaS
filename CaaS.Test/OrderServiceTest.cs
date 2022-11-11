@@ -33,12 +33,13 @@ public class OrderServiceTest {
         var foundOrder = await orderService.FindOrderById(ExistingOrderId);
         foundOrder.Should().NotBeNull();
         foundOrder!.Id.Should().Be(ExistingOrderId);
-        foundOrder!.Items.Count.Should().Be(2);
+        foundOrder.Items.Count.Should().Be(2);
     }
 
     [Fact]
-    public async Task AddProductToOrderWhenNoExisting() {
-        
+    public Task AddProductToOrderWhenNoExisting() {
+        // TODO: implement
+        return Task.CompletedTask;
     }
 
     private IOrderService CreateOrderService() {

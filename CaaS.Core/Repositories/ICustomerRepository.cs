@@ -3,6 +3,7 @@ using CaaS.Core.Repositories.Base;
 
 namespace CaaS.Core.Repositories; 
 
-public interface ICustomerRepository : ICrudRepository<Customer> {
-    
+public interface ICustomerRepository : IRepository {
+    Task<Customer?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Customer>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
 }

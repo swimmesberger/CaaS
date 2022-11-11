@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Entities;
+using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
-using CaaS.Core.Repositories.Base;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
@@ -68,7 +68,7 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
     
     public async Task<Order> UpdateAsync(Order oldEntity, Order newEntity, CancellationToken cancellationToken = default) {
         await Converter.OrderItemRepository.UpdateOrderItemsAsync(oldEntity.Items, newEntity.Items, cancellationToken);
-        await Converter.CouponRepository.UpdateCouponsAsync(oldEntity.Coupons, newEntity.Coupons, cancellationToken);
+        await Converter.CouponRepository.UpdateAsync(oldEntity.Coupons, newEntity.Coupons, cancellationToken);
         //Todo: order discounts updaten
         return await UpdateImplAsync(newEntity, cancellationToken);
     }
@@ -154,12 +154,15 @@ internal class OrderDomainModelConvert : IDomainReadModelConverter<OrderDataMode
         var domainModels = new List<Order>();
         foreach (var dataModel in dataModels) {
             var orderDiscounts = orderDiscountsDict.TryGetValue(dataModel.Id, out var orderDiscountsList) ? 
-                orderDiscountsList.ToImmutableList() : ImmutableList<OrderDiscount>.Empty;
+                orderDiscountsList.ToImmutableArray() : ImmutableArray<OrderDiscount>.Empty;
             var orderItems = orderItemsDict.TryGetValue(dataModel.Id, out var orderItemsList) ? 
-                orderItemsList.ToImmutableList() : ImmutableList<OrderItem>.Empty;
+                orderItemsList.ToImmutableArray() : ImmutableArray<OrderItem>.Empty;
             var coupons = couponsDict.TryGetValue(dataModel.Id, out var couponsList) ? 
-                couponsList.ToImmutableList() : ImmutableList<Coupon>.Empty;
+                couponsList.ToImmutableArray() : ImmutableArray<Coupon>.Empty;
             var customer = customerDict.GetValueOrDefault(dataModel.CustomerId);
+            if (customer == null) {
+                throw new CaasDomainMappingException($"Failed to find customer {dataModel.CustomerId} for order {dataModel.Id}");
+            }
             domainModels.Add(new Order() {
                 Id = dataModel.Id,
                 Customer = customer,

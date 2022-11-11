@@ -1,11 +1,10 @@
-﻿using System.Collections.Immutable;
-using CaaS.Core;
+﻿using CaaS.Core;
 
 namespace CaaS.Infrastructure.Repositories.Base;
 
 public static class ChangeTracker {
     public static ChangeTracker<T> CreateDiff<T>(IEnumerable<T> oldItems, IReadOnlyCollection<T> newItems) where T: IHasId {
-        var oldItemsDict = oldItems.ToImmutableDictionary(i => i.Id);
+        var oldItemsDict = oldItems.ToDictionary(i => i.Id);
         var addedItems = newItems.Where(newItem => !oldItemsDict.ContainsKey(newItem.Id));
         var updatedItems = newItems.Where(newItem => {
             if (!oldItemsDict.TryGetValue(newItem.Id, out var oldItem)) {

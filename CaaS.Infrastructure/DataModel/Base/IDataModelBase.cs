@@ -1,5 +1,4 @@
 ﻿using CaaS.Core;
-using CaaS.Core.Entities.Base;
 
 namespace CaaS.Infrastructure.DataModel.Base; 
 

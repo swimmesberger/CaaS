@@ -3,9 +3,9 @@
 namespace CaaS.Core.Repositories.Base; 
 
 public static class ImmutableArrayExtensions {
-    public static int FindIndex<T>(this ImmutableArray<T> array, Predicate<T> match) {
+    public static int FindIndex<T>(this IImmutableList<T> list, Predicate<T> match) {
         var idx = 0;
-        foreach (var val in array) {
+        foreach (var val in list) {
             if (match.Invoke(val)) return idx;
             idx += 1;
         }

@@ -1,8 +1,5 @@
 ﻿using System.Collections.Immutable;
-using System.Reflection.Metadata.Ecma335;
-using CaaS.Core.Discount;
 using CaaS.Core.Entities;
-using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
 using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories;
@@ -143,21 +140,21 @@ public class OrderRepositoryTest  {
             DiscountValue = (decimal)0.99
         };
 
-        var orderItem1Discounts = new List<OrderItemDiscount>() { orderItem1Discount1, orderItem1Discount2 };
-        var orderItem2Discounts = new List<OrderItemDiscount>() { orderItem2Discount1 };
+        var orderItem1Discounts = ImmutableArray.Create(orderItem1Discount1, orderItem1Discount2);
+        var orderItem2Discounts =  ImmutableArray.Create(orderItem2Discount1);
         orderItem1 = orderItem1 with {
-            OrderItemDiscounts = orderItem1Discounts.ToImmutableList()
+            OrderItemDiscounts = orderItem1Discounts
         };
         orderItem2 = orderItem2 with {
-            OrderItemDiscounts = orderItem2Discounts.ToImmutableList()
+            OrderItemDiscounts = orderItem2Discounts
         };
         
-        var orderItems = new List<OrderItem>(){ orderItem1, orderItem2 };
+        var orderItems =  ImmutableArray.Create(orderItem1, orderItem2);
         var newOrder = new Order {
             Id = orderId,
             ShopId = TestShopId,
             OrderNumber = 99,
-            Items = orderItems.ToImmutableList(),
+            Items = orderItems,
             Customer = customer!
         };
         
@@ -187,12 +184,12 @@ public class OrderRepositoryTest  {
             CustomerId = customer!.Id
         };
 
-        var orderDiscounts = new List<OrderDiscount>(){ orderDiscount };
-        var coupons = new List<Coupon>(){ coupon1, coupon2 };
+        var orderDiscounts =  ImmutableArray.Create(orderDiscount);
+        var coupons =  ImmutableArray.Create(coupon1, coupon2);
         
         newOrder = newOrder with {
-            OrderDiscounts = orderDiscounts.ToImmutableList(),
-            Coupons = coupons.ToImmutableList()
+            OrderDiscounts = orderDiscounts,
+            Coupons = coupons
         };
 
         return newOrder;
@@ -233,32 +230,6 @@ public class OrderRepositoryTest  {
     }
 
     [Fact]
-    public async Task BulkAddEntities() {
-        var order1 = await CreateNewOrderDomainModel();
-        var customer = new Customer {
-            Id = Guid.NewGuid()
-        };
-        
-        var order2 = new Order {
-            Id = Guid.NewGuid(),
-            ShopId = TestShopId,
-            Customer = customer,
-            OrderNumber = 49
-        };
-        
-        var orderRepository = GetOrderRepository();
-        var orders = new List<Order>() { order1, order2 };
-        await orderRepository.AddAsync(orders);
-
-        var ids = new List<Guid>() { order1.Id, order2.Id };
-        var returnedOrders = await orderRepository.FindByIdsAsync(ids);
-
-        returnedOrders.Count.Should().Be(2);
-        returnedOrders[0].Id.Should().Be(order1.Id);
-        returnedOrders[1].Id.Should().Be(order2.Id);
-    }
-
-    [Fact]
     public async Task SingleUpdateOrderNumber() {
         var orderRepository = GetOrderRepository();
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
@@ -275,26 +246,7 @@ public class OrderRepositoryTest  {
         order!.Id.Should().Be(ExistingOrderId);
         order.OrderNumber.Should().Be(100);
     }
-
-    [Fact]
-    public async Task BulkUpdateOrderNumber() {
-        var orderRepository = GetOrderRepository();
-        var orders = await orderRepository.FindAllAsync();
-        var orderUpdate1 = orders[0] with {
-            OrderNumber = 100
-        };
-
-        var orderUpdate2 = orders[1] with {
-            OrderNumber = 200
-        };
-
-        var newOrders = new List<Order>() { orderUpdate1, orderUpdate2 };
-        await orderRepository.UpdateAsync(newOrders);
-        orders = await orderRepository.FindAllAsync();
-        orders[0].OrderNumber.Should().Be(100);
-        orders[1].OrderNumber.Should().Be(200);
-    }
-
+    
     [Fact]
     public async Task SingleUpdateItemUpdate() {
         var orderRepository = GetOrderRepository();
@@ -305,9 +257,9 @@ public class OrderRepositoryTest  {
             Amount = 99
         };
 
-        var newOrderItems = new List<OrderItem>() { orderItemUpdate, order.Items[1] };
+        var newOrderItems =  ImmutableArray.Create(orderItemUpdate, order.Items[1]);
         var orderUpdate = order with {
-            Items = newOrderItems.ToImmutableList()
+            Items = newOrderItems
         };
 
         await orderRepository.UpdateAsync(order, orderUpdate);
@@ -334,10 +286,10 @@ public class OrderRepositoryTest  {
             PricePerPiece = 10
         };
 
-        var updatedItems = new List<OrderItem>() { order.Items[0], order.Items[1], newOrderItem };
+        var updatedItems =  ImmutableArray.Create(order.Items[0], order.Items[1], newOrderItem);
 
         var updatedOrder = order with {
-            Items = updatedItems.ToImmutableList()
+            Items = updatedItems
         };
 
         await orderRepository.UpdateAsync(order, updatedOrder);
@@ -352,10 +304,9 @@ public class OrderRepositoryTest  {
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
         order!.Items.Count.Should().Be(2);
         
-        var updatedItems = new List<OrderItem>() { order.Items[0]};
-
+        var updatedItems = ImmutableArray.Create(order.Items[0]);
         var updatedOrder = order with {
-            Items = updatedItems.ToImmutableList()
+            Items = updatedItems
         };
 
         await orderRepository.UpdateAsync(order, updatedOrder);
@@ -385,15 +336,16 @@ public class OrderRepositoryTest  {
             CustomerId = CustomerIdA
         };
 
-        var updatedCoupons = new List<Coupon>() { updatedCoupon, additionalCoupon };
+        var updatedCoupons = ImmutableArray.Create(updatedCoupon, additionalCoupon);
         var updatedOrder = order with {
-            Coupons = updatedCoupons.ToImmutableList()
+            Coupons = updatedCoupons
         };
 
         await orderRepository.UpdateAsync(order, updatedOrder);
 
         order = await orderRepository.FindByIdAsync(ExistingOrderId);
-        order.Coupons.Count.Should().Be(2);
+        order.Should().NotBeNull();
+        order!.Coupons.Count.Should().Be(2);
         order.Coupons[0].Value.Should().Be(10);
         order.Coupons[1].Id.Should().Be(additionalCoupon.Id);
         order.Coupons[1].Value.Should().Be(99);

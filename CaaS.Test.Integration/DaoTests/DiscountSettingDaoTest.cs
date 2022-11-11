@@ -65,8 +65,8 @@ public class DiscountSettingDaoTest : BaseDaoTest {
                 Name = "Krampus",
                 Rule = Guid.Parse("4904887e-7761-432d-a36e-efc112246818"),
                 Action = Guid.Parse("934cf35e-8875-4984-b942-ff6ec2f2df6b"),
-                RuleParameters = new Dictionary<string, object>() { ["Rule"] = 3 }.ToImmutableDictionary(),
-                ActionParameters = new Dictionary<string, object>() { ["Action"] = 7 }.ToImmutableDictionary()
+                RuleParameters = CreateParameters("Rule", 3),
+                ActionParameters = CreateParameters("Action", 7)
         };
         await discountSettingDao.AddAsync(discountSetting);
         
@@ -123,4 +123,10 @@ public class DiscountSettingDaoTest : BaseDaoTest {
     }
     
     private IDao<DiscountSettingDataModel> GetDiscountSettingDao(string tenantId) => GetDao(new DiscountSettingDataRecordMapper(), tenantId);
+
+    private static ImmutableDictionary<string, object> CreateParameters(string key, object value) {
+        var dict = ImmutableDictionary.CreateBuilder<string, object>();
+        dict.Add(key, value);
+        return dict.ToImmutable();
+    }
 }

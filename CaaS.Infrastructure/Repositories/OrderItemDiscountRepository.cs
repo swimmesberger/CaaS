@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using CaaS.Core.Discount;
 using CaaS.Core.Entities;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
@@ -32,7 +31,7 @@ internal class OrderItemDiscountRepository {
         return (await Converter
                 .ConvertToDomain(Dao
                     .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDiscountDataModel.ProductOrderId), orderItemId), cancellationToken), cancellationToken))
-                .ToImmutableList();
+                .ToList();
     }
     
     public async Task<Dictionary<Guid, IReadOnlyList<OrderItemDiscount>>> FindByOrderItemIds(IEnumerable<Guid> orderItemIds,
@@ -41,7 +40,7 @@ internal class OrderItemDiscountRepository {
                 .ConvertToDomain(Dao
                     .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDiscountDataModel.ProductOrderId), orderItemIds), cancellationToken), cancellationToken))
             .GroupBy(i => i.OrderItemId)
-            .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<OrderItemDiscount>)grp.ToImmutableList());
+            .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<OrderItemDiscount>)grp.ToImmutableArray());
     }
     
     public async Task AddAsync(IEnumerable<OrderItemDiscount> entities, CancellationToken cancellationToken = default) {
@@ -58,7 +57,7 @@ internal class OrderItemDiscountRepository {
         CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
-        await Dao.ApplyAsync(oldDataModels, newDataModels.ToImmutableArray(), cancellationToken);
+        await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
     }
     
     public async Task DeleteAsync(IEnumerable<OrderItemDiscount> entities, CancellationToken cancellationToken = default) {
@@ -67,32 +66,28 @@ internal class OrderItemDiscountRepository {
     }
     
     private class OrderItemDiscountConvert : IDomainModelConverter<ProductOrderDiscountDataModel, OrderItemDiscount> {
-        public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = null;
-        
-        public OrderItemDiscountConvert() {}
+        public IEnumerable<OrderParameter>? DefaultOrderParameters => null;
+
         public async ValueTask<OrderItemDiscount> ConvertToDomain(ProductOrderDiscountDataModel dataModel, CancellationToken cancellationToken) {
-            return (await ConvertToDomain(new List<ProductOrderDiscountDataModel>() { dataModel }, cancellationToken)).First();
+            return (await ConvertToDomain(new List<ProductOrderDiscountDataModel>() { dataModel })).First();
         }
+        
         public async Task<IReadOnlyList<OrderItemDiscount>> ConvertToDomain(IAsyncEnumerable<ProductOrderDiscountDataModel> dataModels, 
             CancellationToken cancellationToken = default) {
                 var items = await dataModels.ToListAsync(cancellationToken);
-                return await ConvertToDomain(items, cancellationToken);
+                return await ConvertToDomain(items);
         }
-        
-        public Task<IReadOnlyList<OrderItemDiscount>> ConvertToDomain(IReadOnlyCollection<ProductOrderDiscountDataModel> dataModels,
-            CancellationToken cancellationToken = default) {
-            
-            var domainModels = new List<OrderItemDiscount>();
-            foreach (var dataModel in dataModels) {
-                domainModels.Add(new OrderItemDiscount() {
+
+        private Task<IReadOnlyList<OrderItemDiscount>> ConvertToDomain(IReadOnlyCollection<ProductOrderDiscountDataModel> dataModels) {
+            var domainModels = dataModels.Select(dataModel => new OrderItemDiscount() {
                     Id = dataModel.Id,
                     DiscountName = dataModel.DiscountName,
                     DiscountValue = dataModel.Discount,
                     OrderItemId = dataModel.ProductOrderId,
                     ShopId = dataModel.ShopId,
                     ConcurrencyToken = dataModel.GetConcurrencyToken()
-                });
-            }
+                })
+                .ToList();
             return Task.FromResult<IReadOnlyList<OrderItemDiscount>>(domainModels);
         }
         

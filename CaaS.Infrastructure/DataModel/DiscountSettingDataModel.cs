@@ -12,8 +12,8 @@ public record DiscountSettingDataModel : Base.DataModel {
     public Guid Action { get; init; }
     
     [JsonColumn]
-    public ImmutableDictionary<string, object> RuleParameters { get; init; } = ImmutableDictionary<string, object>.Empty;
+    public IImmutableDictionary<string, object> RuleParameters { get; init; } = ImmutableDictionary<string, object>.Empty;
     
     [JsonColumn]
-    public ImmutableDictionary<string, object> ActionParameters { get; init; } = ImmutableDictionary<string, object>.Empty;
+    public IImmutableDictionary<string, object> ActionParameters { get; init; } = ImmutableDictionary<string, object>.Empty;
 }

@@ -1,6 +1,6 @@
 ﻿using CaaS.Core.Entities.Base;
 
-namespace CaaS.Core.Discount; 
+namespace CaaS.Core.Entities; 
 
 public class OrderItemDiscount : IEntityBase {
     public Guid Id { get; init; } = Guid.NewGuid();

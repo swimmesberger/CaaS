@@ -8,7 +8,7 @@ using CaaS.Infrastructure.Repositories.Base;
 
 namespace CaaS.Infrastructure.Repositories; 
 
-internal class OrderDiscountRepository : ICrudBulkWriteRepository<OrderDiscount> {
+internal class OrderDiscountRepository : IRepository {
    private IDao<OrderDiscountDataModel> Dao { get; }
    private OrderDiscountDomainModelConvert Converter { get;  }
 
@@ -25,7 +25,7 @@ internal class OrderDiscountRepository : ICrudBulkWriteRepository<OrderDiscount>
    public async Task<IReadOnlyList<OrderDiscount>> FindByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default) {
        return (await Converter.ConvertToDomain(Dao
                .FindBy(StatementParameters.CreateWhere(nameof(OrderDiscount.OrderId), orderId), cancellationToken), cancellationToken))
-           .ToImmutableList();
+           .ToList();
    }
    
    public async Task<OrderDiscount> AddAsync(OrderDiscount entity, CancellationToken cancellationToken = default) {
@@ -50,10 +50,12 @@ internal class OrderDiscountRepository : ICrudBulkWriteRepository<OrderDiscount>
        var dataModels = Converter.ConvertFromDomain(entities);
        await Dao.AddAsync(dataModels, cancellationToken);
    }
+
    public async Task UpdateAsync(IEnumerable<OrderDiscount> entities, CancellationToken cancellationToken = default) {
        var dataModels = Converter.ConvertFromDomain(entities);
        await Dao.UpdateAsync(dataModels, cancellationToken);
    }
+
    public async Task DeleteAsync(IEnumerable<OrderDiscount> entities, CancellationToken cancellationToken = default) {
        var dataModels = Converter.ConvertFromDomain(entities);
        await Dao.DeleteAsync(dataModels, cancellationToken);
@@ -65,37 +67,37 @@ internal class OrderDiscountRepository : ICrudBulkWriteRepository<OrderDiscount>
                .ConvertToDomain(Dao
                    .FindBy(StatementParameters.CreateWhere(nameof(OrderDiscount.OrderId), orderIds), cancellationToken), cancellationToken))
            .GroupBy(i => i.OrderId)
-           .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<OrderDiscount>)grp.ToImmutableList());
+           .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<OrderDiscount>)grp.ToImmutableArray());
    }
 
-   internal class OrderDiscountDomainModelConvert : IDomainModelConverter<OrderDiscountDataModel, OrderDiscount> {
-       public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = null;
-       public async ValueTask<OrderDiscount> ConvertToDomain(OrderDiscountDataModel dataModel, CancellationToken cancellationToken) {
-           return (await ConvertToDomain(new List<OrderDiscountDataModel>() { dataModel }, cancellationToken)).First();
-       }
-       public async  Task<IReadOnlyList<OrderDiscount>> ConvertToDomain(IAsyncEnumerable<OrderDiscountDataModel> dataModels, CancellationToken cancellationToken = default) {
-           var items = await dataModels.ToListAsync(cancellationToken);
-           return await ConvertToDomain(items, cancellationToken);
+   private class OrderDiscountDomainModelConvert : IDomainModelConverter<OrderDiscountDataModel, OrderDiscount> {
+       public IEnumerable<OrderParameter>? DefaultOrderParameters => null;
+       
+       public ValueTask<OrderDiscount> ConvertToDomain(OrderDiscountDataModel dataModel, CancellationToken cancellationToken) {
+           return new ValueTask<OrderDiscount>(
+               ConvertToDomain(new List<OrderDiscountDataModel> { dataModel }).First()
+           );
        }
        
-       public Task<List<OrderDiscount>> ConvertToDomain(IReadOnlyCollection<OrderDiscountDataModel> dataModels, CancellationToken cancellationToken = default) {
-          
-           var domainModels = new List<OrderDiscount>();
-           foreach (var dataModel in dataModels) {
-               domainModels.Add(new OrderDiscount() {
+       public async Task<IReadOnlyList<OrderDiscount>> ConvertToDomain(IAsyncEnumerable<OrderDiscountDataModel> dataModels, CancellationToken cancellationToken = default) {
+           var items = await dataModels.ToListAsync(cancellationToken);
+           return ConvertToDomain(items);
+       }
+
+       private IReadOnlyList<OrderDiscount> ConvertToDomain(IEnumerable<OrderDiscountDataModel> dataModels) {
+           return dataModels.Select(dataModel => new OrderDiscount() {
                    Id = dataModel.Id,
                    ShopId = dataModel.ShopId,
                    DiscountName = dataModel.DiscountName,
                    DiscountValue = dataModel.Discount,
                    OrderId = dataModel.OrderId,
                    ConcurrencyToken = dataModel.GetConcurrencyToken()
-               });
-           }
-           return Task.FromResult(domainModels);
+               })
+               .ToList();
        }
        
        public IReadOnlyList<OrderDiscountDataModel> ConvertFromDomain(IEnumerable<OrderDiscount> domainModels)
-           => domainModels.Select(ConvertFromDomain).ToImmutableArray();
+           => domainModels.Select(ConvertFromDomain).ToList();
        
        public OrderDiscountDataModel ConvertFromDomain(OrderDiscount domainModel) {
            return new OrderDiscountDataModel {
@@ -107,6 +109,7 @@ internal class OrderDiscountRepository : ICrudBulkWriteRepository<OrderDiscount>
                RowVersion = domainModel.GetRowVersion(),
            };
        }
+       
        public OrderDiscountDataModel ApplyDomainModel(OrderDiscountDataModel dataModel, OrderDiscount domainModel) {
            return dataModel with {
                Id = domainModel.Id,
@@ -118,5 +121,4 @@ internal class OrderDiscountRepository : ICrudBulkWriteRepository<OrderDiscount>
            };
        }
    }
-   
 }

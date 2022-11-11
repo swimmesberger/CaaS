@@ -3,7 +3,7 @@ using CaaS.Infrastructure.DataModel;
 using CaaS.Infrastructure.Repositories;
 using CaaS.Test.Common;
 
-namespace CaaS.Test;
+namespace CaaS.Test.RepositoryTests;
 
 public class ShopRepositoryTest {
     private static readonly ImmutableList<ShopAdminDataModel> ShopAdmins = ImmutableList.CreateRange(new List<ShopAdminDataModel>() {

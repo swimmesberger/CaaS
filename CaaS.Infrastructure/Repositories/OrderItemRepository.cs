@@ -1,9 +1,7 @@
 ﻿using System.Collections.Immutable;
-using CaaS.Core.Discount;
 using CaaS.Core.Entities;
 using CaaS.Core.Exceptions;
 using CaaS.Core.Repositories;
-using CaaS.Core.Repositories.Base;
 using CaaS.Infrastructure.Ado.Base;
 using CaaS.Infrastructure.Ado.Model;
 using CaaS.Infrastructure.DataModel;
@@ -36,7 +34,7 @@ internal class OrderItemRepository {
         return (await Converter
                 .ConvertToDomain(Dao
                     .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDataModel.OrderId), orderId), cancellationToken), cancellationToken))
-            .ToImmutableList();
+            .ToList();
     }
     
     public async Task<Dictionary<Guid, IReadOnlyList<OrderItem>>> FindByOrderIds(IEnumerable<Guid> orderIds,
@@ -45,7 +43,7 @@ internal class OrderItemRepository {
                 .ConvertToDomain(Dao
                     .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDataModel.OrderId), orderIds), cancellationToken), cancellationToken))
             .GroupBy(i => i.OrderId)
-            .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<OrderItem>)grp.ToImmutableList());
+            .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<OrderItem>)grp.ToImmutableArray());
     }
     
     public async Task AddAsync(OrderItem entity, CancellationToken cancellationToken = default) {
@@ -88,7 +86,7 @@ internal class OrderItemRepository {
 
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
-        await Dao.ApplyAsync(oldDataModels, newDataModels.ToImmutableArray(), cancellationToken);
+        await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
     }
 
     public async Task DeleteAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {
@@ -141,7 +139,7 @@ internal class OrderItemRepository {
                     Amount = dataModel.Amount,
                     PricePerPiece = product.Price,
                     OrderItemDiscounts =  orderItemDiscountDict.ContainsKey(dataModel.Id) ? 
-                                            orderItemDiscountDict[dataModel.Id].Value.ToImmutableList() : ImmutableList<OrderItemDiscount>.Empty,
+                                            orderItemDiscountDict[dataModel.Id].Value.ToImmutableArray() : ImmutableArray<OrderItemDiscount>.Empty,
                     ConcurrencyToken = dataModel.GetConcurrencyToken()
                 });
             }
