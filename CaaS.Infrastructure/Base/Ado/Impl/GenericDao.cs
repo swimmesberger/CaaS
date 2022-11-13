@@ -160,7 +160,7 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
 
     private ValueTask<Statement> PostProcessStatementWithTenant(Statement statement,
             CancellationToken cancellationToken = default) {
-        var tenantId = _tenantService!.GetTenantId();
+        var tenantId = _tenantService!.GetTenantGuid();
         var tenantIdColumnName = DataRecordMapper.ByPropertyName().MapName(_tenantIdProvider!.TenantIdPropertyName);
         return new ValueTask<Statement>(statement.AddWhereParameter(tenantIdColumnName, tenantId));
     }
