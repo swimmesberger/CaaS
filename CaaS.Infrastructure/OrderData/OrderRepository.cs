@@ -70,17 +70,11 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
     public async Task<Order> UpdateAsync(Order oldEntity, Order newEntity, CancellationToken cancellationToken = default) {
         await Converter.OrderItemRepository.UpdateOrderItemsAsync(oldEntity.Items, newEntity.Items, cancellationToken);
         await Converter.CouponRepository.UpdateAsync(oldEntity.Coupons, newEntity.Coupons, cancellationToken);
-        //Todo: order discounts updaten
+        await Converter.OrderDiscountRepository.UpdateAsync(oldEntity.OrderDiscounts, newEntity.OrderDiscounts, cancellationToken);
         return await UpdateImplAsync(newEntity, cancellationToken);
     }
 
-    public async Task UpdateAsync(IEnumerable<Order> entities, CancellationToken cancellationToken = default) {
-        //Todo: orderItems updaten
-        //Todo: coupons updaten
-        //Todo: order discounts updaten
-        var dataModels = Converter.ConvertFromDomain(entities);
-        await Dao.UpdateAsync(dataModels, cancellationToken);
-    }
+
     private async Task<Order> UpdateImplAsync(Order entity, CancellationToken cancellationToken = default) {
         var dataModel = Converter.ConvertFromDomain(entity);
         dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);

@@ -21,17 +21,17 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
             .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<Coupon>)grp.ToList());
     }
     
-    public async Task<IReadOnlyList<Coupon>> FindCouponsByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Coupon>> FindByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(Coupon.CustomerId), customerId), cancellationToken), cancellationToken))
             .ToList();
     }
-    public async Task<IReadOnlyList<Coupon>> FindCouponsByOrderId(Guid orderId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Coupon>> FindByOrderId(Guid orderId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(Coupon.OrderId), orderId), cancellationToken), cancellationToken))
             .ToList();
     }
-    public async Task<IReadOnlyList<Coupon>> FindCouponsByCartId(Guid cartId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Coupon>> FindByCartId(Guid cartId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(Coupon.CartId), cartId), cancellationToken), cancellationToken))
             .ToList();

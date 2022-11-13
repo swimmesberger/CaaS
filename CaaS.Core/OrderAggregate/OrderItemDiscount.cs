@@ -2,7 +2,7 @@
 
 namespace CaaS.Core.OrderAggregate; 
 
-public class OrderItemDiscount : IEntityBase {
+public record OrderItemDiscount : IEntityBase {
     public Guid Id { get; init; } = Guid.NewGuid();
 
     public Guid ShopId { get; init; } = default;

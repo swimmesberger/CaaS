@@ -41,6 +41,12 @@ internal class OrderDiscountRepository : IRepository {
        return entity;
    }
    
+   public async Task UpdateAsync(IEnumerable<OrderDiscount> oldDomainModels, IEnumerable<OrderDiscount> newDomainModels, CancellationToken cancellationToken = default) {
+       var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
+       var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
+       await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
+   }
+   
    public async Task DeleteAsync(OrderDiscount entity, CancellationToken cancellationToken = default) {
        await Dao.DeleteAsync(Converter.ConvertFromDomain(entity), cancellationToken);
    }

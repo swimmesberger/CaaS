@@ -2,7 +2,7 @@
 
 namespace CaaS.Core.OrderAggregate; 
 
-public class OrderDiscount : IEntityBase {
+public record OrderDiscount : IEntityBase {
     public Guid Id { get; init;  } = Guid.NewGuid();
     public string DiscountName { get; init; } = string.Empty;
     public decimal DiscountValue { get; init; } = 0;

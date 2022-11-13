@@ -22,8 +22,13 @@ public class OrderRepositoryTest  {
     private static readonly Guid ProductAId = new Guid("05B7F6AB-4409-4417-9F76-34035AC92AE9");
     private static readonly Guid ProductBId = new Guid("DD7E1EA1-6D85-4596-AADB-A4648F7DA31F");
     private static readonly Guid OrderDiscountAId = new Guid("AA1B1EA1-6D85-4596-AADB-CF648F7DA31F");
+    private static readonly Guid OrderDiscountBId = new Guid("BB1B1EA1-6D85-4596-AADB-CF648F7DA31F");
+    private static readonly Guid OrderDiscountCId = new Guid("CC1B1EA1-6D85-4596-AADB-CF648F7DA31F");
     private static readonly Guid CouponIdA = new Guid("BB791EA1-3CA5-9097-DFDB-CF648F7DA31F");
+    private static readonly Guid OrderItemAId = new Guid("DA191BA1-3CA5-9097-DFDB-CF648F7DA31F");
+    private static readonly Guid OrderItemBId = new Guid("F113EA14-3CA5-9097-DFDB-CF648F7DA31F");
     private static readonly Guid OrderItemDiscountA = new Guid("DE123EA1-3CA5-9097-DFDB-CF648F7DA31F");
+    private static readonly Guid OrderItemDiscountB = new Guid("BB123EA1-3CA5-9097-DFDB-CF648F7DA31F");
     
     private ICustomerRepository GetCustomerRepository() {
         var customerDao = new MemoryDao<CustomerDataModel>(new List<CustomerDataModel>() {
@@ -47,8 +52,8 @@ public class OrderRepositoryTest  {
     }
     private MemoryDao<ProductOrderDataModel> GetOrderItemDao() {
         var orderItemDao = new MemoryDao<ProductOrderDataModel>(new List<ProductOrderDataModel>() {
-            new ProductOrderDataModel() { Amount = 2, OrderId = ExistingOrderId, ProductId = ProductAId },
-            new ProductOrderDataModel() { Amount = 5, OrderId = ExistingOrderId, ProductId = ProductAId }
+            new ProductOrderDataModel() { Id = OrderItemAId, Amount = 2, OrderId = ExistingOrderId, ProductId = ProductAId },
+            new ProductOrderDataModel() { Id = OrderItemBId, Amount = 5, OrderId = ExistingOrderId, ProductId = ProductBId }
         });
         return orderItemDao;
     }
@@ -70,15 +75,18 @@ public class OrderRepositoryTest  {
     }
     private MemoryDao<OrderDiscountDataModel> GetOrderDiscountDao() {
         var orderDiscountDao = new MemoryDao<OrderDiscountDataModel>(new List<OrderDiscountDataModel>() {
-            new OrderDiscountDataModel()
-                { Id = OrderDiscountAId, DiscountName = "Christmas", Discount = 5, OrderId = ExistingOrderId, ShopId = TestShopId }
+            new OrderDiscountDataModel() { Id = OrderDiscountAId, DiscountName = "Christmas", Discount = 5, OrderId = ExistingOrderId, ShopId = TestShopId },
+            new OrderDiscountDataModel() { Id = OrderDiscountBId, DiscountName = "Easter", Discount = 7, OrderId = ExistingOrderId, ShopId = TestShopId },
+            new OrderDiscountDataModel() { Id = OrderDiscountCId, DiscountName = "Diwali", Discount = 9, OrderId = ExistingOrderId, ShopId = TestShopId }
         });
         return orderDiscountDao;
     }
     private MemoryDao<ProductOrderDiscountDataModel> GetProductOrderDiscountDao() {
         var orderItemDiscountDao = new MemoryDao<ProductOrderDiscountDataModel>(new List<ProductOrderDiscountDataModel>() {
             new ProductOrderDiscountDataModel { Id = OrderItemDiscountA, DiscountName = "10% on most expensive product", 
-                Discount = (decimal)1.10, ProductOrderId = default, ShopId = TestShopId}
+                Discount = (decimal)1.10, ProductOrderId = OrderItemAId, ShopId = TestShopId},
+            new ProductOrderDiscountDataModel { Id = OrderItemDiscountB, DiscountName = "5% on every product", 
+                Discount = (decimal)0.90, ProductOrderId = OrderItemAId, ShopId = TestShopId},       
         });
         return orderItemDiscountDao;
     }
@@ -217,7 +225,7 @@ public class OrderRepositoryTest  {
     }
 
     [Fact]
-    public async Task AddAddsEntity() {
+    public async Task AddOrderAddsEntity() {
         var orderToBeAdded = await CreateNewOrderDomainModel();
         var orderRepository = GetOrderRepository();
         var returnedOrder = await orderRepository.AddAsync(orderToBeAdded);
@@ -236,7 +244,7 @@ public class OrderRepositoryTest  {
     }
 
     [Fact]
-    public async Task SingleUpdateOrderNumber() {
+    public async Task UpdateOrderByUpdatingOrderNumber() {
         var orderRepository = GetOrderRepository();
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
         order!.Id.Should().Be(ExistingOrderId);
@@ -254,7 +262,7 @@ public class OrderRepositoryTest  {
     }
     
     [Fact]
-    public async Task SingleUpdateItemUpdate() {
+    public async Task UpdateOrderByUpdatingOrderItem() {
         var orderRepository = GetOrderRepository();
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
         var orderItem = order!.Items[0];
@@ -275,7 +283,7 @@ public class OrderRepositoryTest  {
     }
 
     [Fact]
-    public async Task SingleUpdateAddOrderItem() {
+    public async Task UpdateOrderByAddingOrderItem() {
         var orderRepository = GetOrderRepository();
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
         order!.Items.Count.Should().Be(2);
@@ -305,7 +313,7 @@ public class OrderRepositoryTest  {
     }
 
     [Fact]
-    public async Task SingleUpdateRemoveOrderItem() {
+    public async Task UpdateOrderByRemovingOrderItem() {
         var orderRepository = GetOrderRepository();
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
         order!.Items.Count.Should().Be(2);
@@ -321,40 +329,129 @@ public class OrderRepositoryTest  {
     }
 
     [Fact]
-    public async Task SingleUpdateOrderUpdateCoupons() {
+    public async Task UpdateOrderByRemovingCoupon() {
+        var orderRepository = GetOrderRepository();
+        
+        var order = await orderRepository.FindByIdAsync(ExistingOrderId);
+        order!.Coupons.Count.Should().Be(1);
+        var coupon = order.Coupons[0];
+        
+        coupon = coupon with {
+            OrderId = null
+        };
+        
+        var updatedCoupons = ImmutableArray.Create(coupon);
+        var updatedOrder = order with {
+            Coupons = updatedCoupons
+        };
+
+        var returnedOrder = await orderRepository.UpdateAsync(order, updatedOrder);
+        returnedOrder.Coupons.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task UpdateOrderByUpdatingAndAddingCoupons() {
         var orderRepository = GetOrderRepository();
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
-
         order!.Coupons.Count.Should().Be(1);
-        order.Coupons[0].Id.Should().Be(CouponIdA);
-        order.Coupons[0].Value.Should().Be(4);
-
-        var updatedCoupon = order.Coupons[0] with {
+        var coupon = order.Coupons[0];
+        coupon.Value.Should().Be(4);
+        coupon = coupon with {
             Value = 10
         };
 
         var additionalCoupon = new Coupon {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            Value = 99,
+            Value = 20,
             OrderId = ExistingOrderId,
-            CartId = null,
             CustomerId = CustomerIdA
         };
-
-        var updatedCoupons = ImmutableArray.Create(updatedCoupon, additionalCoupon);
+        
+        var updatedCoupons = ImmutableArray.Create(coupon, additionalCoupon);
         var updatedOrder = order with {
             Coupons = updatedCoupons
         };
-
-        await orderRepository.UpdateAsync(order, updatedOrder);
-
-        order = await orderRepository.FindByIdAsync(ExistingOrderId);
-        order.Should().NotBeNull();
-        order!.Coupons.Count.Should().Be(2);
-        order.Coupons[0].Value.Should().Be(10);
-        order.Coupons[1].Id.Should().Be(additionalCoupon.Id);
-        order.Coupons[1].Value.Should().Be(99);
+        
+        var returnedOrder = await orderRepository.UpdateAsync(order, updatedOrder);
+        returnedOrder.Coupons.Count.Should().Be(2);
+        returnedOrder.Coupons[0].Id.Should().Be(coupon.Id);
+        returnedOrder.Coupons[0].Value.Should().Be(10);
+        returnedOrder.Coupons[1].Id.Should().Be(additionalCoupon.Id);
+        returnedOrder.Coupons[1].Value.Should().Be(20);
     }
+
+    [Fact]
+    public async void UpdateOrderByUpdatingOrderDiscount() {
+        var orderRepository = GetOrderRepository();
+        var order = await orderRepository.FindByIdAsync(ExistingOrderId);
+        order.OrderDiscounts.Count.Should().Be(3);
+        var orderDiscounts = order.OrderDiscounts;
+
+        var additionalOrderDiscount = new OrderDiscount {
+            Id = Guid.NewGuid(),
+            DiscountName = "a new order discount",
+            DiscountValue = 1,
+            ShopId = TestShopId,
+            OrderId = ExistingOrderId
+        };
+        
+        var updatedOrderDiscount = orderDiscounts[1] with {
+            DiscountValue = 99
+        };
+        
+        var updatedOrderDiscounts = ImmutableArray.Create(updatedOrderDiscount, additionalOrderDiscount);
+        var updatedOrder = order with {
+            OrderDiscounts = updatedOrderDiscounts
+        };
+
+        var returnedOrder = await orderRepository.UpdateAsync(order, updatedOrder);
+        returnedOrder.OrderDiscounts.Count.Should().Be(2);
+        returnedOrder.OrderDiscounts[0].Id.Should().Be(orderDiscounts[1].Id);
+        returnedOrder.OrderDiscounts[1].Id.Should().Be(additionalOrderDiscount.Id);
+    }
+
+    [Fact]
+    public async Task UpdateOrderByUpdatingAndAddingOrderItemDiscounts() {
+        var orderRepository = GetOrderRepository();
     
+        var order = await orderRepository.FindByIdAsync(ExistingOrderId);
+        var orderItems = order.Items;
+        orderItems[0].OrderItemDiscounts.Count.Should().Be(2);
+        orderItems[1].OrderItemDiscounts.Count.Should().Be(0);
+
+        var orderItemDiscounts = orderItems[0].OrderItemDiscounts;
+        var updatedOrderItemDiscount = orderItemDiscounts[0] with {
+            DiscountName = "updated discount"
+        };
+
+        var additionalOrderItemDiscount = new OrderItemDiscount {
+            Id = Guid.NewGuid(),
+            ShopId = TestShopId,
+            OrderItemId = OrderItemBId,
+            DiscountName = "additional order item discount",
+            DiscountValue = 1
+        };
+
+        var updatedOrderItemDiscountsItemA = ImmutableArray.Create(updatedOrderItemDiscount);
+        var updatedOrderItemA = orderItems[0] with {
+            OrderItemDiscounts = updatedOrderItemDiscountsItemA
+        };
+
+        var additionalOrderItemDiscountItemB = ImmutableArray.Create(additionalOrderItemDiscount);
+        var updatedOrderItemB = orderItems[1] with {
+            OrderItemDiscounts = additionalOrderItemDiscountItemB
+        };
+
+        var updatedOrderItems = ImmutableArray.Create(updatedOrderItemA, updatedOrderItemB);
+        var updatedOrder = order with {
+            Items = updatedOrderItems
+        };
+
+        var returnedOrder = await orderRepository.UpdateAsync(order, updatedOrder);
+        returnedOrder.Items[0].OrderItemDiscounts.Count.Should().Be(1);
+        returnedOrder.Items[1].OrderItemDiscounts.Count.Should().Be(1);
+        returnedOrder.Items[0].OrderItemDiscounts[0].DiscountName.Should().Be("updated discount");
+        returnedOrder.Items[1].OrderItemDiscounts[0].DiscountName.Should().Be("additional order item discount");
+    }
 }
