@@ -30,7 +30,7 @@ public class OrderService : IOrderService {
         var shortenedCustomerId = customerId.ToString()[..8];
         var customer = await _customerRepository.FindByIdAsync(customerId, cancellationToken);
         if (customer == null) {
-            throw new CaasModelNotFoundException();
+            throw new CaasItemNotFoundException();
         }
         
         var rand = new Random();
@@ -49,7 +49,7 @@ public class OrderService : IOrderService {
 
         var order = await _orderRepository.FindByIdAsync(orderId, cancellationToken);
         if (order == null) {
-            throw new CaasModelNotFoundException();
+            throw new CaasItemNotFoundException();
         }
         var originalOrder = order;
 
@@ -66,7 +66,7 @@ public class OrderService : IOrderService {
         } else {        //add new item to order
             var product = await _productRepository.FindByIdAsync(productId, cancellationToken);
             if (product == null) {
-                throw new CaasModelNotFoundException();
+                throw new CaasItemNotFoundException();
             }
 
             var productItem = new OrderItem {

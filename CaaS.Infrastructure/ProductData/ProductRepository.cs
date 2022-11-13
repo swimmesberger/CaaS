@@ -9,6 +9,14 @@ namespace CaaS.Infrastructure.ProductData;
 public class ProductRepository : CrudRepository<ProductDataModel, Product>, IProductRepository {
     public ProductRepository(IDao<ProductDataModel> productDao, IShopRepository shopRepository) : 
             base(productDao, new ProductDomainModelConvert(shopRepository)) {}
+
+    public async Task<IReadOnlyList<Product>> FindByTextSearchAsync(string text, CancellationToken cancellationToken = default) {
+        // simple in-memory search for now
+        // TODO: switch to SQL search
+        return await Converter.ConvertToDomain(Dao.FindAllAsync(cancellationToken).Where(p =>
+            p.Name.Contains(text, StringComparison.CurrentCultureIgnoreCase) ||
+            p.Description.Contains(text, StringComparison.CurrentCultureIgnoreCase)), cancellationToken);
+    }
 }
 
 internal class ProductDomainModelConvert : IDomainModelConverter<ProductDataModel, Product> {

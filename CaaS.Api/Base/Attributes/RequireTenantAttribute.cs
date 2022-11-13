@@ -1,4 +1,4 @@
-﻿namespace CaaS.Api.Base.Middleware; 
+﻿namespace CaaS.Api.Base.Attributes; 
 
 public class RequireTenantAttribute : Attribute {
     

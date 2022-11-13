@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using CaaS.Api.Base.Middleware;
+using CaaS.Api.Base.Attributes;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -16,5 +16,6 @@ public class RequireTenantOperationFilter : IOperationFilter {
                 Required = true,
                 Schema = context.SchemaGenerator.GenerateSchema(typeof(Guid), context.SchemaRepository)
         });
+        CaasConventionOperationFilter.AddProblemDetailsByStatusCode(StatusCodes.Status400BadRequest, operation, context);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace CaaS.Api.Base.Swagger;
+﻿namespace CaaS.Api.Base.Attributes;
 
 public class ProducesHeaderAttribute : Attribute {
     public string Name { get; }

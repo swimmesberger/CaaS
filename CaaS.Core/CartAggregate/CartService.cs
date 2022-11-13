@@ -2,6 +2,7 @@
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.ProductAggregate;
+using FluentValidation.Results;
 
 namespace CaaS.Core.CartAggregate; 
 
@@ -14,28 +15,25 @@ public class CartService : ICartService {
         _tenantIdAccessor = tenantIdAccessor;
     }
 
-    public async Task<Cart?> FindCartById(Guid cartId, CancellationToken cancellationToken = default) {
+    public async Task<Cart?> GetCartById(Guid cartId, CancellationToken cancellationToken = default) {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) return null;
         cart = cart with { LastAccess = DateTimeOffset.UtcNow };
         return await _cartRepository.UpdateAsync(cart, cancellationToken);
     }
-
-    public async Task<Cart> CreateCart(CancellationToken cancellationToken = default) {
-        // TODO: set customer id if user is logged in
-        var cart = new Cart() {
-            ShopId = _tenantIdAccessor.GetTenantGuid()
-        };
-        return await _cartRepository.AddAsync(cart, cancellationToken);
-    }
     
     public async Task<Cart> AddProductToCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
         if (productQuantity <= 0) {
-            throw new ArgumentException("Invalid product quantity", nameof(productQuantity));
+            throw new CaasValidationException(new ValidationFailure(nameof(productQuantity), "Invalid product quantity"));
         }
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) {
-            throw new CaasModelNotFoundException();
+            // create cart if it does not exist yet
+            cart = new Cart() {
+                Id = cartId,
+                ShopId = _tenantIdAccessor.GetTenantGuid()
+            };
+            cart = await _cartRepository.AddAsync(cart, cancellationToken);
         }
         var productItemIdx = cart.Items.FindIndex(p => p.Product.Id == productId);
         if (productItemIdx != -1) {
@@ -64,7 +62,7 @@ public class CartService : ICartService {
     public async Task<Cart> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default) {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) {
-            throw new CaasModelNotFoundException();
+            throw new CaasItemNotFoundException();
         }
         var changedProducts = cart.Items.RemoveAll(p => p.Product.Id == productId);
         if (cart.Items.Count == changedProducts.Count) {
@@ -79,15 +77,15 @@ public class CartService : ICartService {
     
     public async Task<Cart> SetProductQuantityInCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
         if (productQuantity <= 0) {
-            throw new ArgumentException("Invalid product quantity", nameof(productQuantity));
+            throw new CaasValidationException(new ValidationFailure(nameof(productQuantity), "Invalid product quantity"));
         }
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) {
-            throw new CaasModelNotFoundException();
+            throw new CaasItemNotFoundException();
         }
         var productItemIdx = cart.Items.FindIndex(p => p.Id == productId);
         if (productItemIdx == -1) {
-            throw new CaasModelNotFoundException();
+            throw new CaasItemNotFoundException();
         } 
         var productItem = cart.Items[productItemIdx];
         productItem = productItem with {

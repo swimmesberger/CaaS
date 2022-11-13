@@ -18,11 +18,15 @@ public class CartServiceTest {
     public async Task CreateCartOptimistic() {
         var cartService = CreateCartService();
 
+        var newCartId = new Guid("397CB87F-9694-4EAD-A549-E3089D61B131");
         var curTime = DateTimeOffset.UtcNow;
-        var createdCart = await cartService.CreateCart();
+        var createdCart = await cartService.AddProductToCart(newCartId, ProductAId, 1);
         createdCart.Should().NotBeNull();
         createdCart.ShopId.Should().Be(TestShopId);
-        createdCart.Items.Should().BeEmpty();
+        createdCart.Items.Should().HaveCount(1);
+        var productA = createdCart.Items.FirstOrDefault(i => i.Product.Id == ProductAId);
+        productA.Should().NotBeNull();
+        productA!.Amount.Should().Be(1);
         createdCart.LastAccess.Should().BeAfter(curTime);
     }
     

@@ -1,0 +1,30 @@
+﻿using System.Runtime.Serialization;
+using FluentValidation;
+using FluentValidation.Results;
+
+namespace CaaS.Core.Base.Exceptions; 
+
+public class CaasValidationException : CaasException {
+    public IEnumerable<ValidationFailure> Errors { get; private set; }
+    
+    public CaasValidationException() { }
+    protected CaasValidationException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+    public CaasValidationException(string? message) : base(message) { }
+    public CaasValidationException(string? message, Exception? innerException) : base(message, innerException) { }
+
+    public CaasValidationException(IEnumerable<ValidationFailure> errors) {
+        Errors = errors;
+    }
+    
+    public CaasValidationException(ValidationFailure error) {
+        Errors = new ValidationFailure[]{error};
+    }
+    
+    public CaasValidationException(string message, IEnumerable<ValidationFailure> errors) : base(message) {
+        Errors = errors;
+    }
+    
+    public CaasValidationException(ValidationException validationException) : base(validationException.Message) {
+        Errors = validationException.Errors;
+    }
+}

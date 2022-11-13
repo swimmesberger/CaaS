@@ -1,6 +1,5 @@
-using CaaS.Api;
+using System.Text.Json.Serialization;
 using CaaS.Api.Base;
-using CaaS.Api.Base.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,13 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //         .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers()
+    .AddMvcOptions(options => {
+        options.ReturnHttpNotAcceptable = true;
+    })
+    .AddJsonOptions(options => {
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => {
-    options.OperationFilter<HeaderOperationFilter>();
-    options.OperationFilter<RequireTenantOperationFilter>();
-});
 
 // register CaaS services
 builder.Services.AddCaas(builder.Configuration);
@@ -25,6 +25,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseHttpLogging();
 }
 
 app.UseHttpsRedirection();

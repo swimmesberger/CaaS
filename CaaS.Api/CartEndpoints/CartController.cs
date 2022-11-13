@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using CaaS.Api.Base.Middleware;
+using CaaS.Api.Base.Attributes;
 using CaaS.Core.CartAggregate;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +8,7 @@ namespace CaaS.Api.CartEndpoints;
 [ApiController]
 [Route("[controller]")]
 [RequireTenant]
-public class CartController {
+public class CartController : ControllerBase {
     private readonly ICartService _cartService;
 
     public CartController(ICartService cartService) {
@@ -16,26 +16,25 @@ public class CartController {
     }
 
     [HttpGet("{cartId:guid}")]
-    public async Task<Cart?> FindCartById(Guid cartId, CancellationToken cancellationToken = default) {
-        return await _cartService.FindCartById(cartId, cancellationToken);
-    }
-
-    [HttpPost]
-    public async Task<Cart> CreateCart(CancellationToken cancellationToken = default) {
-        return await _cartService.CreateCart(cancellationToken);
+    [ReadApi]
+    public async Task<Cart?> GetCartById(Guid cartId, CancellationToken cancellationToken = default) {
+        return await _cartService.GetCartById(cartId, cancellationToken);
     }
 
     [HttpPost("{cartId:guid}/product/{productId:guid}")]
+    [WriteApi]
     public async Task<Cart> AddProductToCart(Guid cartId, Guid productId, [Required][FromQuery] int productQuantity, CancellationToken cancellationToken = default) {
         return await _cartService.AddProductToCart(cartId, productId, productQuantity, cancellationToken);
     }
 
     [HttpDelete("{cartId:guid}/product/{productId:guid}")]
+    [WriteApi]
     public async Task<Cart> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default) {
         return await _cartService.RemoveProductFromCart(cartId, productId, cancellationToken);
     }
 
     [HttpPut("{cartId:guid}/product/{productId:guid}")]
+    [WriteApi]
     public async Task<Cart> SetProductQuantityInCart(Guid cartId, Guid productId, [Required][FromQuery] int productQuantity,
             CancellationToken cancellationToken = default) {
         return await _cartService.SetProductQuantityInCart(cartId, productId, productQuantity, cancellationToken);
