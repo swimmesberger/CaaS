@@ -33,7 +33,7 @@ public class ShopController : ControllerBase {
     
     [HttpPost("{id:guid}/name/{name}")]
     [WriteApi]
-    public async Task<ActionResult<Shop>> SetName(Guid id, string name, CancellationToken cancellationToken = default) {
+    public async Task<Shop> SetName(Guid id, string name, CancellationToken cancellationToken = default) {
         return await _shopService.SetName(id, name, cancellationToken);
     }
 }
