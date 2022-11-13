@@ -385,7 +385,7 @@ public class OrderRepositoryTest  {
     public async void UpdateOrderByUpdatingOrderDiscount() {
         var orderRepository = GetOrderRepository();
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
-        order.OrderDiscounts.Count.Should().Be(3);
+        order!.OrderDiscounts.Count.Should().Be(3);
         var orderDiscounts = order.OrderDiscounts;
 
         var additionalOrderDiscount = new OrderDiscount {
@@ -416,7 +416,7 @@ public class OrderRepositoryTest  {
         var orderRepository = GetOrderRepository();
     
         var order = await orderRepository.FindByIdAsync(ExistingOrderId);
-        var orderItems = order.Items;
+        var orderItems = order!.Items;
         orderItems[0].OrderItemDiscounts.Count.Should().Be(2);
         orderItems[1].OrderItemDiscounts.Count.Should().Be(0);
 

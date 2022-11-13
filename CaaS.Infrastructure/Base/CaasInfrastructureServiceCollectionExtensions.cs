@@ -1,6 +1,5 @@
 ﻿using System.Data.Common;
 using CaaS.Core.Base;
-using CaaS.Core.Base.Tenant;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.ProductAggregate;
@@ -47,7 +46,6 @@ public static class CaasInfrastructureServiceCollectionExtensions {
     
     // ReSharper disable once UnusedMethodReturnValue.Local
     private static IServiceCollection AddRepositories(this IServiceCollection services) {
-        services.AddScoped<ITenantService, ShopTenantService>();
         services.AddScoped<IShopRepository, ShopRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();

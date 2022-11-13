@@ -1,14 +1,11 @@
 ﻿using System.Data.Common;
 using CaaS.Core.Base.Tenant;
-using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Impl;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Di;
 using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
-using CaaS.Infrastructure.Gen;
-using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
@@ -62,12 +59,9 @@ public class BaseDaoTest : IAsyncLifetime {
     protected GenericDao<T> GetDao<T>(IDataRecordMapper<T> dataRecordMapper, string? tenantId = null) where T : DataModel, new() {
         var statementExecutor = new AdoStatementExecutor(GetAdoUnitOfWorkManager());
         var statementGenerator = new AdoStatementGenerator<T>(dataRecordMapper);
-        IServiceProvider<ITenantService> spTenantService = IServiceProvider<ITenantService>.Empty;
+        var spTenantService = IServiceProvider<ITenantIdAccessor>.Empty;
         if (tenantId != null) {
-            spTenantService = new ShopTenantService(
-                    new ShopRepository(GetDao(new ShopDataRecordMapper()), GetDao(new ShopAdminDataRecordMapper())),
-                    new StaticTenantIdAccessor(tenantId)
-            ).AsTypedService();
+            spTenantService = new StaticTenantIdAccessor(tenantId).AsTypedService();
         }
         return new GenericDao<T>(statementExecutor, statementGenerator, spTenantService);
     }

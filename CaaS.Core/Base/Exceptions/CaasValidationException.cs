@@ -1,11 +1,12 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Immutable;
+using System.Runtime.Serialization;
 using FluentValidation;
 using FluentValidation.Results;
 
 namespace CaaS.Core.Base.Exceptions; 
 
 public class CaasValidationException : CaasException {
-    public IEnumerable<ValidationFailure> Errors { get; private set; }
+    public IEnumerable<ValidationFailure> Errors { get; private set; } = ImmutableArray<ValidationFailure>.Empty;
     
     public CaasValidationException() { }
     protected CaasValidationException(SerializationInfo info, StreamingContext context) : base(info, context) { }

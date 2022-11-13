@@ -12,14 +12,14 @@ namespace CaaS.Infrastructure.Base.Ado.Impl;
 public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
     private readonly IStatementExecutor _statementExecutor;
     private readonly IStatementGenerator<T> _statementGenerator;
-    private readonly ITenantService? _tenantService;
+    private readonly ITenantIdAccessor? _tenantService;
     private readonly ITenantIdProvider<T>? _tenantIdProvider;
 
     private IDataRecordMapper<T> DataRecordMapper => _statementGenerator.DataRecordMapper;
     
     public GenericDao(IStatementExecutor statementExecutor, IStatementGenerator<T> statementGenerator, 
-            IServiceProvider<ITenantService>? tenantService = null) {
-        tenantService ??= IServiceProvider<ITenantService>.Empty;
+            IServiceProvider<ITenantIdAccessor>? tenantService = null) {
+        tenantService ??= IServiceProvider<ITenantIdAccessor>.Empty;
         _statementExecutor = statementExecutor;
         _statementGenerator = statementGenerator;
         if (DataRecordMapper is ITenantIdProvider<T> tenantIdProvider) {
@@ -158,10 +158,10 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
         return PostProcessStatementWithTenant(statement, cancellationToken);
     }
 
-    private async ValueTask<Statement> PostProcessStatementWithTenant(Statement statement,
+    private ValueTask<Statement> PostProcessStatementWithTenant(Statement statement,
             CancellationToken cancellationToken = default) {
-        var tenantId = await _tenantService!.GetTenantIdAsync(cancellationToken);
+        var tenantId = _tenantService!.GetTenantId();
         var tenantIdColumnName = DataRecordMapper.ByPropertyName().MapName(_tenantIdProvider!.TenantIdPropertyName);
-        return statement.AddWhereParameter(tenantIdColumnName, tenantId);
+        return new ValueTask<Statement>(statement.AddWhereParameter(tenantIdColumnName, tenantId));
     }
 }
