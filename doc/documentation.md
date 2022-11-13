@@ -64,6 +64,7 @@ Durchschnittlich 3 Produkte je Bestellung
 ![avg_products_order](./assets/avg_products_per_order.png)
 
 Mindestens 10 Kunden mit offenem Warenkorb
+
 ![open_carts](./assets/customers_with_open_carts.png)
 
 <div style="page-break-after: always;"></div>
@@ -76,3 +77,11 @@ Die Datenzugriffsschicht testen wir mittels Integration-Tests. Vor jedem Test wi
 
 Bereits bestehende Unit-Tests betreffen eher die Businesslogik (Repositories) und werden auf basis von in-memory Testdaten durchgeführt.
 
+## Programmstruktur - Ablaufdiagramm
+Exemplarisch haben wir 3 Ablaufdiagramme für komplexe Abläufe in der Anwendung dargestellt.
+
+![flowchart_addProduct](./assets/flowchart_addProductToCart.png)
+
+![flowchart_findCart](./assets/flowchart_findCartByUserId.png)
+
+![flowchart_findOrder](./assets/flowchart_findOrderById.png)
