@@ -9,6 +9,7 @@ namespace CaaS.Api.ProductEndpoints;
 [ApiController]
 [Route("[controller]")]
 [RequireTenant]
+[CaasApiConvention]
 public class ProductController : ControllerBase {
     private readonly IProductService _productService;
 
@@ -17,7 +18,6 @@ public class ProductController : ControllerBase {
     }
     
     [HttpGet]
-    [ReadApi]
     public async Task<IEnumerable<Product>> GetByTextSearch(string searchQuery, CancellationToken cancellationToken = default) {
         var result = await _productService.GetByTextSearch(searchQuery, cancellationToken);
         Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());

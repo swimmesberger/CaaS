@@ -10,6 +10,7 @@ namespace CaaS.Api.ShopEndpoints;
 //[RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
 [ApiController]
 [Route("[controller]")]
+[CaasApiConvention]
 public class ShopController : ControllerBase {
     private readonly IShopService _shopService;
 
@@ -18,7 +19,6 @@ public class ShopController : ControllerBase {
     }
 
     [HttpGet]
-    [ReadApi]
     public async Task<IEnumerable<Shop>> GetAll(CancellationToken cancellationToken = default) {
         var result = await _shopService.GetAll(cancellationToken);
         Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
@@ -26,13 +26,11 @@ public class ShopController : ControllerBase {
     }
     
     [HttpGet("name/{name}")]
-    [ReadApi]
     public async Task<Shop?> GetByName(string name, CancellationToken cancellationToken = default) {
         return await _shopService.GetByName(name, cancellationToken);
     }
     
     [HttpPost("{id:guid}/name/{name}")]
-    [WriteApi]
     public async Task<Shop> SetName(Guid id, string name, CancellationToken cancellationToken = default) {
         return await _shopService.SetName(id, name, cancellationToken);
     }

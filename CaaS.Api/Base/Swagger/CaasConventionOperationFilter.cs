@@ -6,55 +6,92 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace CaaS.Api.Base.Swagger; 
+namespace CaaS.Api.Base.Swagger;
 
 public class CaasConventionOperationFilter : IOperationFilter {
     private static readonly IReadOnlyCollection<KeyValuePair<string, string>> ResponseDescriptionMap = new[] {
         new KeyValuePair<string, string>("2\\d{2}", "Success"),
-        
+
         new KeyValuePair<string, string>("400", "Bad Request"),
         new KeyValuePair<string, string>("404", "Not Found"),
-        new KeyValuePair<string, string>("409", "Conflict")
+        new KeyValuePair<string, string>("409", "Conflict"),
+        new KeyValuePair<string, string>("4\\d{2}", "Client Error"),
+
+        new KeyValuePair<string, string>("5\\d{2}", "Server Error"),
     };
+
+    private readonly NullabilityInfoContext _nullabilityInfoContext;
+
+    public CaasConventionOperationFilter() {
+        _nullabilityInfoContext = new NullabilityInfoContext();
+    }
+
+    public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+        if (ApplyReadFor(operation, context)) return;
+        if (ApplyWriteFor(operation, context)) return;
+
+        if (ApplyReadFor<HttpGetAttribute>(operation, context)) return;
+        if (ApplyWriteFor<HttpPostAttribute>(operation, context)) return;
+        if (ApplyWriteFor<HttpDeleteAttribute>(operation, context)) return;
+        if (ApplyWriteFor<HttpPutAttribute>(operation, context)) return;
+    }
     
-     private readonly NullabilityInfoContext _nullabilityInfoContext;
+    private bool ApplyReadFor(OpenApiOperation operation, OperationFilterContext context)
+        => ApplyReadFor<ReadApiAttribute>(operation, context, static value => value);
+    
+    private bool ApplyWriteFor(OpenApiOperation operation, OperationFilterContext context)
+        => ApplyWriteFor<WriteApiAttribute>(operation, context, static value => value);
 
-     public CaasConventionOperationFilter() {
-         _nullabilityInfoContext = new NullabilityInfoContext();
-     }
-
-     public void Apply(OpenApiOperation operation, OperationFilterContext context) {
-        if (context.MethodInfo.GetCustomAttribute(typeof(WriteApiAttribute)) is WriteApiAttribute writeApiAttribute) {
-            ApplyWriteApi(operation, context, writeApiAttribute);
-            return;
+    private bool ApplyReadFor<T>(OpenApiOperation operation, OperationFilterContext context, Func<T, ReadApiAttribute>? attributeProvider = null) where T: Attribute {
+        if (context.MethodInfo.GetCustomAttribute(typeof(T)) is T attribute) {
+            attributeProvider ??= static _ => new ReadApiAttribute();
+            ApplyReadApi(operation, context, attributeProvider.Invoke(attribute));
+            return true;
         }
-        if (context.MethodInfo.GetCustomAttribute(typeof(ReadApiAttribute)) is ReadApiAttribute readApiAttribute) {
-            ApplyReadApi(operation, context, readApiAttribute);
-            return;
+        return false;
+    }
+    
+    private bool ApplyWriteFor<T>(OpenApiOperation operation, OperationFilterContext context, Func<T, WriteApiAttribute>? attributeProvider = null) where T: Attribute {
+        if (context.MethodInfo.GetCustomAttribute(typeof(T)) is T attribute) {
+            attributeProvider ??= static _ => new WriteApiAttribute();
+            ApplyWriteApi(operation, context, attributeProvider.Invoke(attribute));
+            return true;
         }
-     }
+        return false;
+    }
 
-     private void ApplyReadApi(OpenApiOperation operation, OperationFilterContext context, ReadApiAttribute attribute) {
-         var returnType = _nullabilityInfoContext.Create(context.MethodInfo.ReturnParameter);
-         if (typeof(Task).IsAssignableFrom(returnType.Type)) {
-             var genericParams = returnType.GenericTypeArguments;
-             returnType = genericParams.Length >= 1 ? genericParams[0] : null;
-         }
-         if (returnType == null) return;
-        
-         if (returnType.ReadState == NullabilityState.Nullable) {
-             AddProblemDetailsByStatusCode(StatusCodes.Status404NotFound, operation, context);
-         }
-         if (typeof(IEnumerable).IsAssignableFrom(returnType.Type)) {
-             var okResponse = operation.Responses.GetValueOrDefault(StatusCodes.Status200OK.ToString());
-             if (okResponse == null) return;
-             HeaderOperationFilter.ApplyProducesHeader(okResponse, context, new ProducesTotalCountHeaderAttribute());
-         }
-     }
+    private void ApplyReadApi(OpenApiOperation operation, OperationFilterContext context, ReadApiAttribute attribute) {
+        var returnType = _nullabilityInfoContext.Create(context.MethodInfo.ReturnParameter);
+        if (typeof(Task).IsAssignableFrom(returnType.Type)) {
+            var genericParams = returnType.GenericTypeArguments;
+            returnType = genericParams.Length >= 1 ? genericParams[0] : null;
+        }
+        if (returnType == null) return;
+
+        if (returnType.ReadState == NullabilityState.Nullable) {
+            AddProblemDetailsByStatusCode(StatusCodes.Status404NotFound, operation, context);
+        }
+        if (typeof(IEnumerable).IsAssignableFrom(returnType.Type)) {
+            var okResponse = operation.Responses.GetValueOrDefault(StatusCodes.Status200OK.ToString());
+            if (okResponse == null) return;
+
+            HeaderOperationFilter.ApplyProducesHeader(okResponse, context, new ProducesTotalCountHeaderAttribute());
+        }
+        ApplyDefaultStatusCodes(operation, context);
+    }
 
     private void ApplyWriteApi(OpenApiOperation operation, OperationFilterContext context, WriteApiAttribute attribute) {
         AddProblemDetailsByStatusCode(StatusCodes.Status404NotFound, operation, context);
         AddProblemDetailsByStatusCode(StatusCodes.Status409Conflict, operation, context);
+
+        ApplyDefaultStatusCodes(operation, context);
+    }
+
+    private void ApplyDefaultStatusCodes(OpenApiOperation operation, OperationFilterContext context) {
+        AddProblemDetailsByStatusCode(StatusCodes.Status400BadRequest, operation, context);
+        
+        AddProblemDetailsByStatusCode(StatusCodes.Status500InternalServerError, operation, context);
+        AddProblemDetailsByStatusCode(StatusCodes.Status503ServiceUnavailable, operation, context);
     }
 
     internal static void AddProblemDetailsByStatusCode(int statusCode, OpenApiOperation operation, OperationFilterContext context) {
