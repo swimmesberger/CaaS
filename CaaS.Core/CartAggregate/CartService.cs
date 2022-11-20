@@ -2,6 +2,7 @@
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.ProductAggregate;
+using CaaS.Core.ShopAggregate;
 using FluentValidation.Results;
 
 namespace CaaS.Core.CartAggregate; 
@@ -9,10 +10,12 @@ namespace CaaS.Core.CartAggregate;
 public class CartService : ICartService {
     private readonly ICartRepository _cartRepository;
     private readonly ITenantIdAccessor _tenantIdAccessor;
+    private readonly IShopRepository _shopRepository;
 
-    public CartService(ICartRepository cartRepository, ITenantIdAccessor tenantIdAccessor) {
+    public CartService(ICartRepository cartRepository, ITenantIdAccessor tenantIdAccessor, IShopRepository shopRepository) {
         _cartRepository = cartRepository;
         _tenantIdAccessor = tenantIdAccessor;
+        _shopRepository = shopRepository;
     }
 
     public async Task<Cart?> GetCartById(Guid cartId, CancellationToken cancellationToken = default) {
@@ -21,7 +24,18 @@ public class CartService : ICartService {
         cart = cart with { LastAccess = DateTimeOffset.UtcNow };
         return await _cartRepository.UpdateAsync(cart, cancellationToken);
     }
-    
+
+    public async Task<int> DeleteExpiredCarts(CancellationToken cancellationToken = default) {
+        var shops = await _shopRepository.FindAllAsync(cancellationToken);
+        int count = 0;
+        foreach (var shop in shops) {
+            var expiredCarts = await _cartRepository.FindExpiredCarts(shop.CartLifetimeMinutes, cancellationToken);
+            await _cartRepository.DeleteAsync(expiredCarts, cancellationToken);
+            count += expiredCarts.Count;
+        }
+        return count;
+    }
+
     public async Task<Cart> AddProductToCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
         if (productQuantity <= 0) {
             throw new CaasValidationException(new ValidationFailure(nameof(productQuantity), "Invalid product quantity"));

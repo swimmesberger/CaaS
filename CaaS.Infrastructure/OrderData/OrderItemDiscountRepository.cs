@@ -15,101 +15,101 @@ internal class OrderItemDiscountRepository {
         Converter = new OrderItemDiscountConvert();
     }
     
-    public async Task<OrderItemDiscount?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
+    public async Task<ItemDiscount?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
         var dataModel = await Dao.FindByIdAsync(id, cancellationToken);
         if (dataModel == null) return null;
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
     
-    public async Task<IReadOnlyList<OrderItemDiscount>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<ItemDiscount>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
         var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
     
-    public async Task<IReadOnlyList<OrderItemDiscount>> FindByOrderItemId(Guid orderItemId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<ItemDiscount>> FindByOrderItemId(Guid orderItemId, CancellationToken cancellationToken = default) {
         return (await Converter
                 .ConvertToDomain(Dao
                     .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDiscountDataModel.ProductOrderId), orderItemId), cancellationToken), cancellationToken))
                 .ToList();
     }
     
-    public async Task<Dictionary<Guid, IReadOnlyList<OrderItemDiscount>>> FindByOrderItemIds(IEnumerable<Guid> orderItemIds,
+    public async Task<Dictionary<Guid, IReadOnlyList<ItemDiscount>>> FindByOrderItemIds(IEnumerable<Guid> orderItemIds,
         CancellationToken cancellationToken = default) {
         return (await Converter
                 .ConvertToDomain(Dao
                     .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDiscountDataModel.ProductOrderId), orderItemIds), cancellationToken), cancellationToken))
-            .GroupBy(i => i.OrderItemId)
-            .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<OrderItemDiscount>)grp.ToImmutableArray());
+            .GroupBy(i => i.ParentItemId)
+            .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<ItemDiscount>)grp.ToImmutableArray());
     }
     
-    public async Task AddAsync(IEnumerable<OrderItemDiscount> entities, CancellationToken cancellationToken = default) {
+    public async Task AddAsync(IEnumerable<ItemDiscount> entities, CancellationToken cancellationToken = default) {
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.AddAsync(dataModels, cancellationToken);
     }
     
-    public async Task UpdateAsync(IEnumerable<OrderItemDiscount> entities, CancellationToken cancellationToken = default) {
+    public async Task UpdateAsync(IEnumerable<ItemDiscount> entities, CancellationToken cancellationToken = default) {
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.UpdateAsync(dataModels, cancellationToken);
     }
     
-    public async Task UpdateDiscountsAsync(IEnumerable<OrderItemDiscount> oldDomainModels, IEnumerable<OrderItemDiscount> newDomainModels,
+    public async Task UpdateDiscountsAsync(IEnumerable<ItemDiscount> oldDomainModels, IEnumerable<ItemDiscount> newDomainModels,
         CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
         await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
     }
     
-    public async Task DeleteAsync(IEnumerable<OrderItemDiscount> entities, CancellationToken cancellationToken = default) {
+    public async Task DeleteAsync(IEnumerable<ItemDiscount> entities, CancellationToken cancellationToken = default) {
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.DeleteAsync(dataModels, cancellationToken);
     }
     
-    private class OrderItemDiscountConvert : IDomainModelConverter<ProductOrderDiscountDataModel, OrderItemDiscount> {
+    private class OrderItemDiscountConvert : IDomainModelConverter<ProductOrderDiscountDataModel, ItemDiscount> {
         public IEnumerable<OrderParameter>? DefaultOrderParameters => null;
 
-        public async ValueTask<OrderItemDiscount> ConvertToDomain(ProductOrderDiscountDataModel dataModel, CancellationToken cancellationToken) {
+        public async ValueTask<ItemDiscount> ConvertToDomain(ProductOrderDiscountDataModel dataModel, CancellationToken cancellationToken) {
             return (await ConvertToDomain(new List<ProductOrderDiscountDataModel>() { dataModel })).First();
         }
         
-        public async Task<IReadOnlyList<OrderItemDiscount>> ConvertToDomain(IAsyncEnumerable<ProductOrderDiscountDataModel> dataModels, 
+        public async Task<IReadOnlyList<ItemDiscount>> ConvertToDomain(IAsyncEnumerable<ProductOrderDiscountDataModel> dataModels, 
             CancellationToken cancellationToken = default) {
                 var items = await dataModels.ToListAsync(cancellationToken);
                 return await ConvertToDomain(items);
         }
 
-        private Task<IReadOnlyList<OrderItemDiscount>> ConvertToDomain(IReadOnlyCollection<ProductOrderDiscountDataModel> dataModels) {
-            var domainModels = dataModels.Select(dataModel => new OrderItemDiscount() {
+        private Task<IReadOnlyList<ItemDiscount>> ConvertToDomain(IReadOnlyCollection<ProductOrderDiscountDataModel> dataModels) {
+            var domainModels = dataModels.Select(dataModel => new ItemDiscount() {
                     Id = dataModel.Id,
                     DiscountName = dataModel.DiscountName,
                     DiscountValue = dataModel.Discount,
-                    OrderItemId = dataModel.ProductOrderId,
+                    ParentItemId = dataModel.ProductOrderId,
                     ShopId = dataModel.ShopId,
                     ConcurrencyToken = dataModel.GetConcurrencyToken()
                 })
                 .ToList();
-            return Task.FromResult<IReadOnlyList<OrderItemDiscount>>(domainModels);
+            return Task.FromResult<IReadOnlyList<ItemDiscount>>(domainModels);
         }
         
-        public IReadOnlyList<ProductOrderDiscountDataModel> ConvertFromDomain(IEnumerable<OrderItemDiscount> domainModels)
+        public IReadOnlyList<ProductOrderDiscountDataModel> ConvertFromDomain(IEnumerable<ItemDiscount> domainModels)
             => domainModels.Select(ConvertFromDomain).ToList();
         
-        public ProductOrderDiscountDataModel ConvertFromDomain(OrderItemDiscount domainModel) {
+        public ProductOrderDiscountDataModel ConvertFromDomain(ItemDiscount domainModel) {
             return new ProductOrderDiscountDataModel {
                 Id = domainModel.Id,
                 DiscountName = domainModel.DiscountName,
                 Discount = domainModel.DiscountValue,
-                ProductOrderId = domainModel.OrderItemId,
+                ProductOrderId = domainModel.ParentItemId,
                 ShopId = domainModel.ShopId,
                 RowVersion = domainModel.GetRowVersion(),
             };
         }
         
-        public ProductOrderDiscountDataModel ApplyDomainModel(ProductOrderDiscountDataModel dataModel, OrderItemDiscount domainModel) {
+        public ProductOrderDiscountDataModel ApplyDomainModel(ProductOrderDiscountDataModel dataModel, ItemDiscount domainModel) {
             return dataModel with {
                 Id = domainModel.Id,
                 DiscountName = domainModel.DiscountName,
                 Discount = domainModel.DiscountValue,
-                ProductOrderId = domainModel.OrderItemId,
+                ProductOrderId = domainModel.ParentItemId,
                 ShopId = domainModel.ShopId,
                 RowVersion = domainModel.GetRowVersion(),
             };

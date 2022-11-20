@@ -5,23 +5,27 @@ using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.ShopData; 
 
-internal class ShopAdminRepository {
+internal class ShopAdminRepository : IShopAdminRepository {
     private IDao<ShopAdminDataModel> Dao { get; }
-    private ShopAdminDomainModelConvert Converter { get; }
+    private ShopAdminDomainModelConverter Converter { get; }
 
     public ShopAdminRepository(IDao<ShopAdminDataModel> dao) {
         Dao = dao;
-        Converter = new ShopAdminDomainModelConvert();
+        Converter = new ShopAdminDomainModelConverter();
     }
-
+    
     public async Task<IReadOnlyList<ShopAdmin>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
         var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
+    public async Task<ShopAdmin?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
+        var dataModel = await Dao.FindByIdAsync(id, cancellationToken);
+        if (dataModel == null) return null;
+        return await Converter.ConvertToDomain(dataModel, cancellationToken);
+    }
 
-    private class ShopAdminDomainModelConvert : IDomainReadModelConverter<ShopAdminDataModel, ShopAdmin> {
+    private class ShopAdminDomainModelConverter : IDomainReadModelConverter<ShopAdminDataModel, ShopAdmin> {
         public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = OrderParameter.From(nameof(ShopAdminDataModel.Name));
-        
         public ValueTask<ShopAdmin> ConvertToDomain(ShopAdminDataModel dataModel) => ConvertToDomain(dataModel, default);
 
         public ValueTask<ShopAdmin> ConvertToDomain(ShopAdminDataModel dataModel, CancellationToken cancellationToken) {
@@ -33,11 +37,12 @@ internal class ShopAdminRepository {
                 ConcurrencyToken = dataModel.GetConcurrencyToken()
             });
         }
-        
-        public async Task<IReadOnlyList<ShopAdmin>> ConvertToDomain(IAsyncEnumerable<ShopAdminDataModel> dataModels, CancellationToken cancellationToken = default) {
+
+        public async Task<IReadOnlyList<ShopAdmin>> ConvertToDomain(IAsyncEnumerable<ShopAdminDataModel> dataModels,
+            CancellationToken cancellationToken = default) {
             return await dataModels
-                    .SelectAwait(ConvertToDomain)
-                    .ToListAsync(cancellationToken);
+                .SelectAwait(ConvertToDomain)
+                .ToListAsync(cancellationToken);
         }
     }
 }

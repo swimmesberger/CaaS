@@ -3,7 +3,7 @@ using CaaS.Api.Base.Attributes;
 using CaaS.Core.CartAggregate;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CaaS.Api.CartEndpoints; 
+namespace CaaS.Api.CartApi; 
 
 [ApiController]
 [Route("[controller]")]

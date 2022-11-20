@@ -138,7 +138,7 @@ internal class OrderItemRepository {
                     Amount = dataModel.Amount,
                     PricePerPiece = product.Price,
                     OrderItemDiscounts =  orderItemDiscountDict.ContainsKey(dataModel.Id) ? 
-                                            orderItemDiscountDict[dataModel.Id].Value.ToImmutableArray() : ImmutableArray<OrderItemDiscount>.Empty,
+                                            orderItemDiscountDict[dataModel.Id].Value.ToImmutableArray() : ImmutableArray<ItemDiscount>.Empty,
                     ConcurrencyToken = dataModel.GetConcurrencyToken()
                 });
             }

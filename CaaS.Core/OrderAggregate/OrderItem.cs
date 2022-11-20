@@ -12,7 +12,7 @@ public record OrderItem : IEntityBase {
     public Guid OrderId { get; init; }
     public int Amount { get; init; }
     
-    public IImmutableList<OrderItemDiscount> OrderItemDiscounts { get; init; } = ImmutableArray<OrderItemDiscount>.Empty;
+    public IImmutableList<ItemDiscount> OrderItemDiscounts { get; init; } = ImmutableArray<ItemDiscount>.Empty;
     public decimal PricePerPiece { get; init; }
     public string ConcurrencyToken { get; init; } = string.Empty;
 }

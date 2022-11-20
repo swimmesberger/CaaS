@@ -32,6 +32,9 @@ internal class ProductDomainModelConvert : IDomainModelConverter<ProductDataMode
         return dataModel with {
             Name = domainModel.Name,
             Price = domainModel.Price,
+            Description = domainModel.Description,
+            DownloadLink = domainModel.DownloadLink,
+            Deleted = domainModel.Deleted
         };
     }
 
@@ -40,7 +43,10 @@ internal class ProductDomainModelConvert : IDomainModelConverter<ProductDataMode
             Id = product.Id,
             Name = product.Name,
             Price = product.Price,
+            Description = product.Description,
+            DownloadLink = product.DownloadLink,
             ShopId = product.Shop.Id,
+            Deleted = product.Deleted,
             RowVersion = product.GetRowVersion()
         };
     }
@@ -71,7 +77,10 @@ internal class ProductDomainModelConvert : IDomainModelConverter<ProductDataMode
             Id = dataModel.Id,
             Name = dataModel.Name,
             Price = dataModel.Price,
+            Description = dataModel.Description,
+            DownloadLink = dataModel.DownloadLink,
             Shop = shop,
+            Deleted = dataModel.Deleted,
             ConcurrencyToken = dataModel.GetConcurrencyToken()
         };
     }

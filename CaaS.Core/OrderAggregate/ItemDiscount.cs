@@ -2,11 +2,11 @@
 
 namespace CaaS.Core.OrderAggregate; 
 
-public record OrderItemDiscount : IEntityBase {
+public record ItemDiscount : IEntityBase {
     public Guid Id { get; init; } = Guid.NewGuid();
 
     public Guid ShopId { get; init; } = default;
-    public Guid OrderItemId { get; init; } = default;
+    public Guid ParentItemId { get; init; } = default;
     public string DiscountName { get; init; } = string.Empty;
     public decimal DiscountValue { get; init; } = 0;
     public string ConcurrencyToken { get; init; } = string.Empty;

@@ -1,4 +1,5 @@
 ﻿using CaaS.Core.OrderAggregate;
+using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.CustomerData;
 using CaaS.Infrastructure.OrderData;
@@ -12,6 +13,7 @@ public class OrderServiceTest {
     private static readonly Guid TestShopId = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");
     private const string TestShopName = "TestShop";
     private static readonly Guid ExistingOrderId = new Guid("0EE2F24E-E2DF-4A0E-B055-C804A6672D44");
+    private static readonly Guid ExistingCartId = new Guid("5552F24E-E2DF-4A0E-B055-C804A6672D77");
     private static readonly Guid CustomerIdA = new Guid("99C91EA1-4CA5-9097-DFDB-CF688F0DA31F");
     private static readonly Guid ProductAId = new Guid("05B7F6AB-4409-4417-9F76-34035AC92AE9");
     private static readonly Guid ProductBId = new Guid("DD7E1EA1-6D85-4596-AADB-A4648F7DA31F");
@@ -84,15 +86,24 @@ public class OrderServiceTest {
                 Discount = (decimal)1.10, ProductOrderId = default, ShopId = TestShopId}
         });
         
+        var cartDao = new MemoryDao<CartDataModel>(new List<CartDataModel>() {
+            new CartDataModel() { Id = ExistingCartId, ShopId = TestShopId }
+        });
+        var cartItemDao = new MemoryDao<ProductCartDataModel>(new List<ProductCartDataModel>() {
+            new ProductCartDataModel() { Amount = 2, CartId = ExistingCartId, ProductId = ProductAId }
+        });
+        
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
         var productRepository = new ProductRepository(productDao, shopRepository);
         var customerRepository = new CustomerRepository(customerDao);
         var couponRepository = new CouponRepository(couponDao);
+        
+        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository);
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
         var orderRepository = new OrderRepository(orderDao, orderItemDao, orderItemDiscountDao, orderDiscountDao, 
                                                     productRepository, customerRepository, couponRepository);
         
-        return new OrderService(orderRepository, tenantIdAccessor, customerRepository, productRepository);
+        return new OrderService(orderRepository, tenantIdAccessor, customerRepository, cartRepository);
     }
 }

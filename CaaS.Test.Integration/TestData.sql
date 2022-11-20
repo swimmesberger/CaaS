@@ -1,14 +1,14 @@
-INSERT INTO shop_admin(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail) 
-    VALUES ('bbfc1894-0c7e-4414-aa71-20d7cbbe7236',1,'2022-03-24 08:25:25','2022-09-07 01:50:55','a468d796-db09-496d-9794-f6b42f8c7c0b','Joye Killiam','jkilliam0@zdnet.com');
-INSERT INTO shop_admin(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail) 
-    VALUES ('a5c992d5-5065-41fe-b2d0-2fa4b5945b56',5,'2022-05-31 18:29:50','2022-09-06 14:01:03','a468d796-db09-496d-9794-f6b42f8c7c0b','Kanya Pavey','kpavey0@google.ca');
+INSERT INTO shop_admin(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail)
+VALUES ('bbfc1894-0c7e-4414-aa71-20d7cbbe7236',1,'2022-03-24 08:25:25','2022-09-07 01:50:55','a468d796-db09-496d-9794-f6b42f8c7c0b','Joye Killiam','jkilliam0@zdnet.com');
+INSERT INTO shop_admin(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail)
+VALUES ('a5c992d5-5065-41fe-b2d0-2fa4b5945b56',5,'2022-05-31 18:29:50','2022-09-06 14:01:03','a468d796-db09-496d-9794-f6b42f8c7c0b','Kanya Pavey','kpavey0@google.ca');
 
-INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id) 
-    VALUES ('a468d796-db09-496d-9794-f6b42f8c7c0b',1,'2022-06-29 21:22:51','2022-10-06 14:30:53','Amazon',44415,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236');
-INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id) 
-    VALUES ('ba86a395-51ca-4f29-a047-5296ce90ab79',3,'2022-01-25 05:39:19','2022-09-30 15:40:10','E-Tec',32382,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236');
-INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id) 
-    VALUES ('c277a395-51ca-4f29-a047-5296ce90ab79',3,'2022-01-25 05:39:19','2022-09-30 15:40:10','Kanoodle',32382,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236');
+INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id)
+VALUES ('a468d796-db09-496d-9794-f6b42f8c7c0b',1,'2022-06-29 21:22:51','2022-10-06 14:30:53','Amazon',44415,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236');
+INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id)
+VALUES ('ba86a395-51ca-4f29-a047-5296ce90ab79',3,'2022-01-25 05:39:19','2022-09-30 15:40:10','E-Tec',32382,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236');
+INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id)
+VALUES ('c277a395-51ca-4f29-a047-5296ce90ab79',3,'2022-01-25 05:39:19','2022-09-30 15:40:10','Kanoodle',32382,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236');
 
 INSERT INTO product(id,row_version,creation_time,last_modification_time,shop_id,name,description,download_link,price,deleted) 
     VALUES ('fcb3c98d-4392-4e4c-8d31-f89f0ebe3c83',8,'2022-05-31 10:38:18','2022-08-22 11:30:02','a468d796-db09-496d-9794-f6b42f8c7c0b','USB cable','liquam augue quam',

@@ -191,10 +191,27 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
                 if (parameter.Value == null) {
                     sql.Append($" {queryParameter.Name} IS NULL");
                 } else {
-                    sql.Append($" {queryParameter.Name} = @{parameter.ParameterName}");
+                    sql.Append($" {queryParameter.Name} {ComparatorToSqlOperator(parameter.Comparator)} @{parameter.ParameterName}");
                     newParams.Add(parameter);
                 }
             }
+        }
+    }
+
+    private string ComparatorToSqlOperator(Comparators comparator) {
+        switch (comparator) {
+            case Comparators.Equal:
+                return "=";
+            case Comparators.Greater:
+                return ">";
+            case Comparators.Less:
+                return "<";
+            case Comparators.GreatOrEqual:
+                return ">=";
+            case Comparators.LessOrEqual:
+                return "<=";
+            default:
+                throw new ArgumentException($"Operator '{comparator}' is invalid.");
         }
     }
     

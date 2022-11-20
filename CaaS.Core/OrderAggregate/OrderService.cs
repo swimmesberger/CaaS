@@ -1,8 +1,8 @@
-﻿using CaaS.Core.Base;
+﻿using System.Collections.Immutable;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.CartAggregate;
 using CaaS.Core.CustomerAggregate;
-using CaaS.Core.ProductAggregate;
 
 namespace CaaS.Core.OrderAggregate; 
 
@@ -11,14 +11,14 @@ public class OrderService : IOrderService {
     private readonly ITenantIdAccessor _tenantIdAccessor;
     
     private readonly ICustomerRepository _customerRepository;
-    private readonly IProductRepository _productRepository;
+    private readonly ICartRepository _cartRepository;
 
     public OrderService(IOrderRepository orderRepository, ITenantIdAccessor tenantIdAccessor, 
-        ICustomerRepository customerRepository, IProductRepository productRepository) {
+        ICustomerRepository customerRepository, ICartRepository cartRepository) {
         _orderRepository = orderRepository;
         _tenantIdAccessor = tenantIdAccessor;
         _customerRepository = customerRepository;
-        _productRepository = productRepository;
+        _cartRepository = cartRepository;
     }
 
     public async Task<Order?> FindOrderById(Guid orderId, CancellationToken cancellationToken = default) {
@@ -42,49 +42,44 @@ public class OrderService : IOrderService {
         return await _orderRepository.AddAsync(order, cancellationToken);
     }
     
-    public async Task<Order> AddProductToOrder(Guid orderId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
-        if (productQuantity <= 0) {
-            throw new ArgumentException("Invalid product quantity", nameof(productQuantity));
-        }
+    public async Task<Order> CreateOrderFromCart(Guid cartId, CancellationToken cancellationToken = default) {
+        var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
 
-        var order = await _orderRepository.FindByIdAsync(orderId, cancellationToken);
-        if (order == null) {
+        if (cart == null) {
             throw new CaasItemNotFoundException();
         }
-        var originalOrder = order;
-
-        var productItemIdx = order.Items.FindIndex(p => p.Product.Id == productId);
-        if (productItemIdx != -1) { //Product already exists in order... will this case ever happen?
-            var productItem = order.Items[productItemIdx];
-            productItem = productItem with {
-                Amount = productItem.Amount + productQuantity
-            };
-
-            order = order with {
-                Items = order.Items.SetItem(productItemIdx, productItem),
-            };
-        } else {        //add new item to order
-            var product = await _productRepository.FindByIdAsync(productId, cancellationToken);
-            if (product == null) {
-                throw new CaasItemNotFoundException();
-            }
-
-            var productItem = new OrderItem {
-                Product = new Product() { Id = productId },
-                ShopId = _tenantIdAccessor.GetTenantGuid(),
-                OrderId = orderId,
-                Amount = productQuantity,
-                //OrderItemDiscounts = null,
-                PricePerPiece = product.Price,
-            };
-
-            order = order with {
-                Items = order.Items.Add(productItem)
-            };
+        
+        if (cart.Customer == null) {
+            throw new CaasItemNotFoundException("a cart needs a customer when an order is created out of it");
         }
-        return await _orderRepository.UpdateAsync(originalOrder, order, cancellationToken);
-    }
-    public Task<Order> CreateOrderFromCart(Guid cartId, CancellationToken cancellationToken = default) {
-        throw new NotImplementedException();
+
+        var orderId = Guid.NewGuid();
+        
+        var orderItems = new List<OrderItem>();
+        foreach (var item in cart.Items) {
+            var orderItem = new OrderItem {
+                Id = item.Id,
+                Product = item.Product,
+                ShopId = item.ShopId,
+                OrderId = orderId,
+                Amount = item.Amount,
+                OrderItemDiscounts = item.CartItemDiscounts,
+                PricePerPiece = item.Product.Price
+            };
+            orderItems.Add(orderItem);
+        }
+
+        var order = new Order {
+            Id = orderId,
+            ShopId = _tenantIdAccessor.GetTenantGuid(),
+            Customer = cart.Customer,
+            Items = orderItems.ToImmutableArray(),
+            Coupons = cart.Coupons,
+            OrderDiscounts = cart.CartDiscounts,
+            OrderDate = DateTimeOffset.Now
+        };
+
+        var savedOrder = await _orderRepository.AddAsync(order);
+        return savedOrder;
     }
 }

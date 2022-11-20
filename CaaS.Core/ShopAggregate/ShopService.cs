@@ -5,11 +5,13 @@ namespace CaaS.Core.ShopAggregate;
 
 public class ShopService : IShopService {
     private readonly IShopRepository _shopRepository;
+    private readonly IShopAdminRepository _shopAdminRepository;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
 
-    public ShopService(IShopRepository shopRepository, IUnitOfWorkManager unitOfWorkManager) {
+    public ShopService(IShopRepository shopRepository, IUnitOfWorkManager unitOfWorkManager, IShopAdminRepository shopAdminRepository) {
         _shopRepository = shopRepository;
         _unitOfWorkManager = unitOfWorkManager;
+        _shopAdminRepository = shopAdminRepository;
     }
     
     public async Task<CountedResult<Shop>> GetAll(CancellationToken cancellationToken = default) {
@@ -30,6 +32,21 @@ public class ShopService : IShopService {
         shop = shop with { Name = name };
         shop = await _shopRepository.UpdateAsync(shop, cancellationToken);
         await uow.CompleteAsync(cancellationToken);
+        return shop;
+    }
+    public async Task<Shop> Add(string name, Guid adminId, int cartLifetimeMinutes = 120, CancellationToken cancellationToken = default) {
+        var admin = await _shopAdminRepository.FindByIdAsync(adminId, cancellationToken);
+        if (admin == null) {
+            throw new CaasItemNotFoundException();
+        }
+        var shop = new Shop {
+            Name = name,
+            CartLifetimeMinutes = cartLifetimeMinutes,
+            ShopAdmin = admin
+        };
+
+        shop = await _shopRepository.AddAsync(shop, cancellationToken);
+        
         return shop;
     }
 }

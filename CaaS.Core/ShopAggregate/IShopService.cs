@@ -8,4 +8,6 @@ public interface IShopService {
     Task<Shop?> GetByName(string name, CancellationToken cancellationToken = default);
 
     Task<Shop> SetName(Guid id, string name, CancellationToken cancellationToken = default);
+
+    Task<Shop> Add(string name, Guid adminId, int cartLifetimeMinutes = 120, CancellationToken cancellationToken = default);
 }

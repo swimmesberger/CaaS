@@ -149,7 +149,7 @@ internal class OrderDomainModelConvert : IDomainReadModelConverter<OrderDataMode
         var domainModels = new List<Order>();
         foreach (var dataModel in dataModels) {
             var orderDiscounts = orderDiscountsDict.TryGetValue(dataModel.Id, out var orderDiscountsList) ? 
-                orderDiscountsList.ToImmutableArray() : ImmutableArray<OrderDiscount>.Empty;
+                orderDiscountsList.ToImmutableArray() : ImmutableArray<Discount>.Empty;
             var orderItems = orderItemsDict.TryGetValue(dataModel.Id, out var orderItemsList) ? 
                 orderItemsList.ToImmutableArray() : ImmutableArray<OrderItem>.Empty;
             var coupons = couponsDict.TryGetValue(dataModel.Id, out var couponsList) ? 

@@ -130,26 +130,26 @@ public class OrderRepositoryTest  {
             Amount = 10
         };
 
-        var orderItem1Discount1 = new OrderItemDiscount {
+        var orderItem1Discount1 = new ItemDiscount {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            OrderItemId = orderItem1.Id,
+            ParentItemId = orderItem1.Id,
             DiscountName = "the first OrderItemDiscount of the first product in this order",
             DiscountValue = (decimal)1.99
         };
 
-        var orderItem1Discount2 = new OrderItemDiscount() {
+        var orderItem1Discount2 = new ItemDiscount() {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            OrderItemId = orderItem1.Id,
+            ParentItemId = orderItem1.Id,
             DiscountName = "the second OrderItemDiscount of the first product in this order",
             DiscountValue = (decimal)2.99
         };
 
-        var orderItem2Discount1 = new OrderItemDiscount() {
+        var orderItem2Discount1 = new ItemDiscount() {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            OrderItemId = orderItem2.Id,
+            ParentItemId = orderItem2.Id,
             DiscountName = "the first OrderItemDiscount of the second product in this order",
             DiscountValue = (decimal)0.99
         };
@@ -172,12 +172,12 @@ public class OrderRepositoryTest  {
             Customer = customer!
         };
         
-        var orderDiscount = new OrderDiscount {
+        var orderDiscount = new Discount {
             Id = Guid.NewGuid(),
             DiscountName = "my test discount",
             DiscountValue = 5,
             ShopId = TestShopId,
-            OrderId = newOrder.Id
+            ParentId = newOrder.Id
         };
 
         var coupon1 = new Coupon {
@@ -388,12 +388,12 @@ public class OrderRepositoryTest  {
         order!.OrderDiscounts.Count.Should().Be(3);
         var orderDiscounts = order.OrderDiscounts;
 
-        var additionalOrderDiscount = new OrderDiscount {
+        var additionalOrderDiscount = new Discount {
             Id = Guid.NewGuid(),
             DiscountName = "a new order discount",
             DiscountValue = 1,
             ShopId = TestShopId,
-            OrderId = ExistingOrderId
+            ParentId = ExistingOrderId
         };
         
         var updatedOrderDiscount = orderDiscounts[1] with {
@@ -425,10 +425,10 @@ public class OrderRepositoryTest  {
             DiscountName = "updated discount"
         };
 
-        var additionalOrderItemDiscount = new OrderItemDiscount {
+        var additionalOrderItemDiscount = new ItemDiscount {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            OrderItemId = OrderItemBId,
+            ParentItemId = OrderItemBId,
             DiscountName = "additional order item discount",
             DiscountValue = 1
         };

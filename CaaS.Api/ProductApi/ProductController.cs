@@ -4,7 +4,7 @@ using CaaS.Core.ProductAggregate;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 
-namespace CaaS.Api.ProductEndpoints; 
+namespace CaaS.Api.ProductApi; 
 
 [ApiController]
 [Route("[controller]")]

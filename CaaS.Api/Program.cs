@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using CaaS.Api.BackgroundServices;
 using CaaS.Api.Base;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,8 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddHostedService<ScheduledUpdateService>();
+
 
 // register CaaS services
 builder.Services.AddCaas(builder.Configuration);

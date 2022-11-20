@@ -21,6 +21,20 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
         if (dataModel == null) return null;
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
+    
+    public async Task<IReadOnlyList<Cart>> FindCartsByShopId(Guid shopId, CancellationToken cancellationToken = default) {
+        return await Converter
+            .ConvertToDomain(Dao
+                .FindBy(StatementParameters.CreateWhere(nameof(Cart.ShopId), shopId), cancellationToken), cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Cart>> FindExpiredCarts(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
+        var parameters = new List<QueryParameter> {
+            QueryParameter.From(nameof(Cart.LastAccess), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMinutes(lifeTimeMinutes)), comparator: Comparators.Less),
+        };
+
+        return await Converter.ConvertToDomain(Dao.FindBy(StatementParameters.CreateWhere(parameters), cancellationToken), cancellationToken);
+    }
 
     public async Task<Cart> AddAsync(Cart entity, CancellationToken cancellationToken = default) {
         await Converter.CartItemRepository.AddAsync(entity.Items, cancellationToken);
@@ -51,7 +65,11 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     public async Task DeleteAsync(Cart entity, CancellationToken cancellationToken = default) {
         await Dao.DeleteAsync(Converter.ConvertFromDomain(entity), cancellationToken);
     }
-
+    public async Task DeleteAsync(IEnumerable<Cart> entities, CancellationToken cancellationToken = default) {
+        var dataModels = Converter.ConvertFromDomain(entities);
+        await Dao.DeleteAsync(dataModels, cancellationToken);
+    }
+    
     private async Task<Cart> UpdateImplAsync(Cart entity, CancellationToken cancellationToken = default) {
         var dataModel = Converter.ConvertFromDomain(entity);
         dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
@@ -70,6 +88,9 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
             CartItemRepository = new CartItemRepository(cartItemDao, productRepository);
             CustomerRepository = customerRepository;
         }
+        
+        public IReadOnlyList<CartDataModel> ConvertFromDomain(IEnumerable<Cart> domainModels)
+            => domainModels.Select(ConvertFromDomain).ToList();
 
         public CartDataModel ConvertFromDomain(Cart domainModel) {
             return new CartDataModel() {

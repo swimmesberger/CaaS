@@ -7,6 +7,7 @@ using CaaS.Infrastructure.Base.Repository;
 namespace CaaS.Infrastructure.ShopData;
 
 public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopRepository {
+    
     public ShopRepository(IDao<ShopDataModel> shopDao, IDao<ShopAdminDataModel> shopAdminDao) : 
             base(shopDao, new ShopDomainModelConverter(shopAdminDao)) { }
 

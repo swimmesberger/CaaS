@@ -13,7 +13,7 @@ public record Order : IEntityBase {
     
     public IImmutableList<OrderItem> Items { get; init; } = ImmutableArray<OrderItem>.Empty;
     public IImmutableList<Coupon> Coupons { get; init; } = ImmutableArray<Coupon>.Empty;
-    public IImmutableList<OrderDiscount> OrderDiscounts { get; init; } = ImmutableArray<OrderDiscount>.Empty;
+    public IImmutableList<Discount> OrderDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
 
     public DateTimeOffset OrderDate { get; init; } = DateTimeOffset.UtcNow;
     
