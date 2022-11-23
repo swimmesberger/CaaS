@@ -1,6 +1,9 @@
 ﻿using System.Collections.Immutable;
+using CaaS.Core.Base;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
+using CaaS.Core.DiscountAggregate;
+using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
@@ -93,8 +96,8 @@ public class OrderRepositoryTest  {
     private IOrderRepository GetOrderRepository() {
        
         var orderDao = new MemoryDao<OrderDataModel>(new List<OrderDataModel>() {
-            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = DateTimeOffset.Now },
-            new OrderDataModel { Id = ExistingOrder2Id, ShopId = TestShopId, OrderNumber = 5, CustomerId = CustomerIdA, OrderDate = DateTimeOffset.Now }
+            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = DateTimeOffsetProvider.GetNow() },
+            new OrderDataModel { Id = ExistingOrder2Id, ShopId = TestShopId, OrderNumber = 5, CustomerId = CustomerIdA, OrderDate = DateTimeOffsetProvider.GetNow() }
         });
 
         var productRepository = GetProductRepository();
@@ -130,26 +133,26 @@ public class OrderRepositoryTest  {
             Amount = 10
         };
 
-        var orderItem1Discount1 = new ItemDiscount {
+        var orderItem1Discount1 = new Discount() {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            ParentItemId = orderItem1.Id,
+            ParentId = orderItem1.Id,
             DiscountName = "the first OrderItemDiscount of the first product in this order",
             DiscountValue = (decimal)1.99
         };
 
-        var orderItem1Discount2 = new ItemDiscount() {
+        var orderItem1Discount2 = new Discount() {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            ParentItemId = orderItem1.Id,
+            ParentId = orderItem1.Id,
             DiscountName = "the second OrderItemDiscount of the first product in this order",
             DiscountValue = (decimal)2.99
         };
 
-        var orderItem2Discount1 = new ItemDiscount() {
+        var orderItem2Discount1 = new Discount() {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            ParentItemId = orderItem2.Id,
+            ParentId = orderItem2.Id,
             DiscountName = "the first OrderItemDiscount of the second product in this order",
             DiscountValue = (decimal)0.99
         };
@@ -425,10 +428,10 @@ public class OrderRepositoryTest  {
             DiscountName = "updated discount"
         };
 
-        var additionalOrderItemDiscount = new ItemDiscount {
+        var additionalOrderItemDiscount = new Discount {
             Id = Guid.NewGuid(),
             ShopId = TestShopId,
-            ParentItemId = OrderItemBId,
+            ParentId = OrderItemBId,
             DiscountName = "additional order item discount",
             DiscountValue = 1
         };

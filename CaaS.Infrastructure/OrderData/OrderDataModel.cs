@@ -1,4 +1,5 @@
-﻿using CaaS.Infrastructure.Base.Mapping;
+﻿using CaaS.Core.Base;
+using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Infrastructure.OrderData;
@@ -9,5 +10,5 @@ public record OrderDataModel : DataModel {
     public Guid ShopId { get; init; }
     public int OrderNumber { get; init; }
     public Guid CustomerId { get; init; }
-    public DateTimeOffset OrderDate { get; init; } = DateTimeOffset.Now;
+    public DateTimeOffset OrderDate { get; init; } = DateTimeOffsetProvider.GetNow();
 }

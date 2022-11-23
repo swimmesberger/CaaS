@@ -1,4 +1,6 @@
-﻿namespace CaaS.Infrastructure.Base.Model; 
+﻿using CaaS.Core.Base;
+
+namespace CaaS.Infrastructure.Base.Model; 
 
 public abstract record DataModel : IDataModelBase {
     public Guid Id { get; init; }
@@ -10,7 +12,7 @@ public abstract record DataModel : IDataModelBase {
     protected DataModel() {
         Id = Guid.NewGuid();
         RowVersion = 0;
-        CreationTime = DateTimeOffset.UtcNow;
+        CreationTime = DateTimeOffsetProvider.GetNow();
         LastModificationTime = CreationTime;
     }
 }

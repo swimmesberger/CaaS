@@ -1,4 +1,8 @@
-﻿using CaaS.Core.CartAggregate;
+﻿using CaaS.Core.Base;
+using CaaS.Core.CartAggregate;
+using CaaS.Core.DiscountAggregate;
+using CaaS.Core.DiscountAggregate.Base;
+using CaaS.Core.DiscountAggregate.Impl;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +14,22 @@ public static class CaasCoreServiceCollectionExtensions {
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IShopService, ShopService>();
+        services.AddScoped<IDateTimeOffsetProvider, DefaultDateTimeOffsetProvider>();
+
+        services = services.AddCaasDiscountCore();
+        return services;
+    }
+
+    public static IServiceCollection AddCaasDiscountCore(this IServiceCollection services) {
+        services.AddScoped<DiscountSettingsJsonConverter>();
+        services.AddScoped<IDiscountComponentFactory, DiscountComponentFactory>();
+        services.AddScoped<IDiscountService, CaasDiscountService>();
+        services.AddDiscountRule<MinProductCountDiscountRule, MinProductCountSettings>(MinProductCountDiscountRule.Id);
+        services.AddDiscountRule<TimeWindowDiscountRule, TimeWindowDiscountSettings>(TimeWindowDiscountRule.Id);
+        services.AddDiscountRule<CompositeDiscountRule, CompositeDiscountRuleSettings>(CompositeDiscountRule.Id);
+        services.AddDiscountAction<PercentageDiscountAction, PercentageDiscountSettings>(PercentageDiscountAction.Id);
+        services.AddDiscountAction<FixedValueDiscountAction, FixedValueDiscountSettings>(FixedValueDiscountAction.Id);
+        services.AddDiscountAction<AndDiscountAction, AndDiscountActionSettings>(AndDiscountAction.Id);
         return services;
     }
 }

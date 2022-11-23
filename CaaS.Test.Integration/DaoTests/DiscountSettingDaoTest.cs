@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
@@ -63,8 +64,8 @@ public class DiscountSettingDaoTest : BaseDaoTest {
                 Id = Guid.Parse("7A819343-23A1-4AD9-8798-64D1047CF01F"),
                 ShopId = Guid.Parse(ShopTenantId),
                 Name = "Krampus",
-                Rule = Guid.Parse("4904887e-7761-432d-a36e-efc112246818"),
-                Action = Guid.Parse("934cf35e-8875-4984-b942-ff6ec2f2df6b"),
+                RuleId = Guid.Parse("B5791E0F-D839-45CE-92FE-94F3F5F19DEF"),
+                ActionId = Guid.Parse("68A4020D-A8AC-4A74-8A04-24E449786898"),
                 RuleParameters = CreateParameters("Rule", 3),
                 ActionParameters = CreateParameters("Action", 7)
         };
@@ -124,9 +125,11 @@ public class DiscountSettingDaoTest : BaseDaoTest {
     
     private IDao<DiscountSettingDataModel> GetDiscountSettingDao(string tenantId) => GetDao(new DiscountSettingDataRecordMapper(), tenantId);
 
-    private static ImmutableDictionary<string, object> CreateParameters(string key, object value) {
-        var dict = ImmutableDictionary.CreateBuilder<string, object>();
-        dict.Add(key, value);
-        return dict.ToImmutable();
+    private static JsonElement CreateParameters(string key, object value) {
+        var json = new JsonObject {
+            ["version"] = JsonSerializer.SerializeToNode(value),
+            [key] = JsonSerializer.SerializeToNode(value)
+        };
+        return JsonSerializer.SerializeToElement(json);
     }
 }

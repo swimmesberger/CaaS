@@ -65,15 +65,15 @@ INSERT INTO coupon(id,row_version,creation_time,last_modification_time,shop_id,v
     VALUES ('aff66783-ed9c-4838-9642-72042883fffe',3,'2022-04-30 07:25:07','2022-09-13 10:43:50','a468d796-db09-496d-9794-f6b42f8c7c0b',7,
             NULL,'b4cf2977-13fc-44dd-89cf-0dbfdae04fce','703111b0-c3fd-4bf1-9d1a-12cd3852c182');
 
-INSERT INTO discount_setting(id,row_version,creation_time,last_modification_time,shop_id,name,rule,action,rule_parameters,action_parameters) 
+INSERT INTO discount_setting(id,row_version,creation_time,last_modification_time,shop_id,name,rule_id,action_id,rule_parameters,action_parameters) 
     VALUES ('7981f1dc-76d4-4d7b-b823-af2e841d8001',0,'2022-06-14 17:04:16','2022-10-24 18:28:33','a468d796-db09-496d-9794-f6b42f8c7c0b','Christmas2022',
-            '533c853e-059a-47d8-9348-7fad652760fa','0918d507-0b2e-4eb5-b406-2359d28019ba','{}','{}');
-INSERT INTO discount_setting(id,row_version,creation_time,last_modification_time,shop_id,name,rule,action,rule_parameters,action_parameters) 
+            'B5791E0F-D839-45CE-92FE-94F3F5F19DEF','68A4020D-A8AC-4A74-8A04-24E449786898','{}','{}');
+INSERT INTO discount_setting(id,row_version,creation_time,last_modification_time,shop_id,name,rule_id,action_id,rule_parameters,action_parameters) 
     VALUES ('b04bf20d-0abf-47c4-94d9-185536df9867',8,'2022-08-26 02:11:16','2022-09-10 19:13:43','a468d796-db09-496d-9794-f6b42f8c7c0b','Black Friday',
-            '66525a3e-be36-4e07-bb46-3f60e586c653','b40d2f12-5535-4176-b2bd-d08b0f94bf44','{}','{}');
-INSERT INTO discount_setting(id,row_version,creation_time,last_modification_time,shop_id,name,rule,action,rule_parameters,action_parameters) 
+            'B5791E0F-D839-45CE-92FE-94F3F5F19DEF','68A4020D-A8AC-4A74-8A04-24E449786898','{}','{}');
+INSERT INTO discount_setting(id,row_version,creation_time,last_modification_time,shop_id,name,rule_id,action_id,rule_parameters,action_parameters) 
     VALUES ('2f87ca9b-9829-437e-b78b-f71dcc2de7a0',7,'2021-12-02 11:31:37','2022-09-08 00:06:21','a468d796-db09-496d-9794-f6b42f8c7c0b','Valentines day',
-            '1c1ef8a8-ca40-43a3-a164-bc45e9d18725','c85330d8-de43-445a-bf86-5be0abcaca21','{}','{}');
+            'B5791E0F-D839-45CE-92FE-94F3F5F19DEF','68A4020D-A8AC-4A74-8A04-24E449786898','{}','{}');
 
 INSERT INTO order_discount(id,row_version,creation_time,last_modification_time,discount_name,discount,order_id,shop_id) 
     VALUES ('ad6f89c5-68dc-499d-ae9e-0976cad053fd',81,'2022-08-04 17:41:39','2022-09-30 21:26:54','Christmas2022',5,'41b1fa55-fd34-4611-bda0-f3821f6db52b',

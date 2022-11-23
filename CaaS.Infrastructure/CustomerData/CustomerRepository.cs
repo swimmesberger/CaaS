@@ -25,7 +25,7 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
     }
     
     public async Task<IReadOnlyList<Customer>> ConvertToDomain(IAsyncEnumerable<CustomerDataModel> dataModels, CancellationToken cancellationToken = default) {
-        return await dataModels.SelectAwait(m => ConvertToDomain(m, cancellationToken)).ToListAsync(cancellationToken);
+        return await dataModels.SelectAwaitWithCancellation(ConvertToDomain).ToListAsync(cancellationToken);
     }
     
     public CustomerDataModel ApplyDomainModel(CustomerDataModel dataModel, Customer domainModel) {

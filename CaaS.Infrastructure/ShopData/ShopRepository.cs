@@ -27,9 +27,7 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
     public ShopDomainModelConverter(IDao<ShopAdminDataModel> shopAdminDao) {
         _shopAdminRepository = new ShopAdminRepository(shopAdminDao);
     }
-
-    public ValueTask<Shop> ConvertToDomain(ShopDataModel dataModel) => ConvertToDomain(dataModel, (CancellationToken)default);
-
+    
     public ShopDataModel ApplyDomainModel(ShopDataModel dataModel, Shop domainModel) {
         return dataModel with {
             Name = domainModel.Name
@@ -61,7 +59,7 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
     public async Task<IReadOnlyList<Shop>> ConvertToDomain(IAsyncEnumerable<ShopDataModel> dataModels, 
             CancellationToken cancellationToken = default) {
         return await dataModels
-                .SelectAwait(ConvertToDomain)
+                .SelectAwaitWithCancellation(ConvertToDomain)
                 .ToListAsync(cancellationToken);
     }
 

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.DiscountAggregate;
+using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
@@ -138,7 +140,7 @@ internal class OrderItemRepository {
                     Amount = dataModel.Amount,
                     PricePerPiece = product.Price,
                     OrderItemDiscounts =  orderItemDiscountDict.ContainsKey(dataModel.Id) ? 
-                                            orderItemDiscountDict[dataModel.Id].Value.ToImmutableArray() : ImmutableArray<ItemDiscount>.Empty,
+                                            orderItemDiscountDict[dataModel.Id].Value.ToImmutableArray() : ImmutableArray<Discount>.Empty,
                     ConcurrencyToken = dataModel.GetConcurrencyToken()
                 });
             }

@@ -212,8 +212,8 @@ CREATE TABLE "discount_setting" (
     "last_modification_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "shop_id" uuid NOT NULL,
     "name" varchar(255),
-    "rule" uuid NOT NULL,
-    "action" uuid NOT NULL,
+    "rule_id" uuid NOT NULL,
+    "action_id" uuid NOT NULL,
     "rule_parameters" jsonb,
     "action_parameters" jsonb,
     CONSTRAINT "FK_discount_setting.shop_id"

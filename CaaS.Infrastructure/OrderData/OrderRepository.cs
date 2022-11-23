@@ -2,6 +2,8 @@
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
+using CaaS.Core.DiscountAggregate;
+using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
@@ -58,10 +60,10 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
         await Converter.OrderItemRepository.AddAsync(orderItems, cancellationToken);
 
         var orderDiscounts = domainModels.SelectMany(o => o.OrderDiscounts);
-        await Converter.OrderDiscountRepository.AddAsync(orderDiscounts);
+        await Converter.OrderDiscountRepository.AddAsync(orderDiscounts, cancellationToken);
 
         var coupons = domainModels.SelectMany(o => o.Coupons);
-        await Converter.CouponRepository.AddAsync(coupons);
+        await Converter.CouponRepository.AddAsync(coupons, cancellationToken);
 
         var dataModels = Converter.ConvertFromDomain(domainModels);
         await Dao.AddAsync(dataModels, cancellationToken);

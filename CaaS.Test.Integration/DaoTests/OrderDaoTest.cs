@@ -1,4 +1,5 @@
-﻿using CaaS.Core.Base.Exceptions;
+﻿using CaaS.Core.Base;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Core.OrderAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
@@ -65,7 +66,7 @@ public class OrderDaoTest : BaseDaoTest {
                 ShopId = Guid.Parse(ShopTenantId),
                 OrderNumber = 49538,
                 CustomerId = Guid.Parse("9234a988-0abd-4b44-808a-9e7a8852e19c"),
-                OrderDate = DateTimeOffset.UtcNow
+                OrderDate = DateTimeOffsetProvider.GetNow()
         };
         await orderDao.AddAsync(order);
         
@@ -152,14 +153,14 @@ public class OrderDaoTest : BaseDaoTest {
             ShopId = Guid.Parse(ShopTenantId),
             OrderNumber = 49538,
             CustomerId = id2,
-            OrderDate = DateTimeOffset.UtcNow
+            OrderDate = DateTimeOffsetProvider.GetNow()
         };
         var order2 = new OrderDataModel() {
             Id = id2,
             ShopId = Guid.Parse(ShopTenantId),
             OrderNumber = 102,
             CustomerId = id2,
-            OrderDate = DateTimeOffset.UtcNow
+            OrderDate = DateTimeOffsetProvider.GetNow()
         };
         var entities = new List<OrderDataModel> { order1, order2 };
         await orderDao.AddAsync(entities);

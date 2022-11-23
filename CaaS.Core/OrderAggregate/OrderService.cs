@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.CartAggregate;
@@ -37,7 +38,7 @@ public class OrderService : IOrderService {
         var order = new Order() {
             ShopId = _tenantIdAccessor.GetTenantGuid(),
             Customer = customer,
-            OrderDate = DateTimeOffset.Now
+            OrderDate = DateTimeOffsetProvider.GetNow()
         };
         return await _orderRepository.AddAsync(order, cancellationToken);
     }
@@ -76,7 +77,7 @@ public class OrderService : IOrderService {
             Items = orderItems.ToImmutableArray(),
             Coupons = cart.Coupons,
             OrderDiscounts = cart.CartDiscounts,
-            OrderDate = DateTimeOffset.Now
+            OrderDate = DateTimeOffsetProvider.GetNow()
         };
 
         var savedOrder = await _orderRepository.AddAsync(order);

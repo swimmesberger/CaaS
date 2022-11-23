@@ -1,4 +1,5 @@
-﻿using CaaS.Core.OrderAggregate;
+﻿using CaaS.Core.Base;
+using CaaS.Core.OrderAggregate;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.CustomerData;
@@ -65,7 +66,7 @@ public class OrderServiceTest {
         });
         
         var orderDao = new MemoryDao<OrderDataModel>(new List<OrderDataModel>() {
-            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = DateTimeOffset.Now }
+            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = DateTimeOffsetProvider.GetNow() }
         });
         
         var orderItemDao = new MemoryDao<ProductOrderDataModel>(new List<ProductOrderDataModel>() {

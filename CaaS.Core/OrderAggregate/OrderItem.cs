@@ -1,5 +1,7 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base;
+using CaaS.Core.DiscountAggregate;
+using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.ProductAggregate;
 
 namespace CaaS.Core.OrderAggregate;
@@ -12,7 +14,7 @@ public record OrderItem : IEntityBase {
     public Guid OrderId { get; init; }
     public int Amount { get; init; }
     
-    public IImmutableList<ItemDiscount> OrderItemDiscounts { get; init; } = ImmutableArray<ItemDiscount>.Empty;
+    public IImmutableList<Discount> OrderItemDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
     public decimal PricePerPiece { get; init; }
     public string ConcurrencyToken { get; init; } = string.Empty;
 }

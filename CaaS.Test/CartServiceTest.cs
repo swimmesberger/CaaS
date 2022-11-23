@@ -1,4 +1,5 @@
-﻿using CaaS.Core.CartAggregate;
+﻿using CaaS.Core.Base;
+using CaaS.Core.CartAggregate;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CustomerData;
 using CaaS.Infrastructure.ProductData;
@@ -19,7 +20,7 @@ public class CartServiceTest {
         var cartService = CreateCartService();
 
         var newCartId = new Guid("397CB87F-9694-4EAD-A549-E3089D61B131");
-        var curTime = DateTimeOffset.UtcNow;
+        var curTime = DateTimeOffsetProvider.GetNow();
         var createdCart = await cartService.AddProductToCart(newCartId, ProductAId, 1);
         createdCart.Should().NotBeNull();
         createdCart.ShopId.Should().Be(TestShopId);
@@ -27,14 +28,14 @@ public class CartServiceTest {
         var productA = createdCart.Items.FirstOrDefault(i => i.Product.Id == ProductAId);
         productA.Should().NotBeNull();
         productA!.Amount.Should().Be(1);
-        createdCart.LastAccess.Should().BeAfter(curTime);
+        createdCart.LastAccess.Should().BeOnOrAfter(curTime);
     }
     
     [Fact]
     public async Task AddProductToCartWhenProductExistsOptimistic() {
         var cartService = CreateCartService();
 
-        var curTime = DateTimeOffset.UtcNow;
+        var curTime = DateTimeOffsetProvider.GetNow();
         var updatedCart = await cartService.AddProductToCart(ExistingCartId, ProductAId, 2);
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
@@ -42,14 +43,14 @@ public class CartServiceTest {
         var productA = updatedCart.Items.FirstOrDefault(i => i.Product.Id == ProductAId);
         productA.Should().NotBeNull();
         productA!.Amount.Should().Be(4);
-        updatedCart.LastAccess.Should().BeAfter(curTime);
+        updatedCart.LastAccess.Should().BeOnOrAfter(curTime);
     }
     
     [Fact]
     public async Task AddProductToCartWhenProductNotExistingOptimistic() {
         var cartService = CreateCartService();
 
-        var curTime = DateTimeOffset.UtcNow;
+        var curTime = DateTimeOffsetProvider.GetNow();
         var updatedCart = await cartService.AddProductToCart(ExistingCartId, ProductBId, 2);
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
@@ -60,19 +61,19 @@ public class CartServiceTest {
         var productB = updatedCart.Items.FirstOrDefault(i => i.Product.Id == ProductBId);
         productB.Should().NotBeNull();
         productB!.Amount.Should().Be(2);
-        updatedCart.LastAccess.Should().BeAfter(curTime);
+        updatedCart.LastAccess.Should().BeOnOrAfter(curTime);
     }
     
     [Fact]
     public async Task RemoveProductFromCartExistingOptimistic() {
         var cartService = CreateCartService();
 
-        var curTime = DateTimeOffset.UtcNow;
+        var curTime = DateTimeOffsetProvider.GetNow();
         var updatedCart = await cartService.RemoveProductFromCart(ExistingCartId, ProductAId);
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
         updatedCart.Items.Should().BeEmpty();
-        updatedCart.LastAccess.Should().BeAfter(curTime);
+        updatedCart.LastAccess.Should().BeOnOrAfter(curTime);
     }
 
     private ICartService CreateCartService() {

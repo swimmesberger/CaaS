@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base;
-using CaaS.Core.OrderAggregate;
+using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.ProductAggregate;
 
 namespace CaaS.Core.CartAggregate; 
@@ -12,6 +12,6 @@ public record CartItem : IEntityBase {
     public Guid ShopId { get; init; } = default;
     public Guid CartId { get; init; } = default;
     public int Amount { get; init; } = 0;
-    public IImmutableList<ItemDiscount> CartItemDiscounts { get; init; } = ImmutableArray<ItemDiscount>.Empty;
+    public IImmutableList<Discount> CartItemDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
     public string ConcurrencyToken { get; init; } = string.Empty;
 }

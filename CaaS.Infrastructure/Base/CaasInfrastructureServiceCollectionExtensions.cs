@@ -2,6 +2,7 @@
 using CaaS.Core.Base;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.CustomerAggregate;
+using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
@@ -10,6 +11,7 @@ using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Di;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CustomerData;
+using CaaS.Infrastructure.DiscountData;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.ProductData;
 using CaaS.Infrastructure.ShopData;
@@ -51,6 +53,7 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IShopAdminRepository, ShopAdminRepository>();
+        services.AddScoped<IDiscountSettingRepository, DiscountSettingsRepository>();
         return services;
     }
 

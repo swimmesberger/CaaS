@@ -26,7 +26,6 @@ internal class ShopAdminRepository : IShopAdminRepository {
 
     private class ShopAdminDomainModelConverter : IDomainReadModelConverter<ShopAdminDataModel, ShopAdmin> {
         public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = OrderParameter.From(nameof(ShopAdminDataModel.Name));
-        public ValueTask<ShopAdmin> ConvertToDomain(ShopAdminDataModel dataModel) => ConvertToDomain(dataModel, default);
 
         public ValueTask<ShopAdmin> ConvertToDomain(ShopAdminDataModel dataModel, CancellationToken cancellationToken) {
             return new ValueTask<ShopAdmin>(new ShopAdmin() {
@@ -41,7 +40,7 @@ internal class ShopAdminRepository : IShopAdminRepository {
         public async Task<IReadOnlyList<ShopAdmin>> ConvertToDomain(IAsyncEnumerable<ShopAdminDataModel> dataModels,
             CancellationToken cancellationToken = default) {
             return await dataModels
-                .SelectAwait(ConvertToDomain)
+                .SelectAwaitWithCancellation(ConvertToDomain)
                 .ToListAsync(cancellationToken);
         }
     }

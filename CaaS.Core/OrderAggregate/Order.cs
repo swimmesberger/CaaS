@@ -2,6 +2,7 @@
 using CaaS.Core.Base;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
+using CaaS.Core.DiscountAggregate.Models;
 
 namespace CaaS.Core.OrderAggregate;
 
@@ -15,7 +16,7 @@ public record Order : IEntityBase {
     public IImmutableList<Coupon> Coupons { get; init; } = ImmutableArray<Coupon>.Empty;
     public IImmutableList<Discount> OrderDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
 
-    public DateTimeOffset OrderDate { get; init; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset OrderDate { get; init; } = DateTimeOffsetProvider.GetNow();
     
     public string ConcurrencyToken { get; init; } = string.Empty;
 

@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using System.Runtime.CompilerServices;
+using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Infrastructure.Base.Ado.Model;
@@ -17,7 +18,8 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
 
     private IDataRecordMapper<T> DataRecordMapper => _statementGenerator.DataRecordMapper;
     
-    public GenericDao(IStatementExecutor statementExecutor, IStatementGenerator<T> statementGenerator, 
+    public GenericDao(IStatementExecutor statementExecutor, 
+            IStatementGenerator<T> statementGenerator, 
             IServiceProvider<ITenantIdAccessor>? tenantService = null) {
         tenantService ??= IServiceProvider<ITenantIdAccessor>.Empty;
         _statementExecutor = statementExecutor;
@@ -77,7 +79,7 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
         var origRowVersion = entity.RowVersion;
         entity = entity with {
             RowVersion = origRowVersion+1,
-            LastModificationTime = DateTimeOffset.UtcNow
+            LastModificationTime = DateTimeOffsetProvider.GetNow()
         };
         var statement = _statementGenerator.CreateUpdate(entity, origRowVersion);
         var changedCount = await ExecuteAsync(statement, cancellationToken);
@@ -92,7 +94,7 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
             var origRowVersion = e.RowVersion;
             return new VersionedEntity<T>(e with {
                 RowVersion = origRowVersion + 1,
-                LastModificationTime = DateTimeOffset.UtcNow
+                LastModificationTime = DateTimeOffsetProvider.GetNow()
             }, origRowVersion);
         }).ToList();
         var statement = _statementGenerator.CreateUpdate(versionedEntities);

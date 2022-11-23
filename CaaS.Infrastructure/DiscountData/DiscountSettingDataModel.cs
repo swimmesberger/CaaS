@@ -1,20 +1,23 @@
-﻿using System.Collections.Immutable;
+﻿using System.Text.Json;
+using CaaS.Core.Base;
 using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Infrastructure.DiscountData;
 
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 [GenerateMapper]
 public record DiscountSettingDataModel : DataModel {
     [TenantIdColumn]
     public Guid ShopId { get; init; }
     public string Name { get; init; } = string.Empty;
-    public Guid Rule { get; init; }
-    public Guid Action { get; init; }
+
+    public Guid RuleId { get; init; }
+    public Guid ActionId { get; init; }
     
     [JsonColumn]
-    public IImmutableDictionary<string, object> RuleParameters { get; init; } = ImmutableDictionary<string, object>.Empty;
+    public JsonElement RuleParameters { get; init; } = JsonElementConstants.Empty;
     
     [JsonColumn]
-    public IImmutableDictionary<string, object> ActionParameters { get; init; } = ImmutableDictionary<string, object>.Empty;
+    public JsonElement ActionParameters { get; init; } = JsonElementConstants.Empty;
 }
