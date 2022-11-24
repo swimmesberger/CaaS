@@ -54,6 +54,8 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IShopAdminRepository, ShopAdminRepository>();
         services.AddScoped<IDiscountSettingRepository, DiscountSettingsRepository>();
+        services.AddOptions<DiscountJsonOptions>();
+        services.AddScoped<DiscountSettingsJsonConverter>();
         return services;
     }
 

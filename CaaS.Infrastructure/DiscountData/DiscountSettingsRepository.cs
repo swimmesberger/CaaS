@@ -1,6 +1,4 @@
-﻿using CaaS.Core.DiscountAggregate;
-using CaaS.Core.DiscountAggregate.Base;
-using CaaS.Core.DiscountAggregate.Impl;
+﻿using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;

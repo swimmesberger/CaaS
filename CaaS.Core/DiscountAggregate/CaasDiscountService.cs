@@ -12,12 +12,8 @@ public class CaasDiscountService : IDiscountService {
         _discountSettingRepository = discountSettingRepository;
         _discountComponentFactory = discountComponentFactory;
     }
-
-    public Task<IEnumerable<DiscountComponentMetadata>> GetDiscountActions() 
-        => Task.FromResult(_discountComponentFactory.GetDiscountMetadata().Where(d => d.ComponentType == DiscountComponentType.Action));
-
-    public Task<IEnumerable<DiscountComponentMetadata>> GetDiscountRules()
-        => Task.FromResult(_discountComponentFactory.GetDiscountMetadata().Where(d => d.ComponentType == DiscountComponentType.Rule));
+    
+    public IEnumerable<DiscountComponentMetadata> GetDiscountMetadata() => _discountComponentFactory.GetDiscountMetadata();
 
     public async Task<Cart> ApplyDiscountAsync(Cart cart, CancellationToken cancellationToken = default) {
         var discountComponents = (await _discountSettingRepository.FindAllAsync(cancellationToken))

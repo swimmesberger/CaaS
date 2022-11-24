@@ -20,6 +20,8 @@ public class CaasConventionOperationFilter : IOperationFilter {
         new KeyValuePair<string, string>("5\\d{2}", "Server Error"),
     };
 
+    private const string MediaTypeProblemJson = "application/problem+json";
+
     private readonly NullabilityInfoContext _nullabilityInfoContext;
 
     public CaasConventionOperationFilter() {
@@ -98,7 +100,7 @@ public class CaasConventionOperationFilter : IOperationFilter {
         var statusCodeString = statusCode.ToString();
         var problemDetailsSchema = context.SchemaGenerator.GenerateSchema(typeof(ProblemDetails), context.SchemaRepository);
         if (operation.Responses.TryGetValue(statusCodeString, out var response)) {
-            response.Content["application/problem+json"] = new OpenApiMediaType { Schema = problemDetailsSchema };
+            response.Content[MediaTypeProblemJson] = new OpenApiMediaType { Schema = problemDetailsSchema };
         } else {
             var description = ResponseDescriptionMap
                 .FirstOrDefault(entry => Regex.IsMatch(statusCodeString, entry.Key))
@@ -106,7 +108,7 @@ public class CaasConventionOperationFilter : IOperationFilter {
             operation.Responses.Add(statusCode.ToString(), new OpenApiResponse {
                 Description = description,
                 Content = {
-                    ["application/problem+json"] = new OpenApiMediaType { Schema = problemDetailsSchema }
+                    [MediaTypeProblemJson] = new OpenApiMediaType { Schema = problemDetailsSchema }
                 }
             });
         }

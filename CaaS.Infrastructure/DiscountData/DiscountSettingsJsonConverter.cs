@@ -1,16 +1,18 @@
 ﻿using System.Text.Json;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Models;
+using CaaS.Infrastructure.Base;
+using Microsoft.Extensions.Options;
 
-namespace CaaS.Core.DiscountAggregate.Impl; 
+namespace CaaS.Infrastructure.DiscountData; 
 
 public class DiscountSettingsJsonConverter {
     private readonly IEnumerable<DiscountComponentMetadata> _componentMetadata;
     private readonly JsonSerializerOptions _jsonOptions;
     
-    public DiscountSettingsJsonConverter(IEnumerable<DiscountComponentMetadata> componentMetadata, JsonSerializerOptions jsonOptions) {
+    public DiscountSettingsJsonConverter(IEnumerable<DiscountComponentMetadata> componentMetadata, IOptions<DiscountJsonOptions> jsonOptions) {
         _componentMetadata = componentMetadata;
-        _jsonOptions = jsonOptions;
+        _jsonOptions = jsonOptions.Value.JsonSerializerOptions;
     }
 
     public DiscountSettingMetadata DeserializeSettings(Guid id, JsonElement actionParameters) {

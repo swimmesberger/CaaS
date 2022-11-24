@@ -61,6 +61,8 @@ public class DiscountServiceTest {
         });
         
         var serviceCollection = new ServiceCollection();
+        serviceCollection.AddOptions<DiscountJsonOptions>();
+        serviceCollection.AddScoped<DiscountSettingsJsonConverter>();
         serviceCollection.AddSingleton<IDao<DiscountSettingDataModel>>(_ => discountSettingsDao);
         serviceCollection.AddScoped<IDiscountSettingRepository, DiscountSettingsRepository>();
         serviceCollection.AddScoped(_ => new JsonSerializerOptions());

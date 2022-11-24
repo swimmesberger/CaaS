@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.Base.Swagger;
+using CaaS.Api.DiscountApi.Swagger;
 using CaaS.Core;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
@@ -13,6 +14,7 @@ using Hellang.Middleware.ProblemDetails.Mvc;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 
 namespace CaaS.Api.Base; 
 
@@ -26,6 +28,8 @@ public static class CaasApiServiceCollectionExtensions {
             options.Filters.Add(new NotFoundResultFilterAttribute());
         }).AddJsonOptions(options => {
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.JsonSerializerOptions.Converters.Add(new OpenApiReferenceJsonConverter());
         });
         services.AddEndpointsApiExplorer();
         services.AddHttpContextAccessor();
@@ -38,6 +42,7 @@ public static class CaasApiServiceCollectionExtensions {
             options.OperationFilter<HeaderOperationFilter>();
             options.OperationFilter<RequireTenantOperationFilter>();
             options.OperationFilter<CaasConventionOperationFilter>();
+            options.DocumentFilter<DiscountSettingsOpenApiDocumentFilter>();
         });
 
         services.AddCaasInfrastructure();

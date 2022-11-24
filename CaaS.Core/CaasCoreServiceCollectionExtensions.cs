@@ -21,8 +21,7 @@ public static class CaasCoreServiceCollectionExtensions {
     }
 
     public static IServiceCollection AddCaasDiscountCore(this IServiceCollection services) {
-        services.AddScoped<DiscountSettingsJsonConverter>();
-        services.AddScoped<IDiscountComponentFactory, DiscountComponentFactory>();
+        services.AddSingleton<IDiscountComponentFactory, DiscountComponentFactory>();
         services.AddScoped<IDiscountService, CaasDiscountService>();
         services.AddDiscountRule<MinProductCountDiscountRule, MinProductCountSettings>(MinProductCountDiscountRule.Id);
         services.AddDiscountRule<TimeWindowDiscountRule, TimeWindowDiscountSettings>(TimeWindowDiscountRule.Id);

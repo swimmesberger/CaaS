@@ -8,16 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //         .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
 
-builder.Services.AddControllers()
-    .AddMvcOptions(options => {
-        options.ReturnHttpNotAcceptable = true;
-    })
-    .AddJsonOptions(options => {
-        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    });
-builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddHostedService<ScheduledUpdateService>();
-
 
 // register CaaS services
 builder.Services.AddCaas(builder.Configuration);
