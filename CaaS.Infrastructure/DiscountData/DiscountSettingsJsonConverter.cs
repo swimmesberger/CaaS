@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Models;
-using CaaS.Infrastructure.Base;
 using Microsoft.Extensions.Options;
 
 namespace CaaS.Infrastructure.DiscountData; 

@@ -1,5 +1,4 @@
 using CaaS.Core.CartAggregate;
-using CaaS.Core.ShopAggregate;
 
 namespace CaaS.Api.BackgroundServices; 
 

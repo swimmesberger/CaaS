@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-using CaaS.Api.BackgroundServices;
 using CaaS.Api.Base;
 
 var builder = WebApplication.CreateBuilder(args);

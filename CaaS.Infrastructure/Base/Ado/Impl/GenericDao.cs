@@ -90,6 +90,7 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
     }
 
     public async Task<IReadOnlyCollection<T>> UpdateAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        if (entities.Count == 0) return entities;
         var versionedEntities = entities.Select(e => {
             var origRowVersion = e.RowVersion;
             return new VersionedEntity<T>(e with {
@@ -113,6 +114,7 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
     }
 
     public async Task DeleteAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default) {
+        if (entities.Count == 0) return;
         var changedCount = await ExecuteAsync(_statementGenerator.CreateDelete(entities), cancellationToken);
         if (changedCount == 0) {
             throw new CaasInsertDbException();

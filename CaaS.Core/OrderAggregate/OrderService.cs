@@ -28,13 +28,11 @@ public class OrderService : IOrderService {
     }
     
     public async Task<Order> CreateOrder(Guid customerId ,CancellationToken cancellationToken = default) {
-        var shortenedCustomerId = customerId.ToString()[..8];
         var customer = await _customerRepository.FindByIdAsync(customerId, cancellationToken);
         if (customer == null) {
             throw new CaasItemNotFoundException();
         }
         
-        var rand = new Random();
         var order = new Order() {
             ShopId = _tenantIdAccessor.GetTenantGuid(),
             Customer = customer,
@@ -80,7 +78,7 @@ public class OrderService : IOrderService {
             OrderDate = DateTimeOffsetProvider.GetNow()
         };
 
-        var savedOrder = await _orderRepository.AddAsync(order);
+        var savedOrder = await _orderRepository.AddAsync(order, cancellationToken);
         return savedOrder;
     }
 }

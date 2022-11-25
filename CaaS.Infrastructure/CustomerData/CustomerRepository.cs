@@ -37,7 +37,11 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
             CreditCardNumber = domainModel.CreditCardNumber
         };
     }
-    
+
+    public Customer ApplyDataModel(Customer domainModel, CustomerDataModel dataModel) {
+        return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
+    }
+
     public CustomerDataModel ConvertFromDomain(Customer domainModel) {
         return new CustomerDataModel() {
             Id = domainModel.Id,

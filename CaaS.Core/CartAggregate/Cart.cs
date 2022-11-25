@@ -2,7 +2,6 @@
 using CaaS.Core.Base;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
-using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Models;
 
 namespace CaaS.Core.CartAggregate; 

@@ -9,7 +9,7 @@ public interface ICartRepository : IRepository {
     Task<Cart?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<Cart> AddAsync(Cart entity, CancellationToken cancellationToken = default);
-    Task<Cart> UpdateAsync(Cart entity, CancellationToken cancellationToken = default);
+    Task<Cart> UpdateAsync(Cart oldEntity, Cart newEntity, CancellationToken cancellationToken = default);
     Task DeleteAsync(Cart entity, CancellationToken cancellationToken = default);
     Task DeleteAsync(IEnumerable<Cart> entities, CancellationToken cancellationToken = default);
 }

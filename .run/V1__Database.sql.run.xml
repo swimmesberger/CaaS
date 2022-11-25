@@ -1,0 +1,8 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="V1__Database.sql" type="DatabaseScript" nameIsGenerated="true">
+    <script-file value="$PROJECT_DIR$/CaaS.Infrastructure/Base/Sql/V1__Database.sql" />
+    <script-mode>FILE</script-mode>
+    <data-source id="3d290f25-ac52-464f-96be-adfaff38429e" />
+    <method v="2" />
+  </configuration>
+</component>

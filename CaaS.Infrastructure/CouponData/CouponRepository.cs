@@ -40,7 +40,7 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
     public async Task<Coupon> AddAsync(Coupon entity, CancellationToken cancellationToken = default) {
         var dataModel = Converter.ConvertFromDomain(entity);
         await Dao.AddAsync(dataModel, cancellationToken);
-        entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
+        entity = Converter.ApplyDataModel(entity, dataModel);
         return entity;
     }
     
@@ -50,20 +50,16 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
     }
     
     public async Task<Coupon> UpdateAsync(Coupon oldEntity, Coupon newEntity, CancellationToken cancellationToken = default) {
-        return await UpdateImplAsync(newEntity, cancellationToken);
+        var dataModel = Converter.ConvertFromDomain(newEntity);
+        dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
+        newEntity = Converter.ApplyDataModel(newEntity, dataModel);
+        return newEntity;
     }
 
     public async Task UpdateAsync(IEnumerable<Coupon> oldDomainModels, IEnumerable<Coupon> newDomainModels, CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
         await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
-    }
-
-    private async Task<Coupon> UpdateImplAsync(Coupon entity, CancellationToken cancellationToken = default) {
-        var dataModel = Converter.ConvertFromDomain(entity);
-        dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
-        entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
-        return entity;
     }
 
     public async Task DeleteAsync(Coupon entity, CancellationToken cancellationToken = default) {
@@ -74,6 +70,10 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
 
 internal class CouponDomainModelConvert : IDomainReadModelConverter<CouponDataModel, Coupon> {
     public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = null;
+    
+    public Coupon ApplyDataModel(Coupon domainModel, CouponDataModel dataModel) {
+        return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
+    }
     
     public IReadOnlyList<CouponDataModel> ConvertFromDomain(IEnumerable<Coupon> domainModels)
         => domainModels.Select(ConvertFromDomain).ToImmutableArray();
@@ -90,8 +90,9 @@ internal class CouponDomainModelConvert : IDomainReadModelConverter<CouponDataMo
         };
     }
     public ValueTask<Coupon> ConvertToDomain(CouponDataModel dataModel, CancellationToken cancellationToken) {
-        return ValueTask.FromResult(ConvertToDomain(new List<CouponDataModel> { dataModel }).First());
+        return ValueTask.FromResult(ConvertToDomain(new List<CouponDataModel> { dataModel })[0]);
     }
+    
     public async Task<IReadOnlyList<Coupon>> ConvertToDomain(IAsyncEnumerable<CouponDataModel> dataModels, CancellationToken cancellationToken = default) {
         var items = await dataModels.ToListAsync(cancellationToken);
         return ConvertToDomain(items);

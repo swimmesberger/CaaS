@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base;
-using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
@@ -35,11 +34,11 @@ internal class OrderDiscountRepository : IRepository {
        return entity;
    }
    
-   public async Task<Discount> UpdateAsync(Discount entity, CancellationToken cancellationToken = default) {
-       var dataModel = Converter.ConvertFromDomain(entity);
+   public async Task<Discount> UpdateAsync(Discount oldEntity, Discount newEntity, CancellationToken cancellationToken = default) {
+       var dataModel = Converter.ConvertFromDomain(newEntity);
        dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
-       entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
-       return entity;
+       newEntity = Converter.ApplyDataModel(newEntity, dataModel);
+       return newEntity;
    }
    
    public async Task UpdateAsync(IEnumerable<Discount> oldDomainModels, IEnumerable<Discount> newDomainModels, CancellationToken cancellationToken = default) {
@@ -125,6 +124,10 @@ internal class OrderDiscountRepository : IRepository {
                ShopId = domainModel.ShopId,
                RowVersion = domainModel.GetRowVersion(),
            };
+       }
+
+       public Discount ApplyDataModel(Discount domainModel, OrderDiscountDataModel dataModel) {
+           return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
        }
    }
 }

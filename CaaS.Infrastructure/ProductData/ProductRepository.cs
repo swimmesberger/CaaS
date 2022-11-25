@@ -38,6 +38,10 @@ internal class ProductDomainModelConvert : IDomainModelConverter<ProductDataMode
         };
     }
 
+    public Product ApplyDataModel(Product domainModel, ProductDataModel dataModel) {
+        return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
+    }
+
     public ProductDataModel ConvertFromDomain(Product product) {
         return new ProductDataModel() {
             Id = product.Id,

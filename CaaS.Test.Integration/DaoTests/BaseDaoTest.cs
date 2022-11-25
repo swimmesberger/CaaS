@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using CaaS.Core.Base.Tenant;
+﻿using CaaS.Core.Base.Tenant;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Impl;
 using CaaS.Infrastructure.Base.Ado.Model;
@@ -10,7 +9,6 @@ using CaaS.Test.Common;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
-using Npgsql;
 using Xunit.Abstractions;
 
 namespace CaaS.Test.Integration.DaoTests; 
@@ -76,12 +74,7 @@ public class BaseDaoTest : IAsyncLifetime {
             ProviderName = PostgresProviderName
         };
         Output.WriteLine($"Using connection {dbOptions.ConnectionString}");
-        var dbFactory = GetDbProviderFactory(dbOptions);
+        var dbFactory = DbProviderFactoryUtil.GetDbProviderFactory(dbOptions);
         return new AdoConnectionFactory(dbFactory, dbOptions);
-    }
-    
-    private static DbProviderFactory GetDbProviderFactory(RelationalOptions relationalOptions) {
-        DbProviderFactories.RegisterFactory(PostgresProviderName, NpgsqlFactory.Instance);
-        return DbProviderFactories.GetFactory(relationalOptions.ProviderName);
     }
 }

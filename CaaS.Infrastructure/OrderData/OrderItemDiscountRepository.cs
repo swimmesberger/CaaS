@@ -1,7 +1,5 @@
 ﻿using System.Collections.Immutable;
-using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Models;
-using CaaS.Core.OrderAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Repository;
@@ -115,6 +113,10 @@ internal class OrderItemDiscountRepository {
                 ShopId = domainModel.ShopId,
                 RowVersion = domainModel.GetRowVersion(),
             };
+        }
+
+        public Discount ApplyDataModel(Discount domainModel, ProductOrderDiscountDataModel dataModel) {
+            return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
         }
     }
 }

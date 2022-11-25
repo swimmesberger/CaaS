@@ -41,7 +41,11 @@ internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSetting
             ActionParameters = _settingsJsonConverter.SerializeSettings(domainModel.Action)
         };
     }
-    
+
+    public DiscountSetting ApplyDataModel(DiscountSetting domainModel, DiscountSettingDataModel dataModel) {
+        return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
+    }
+
     public DiscountSettingDataModel ConvertFromDomain(DiscountSetting domainModel) {
         return new DiscountSettingDataModel() {
             Id = domainModel.Id,

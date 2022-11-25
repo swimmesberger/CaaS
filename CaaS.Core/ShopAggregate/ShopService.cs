@@ -27,24 +27,23 @@ public class ShopService : IShopService {
         await using var uow = _unitOfWorkManager.Begin();
         var shop = await _shopRepository.FindByIdAsync(id, cancellationToken);
         if (shop == null) {
-            throw new CaasItemNotFoundException();
+            throw new CaasItemNotFoundException($"Shop {id} not found");
         }
         shop = shop with { Name = name };
         shop = await _shopRepository.UpdateAsync(shop, cancellationToken);
         await uow.CompleteAsync(cancellationToken);
         return shop;
     }
-    public async Task<Shop> Add(string name, Guid adminId, int cartLifetimeMinutes = 120, CancellationToken cancellationToken = default) {
-        var admin = await _shopAdminRepository.FindByIdAsync(adminId, cancellationToken);
+    public async Task<Shop> Add(Shop shop, CancellationToken cancellationToken = default) {
+        var admin = await _shopAdminRepository.FindByIdAsync(shop.ShopAdmin.Id, cancellationToken);
         if (admin == null) {
-            throw new CaasItemNotFoundException();
+            throw new CaasItemNotFoundException($"ShopAdmin {shop.ShopAdmin.Id} does not exist");
         }
-        var shop = new Shop {
-            Name = name,
-            CartLifetimeMinutes = cartLifetimeMinutes,
+
+        shop = shop with {
             ShopAdmin = admin
         };
-
+        
         shop = await _shopRepository.AddAsync(shop, cancellationToken);
         
         return shop;

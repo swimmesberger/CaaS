@@ -1,0 +1,9 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Schema_With_Mock_Data" type="DatabaseScript">
+    <script-file value="$PROJECT_DIR$/CaaS.Infrastructure/Base/Sql/V2__Initial_version.sql" />
+    <script-file value="$PROJECT_DIR$/CaaS.Infrastructure/Base/Sql/V3_Mock_data.sql" />
+    <script-mode>FILE</script-mode>
+    <data-source id="3d290f25-ac52-464f-96be-adfaff38429e" namespace="database/&quot;caas&quot;" />
+    <method v="2" />
+  </configuration>
+</component>

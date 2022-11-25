@@ -10,6 +10,9 @@ namespace CaaS.Api.Base.Swagger;
 
 public class CaasConventionOperationFilter : IOperationFilter {
     private static readonly IReadOnlyCollection<KeyValuePair<string, string>> ResponseDescriptionMap = new[] {
+        new KeyValuePair<string, string>("201", "Created"),
+        new KeyValuePair<string, string>("202", "Accepted"),
+        new KeyValuePair<string, string>("204", "No Content"),
         new KeyValuePair<string, string>("2\\d{2}", "Success"),
 
         new KeyValuePair<string, string>("400", "Bad Request"),
@@ -33,7 +36,10 @@ public class CaasConventionOperationFilter : IOperationFilter {
         if (ApplyWriteFor(operation, context)) return;
 
         if (ApplyReadFor<HttpGetAttribute>(operation, context)) return;
-        if (ApplyWriteFor<HttpPostAttribute>(operation, context)) return;
+        if (ApplyWriteFor<HttpPostAttribute>(operation, context)) {
+            Replace200With201(operation);
+            return;
+        }
         if (ApplyWriteFor<HttpDeleteAttribute>(operation, context)) return;
         if (ApplyWriteFor<HttpPutAttribute>(operation, context)) return;
     }
@@ -94,6 +100,16 @@ public class CaasConventionOperationFilter : IOperationFilter {
         
         AddProblemDetailsByStatusCode(StatusCodes.Status500InternalServerError, operation, context);
         AddProblemDetailsByStatusCode(StatusCodes.Status503ServiceUnavailable, operation, context);
+    }
+
+    private void Replace200With201(OpenApiOperation operation) {
+        if (!operation.Responses.Remove(StatusCodes.Status200OK.ToString(), out var okSchema)) return;
+        var statusCodeString = StatusCodes.Status201Created.ToString();
+        var description = ResponseDescriptionMap
+            .FirstOrDefault(entry => Regex.IsMatch(statusCodeString, entry.Key))
+            .Value;
+        okSchema.Description = description;
+        operation.Responses[StatusCodes.Status201Created.ToString()] = okSchema;
     }
 
     internal static void AddProblemDetailsByStatusCode(int statusCode, OpenApiOperation operation, OperationFilterContext context) {

@@ -14,12 +14,12 @@ using Hellang.Middleware.ProblemDetails.Mvc;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
 
 namespace CaaS.Api.Base; 
 
 public static class CaasApiServiceCollectionExtensions {
     public static IServiceCollection AddCaas(this IServiceCollection services, IConfiguration configuration) {
+        services.AddAutoMapper(typeof(CaasApiServiceCollectionExtensions));
         services.AddControllers(options => {
             // remove text/plain support
             options.OutputFormatters.RemoveType<StringOutputFormatter>();
@@ -51,6 +51,9 @@ public static class CaasApiServiceCollectionExtensions {
     }
     
     private static void ConfigureProblemDetails(ProblemDetailsOptions options) {
+        // log exception in development mode
+        options.ShouldLogUnhandledException = (context, _, _) 
+            => context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment();
         options.MapToStatusCode<NotImplementedException>(StatusCodes.Status501NotImplemented);
         options.MapToStatusCode<HttpRequestException>(StatusCodes.Status503ServiceUnavailable);
         options.MapToStatusCode<CaasUpdateConcurrencyDbException>(StatusCodes.Status409Conflict);

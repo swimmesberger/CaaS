@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base.Exceptions;
-using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;

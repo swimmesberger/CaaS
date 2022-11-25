@@ -2,7 +2,6 @@
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
-using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
@@ -13,7 +12,7 @@ using CaaS.Infrastructure.Base.Repository;
 namespace CaaS.Infrastructure.OrderData; 
 
 public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrderRepository {
-    internal new OrderDomainModelConvert Converter => (OrderDomainModelConvert)base.Converter;
+    private new OrderDomainModelConvert Converter => (OrderDomainModelConvert)base.Converter;
     
     public OrderRepository(IDao<OrderDataModel> dao, 
                             IDao<ProductOrderDataModel> orderItemDao,

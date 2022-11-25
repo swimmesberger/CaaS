@@ -33,7 +33,11 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
             Name = domainModel.Name
         };
     }
-    
+
+    public Shop ApplyDataModel(Shop domainModel, ShopDataModel dataModel) {
+        return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
+    }
+
     public ShopDataModel ConvertFromDomain(Shop domainModel) {
         return new ShopDataModel() {
             Id = domainModel.Id,

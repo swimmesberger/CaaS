@@ -47,20 +47,16 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
             RowVersion = entity.GetRowVersion()
         };
         dataModel = await Dao.AddAsync(dataModel, cancellationToken);
-        entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
+        entity = Converter.ApplyDataModel(entity, dataModel);
         return entity;
-    }
-    
-    public async Task<Cart> UpdateAsync(Cart entity, CancellationToken cancellationToken = default) {
-        var oldItems = await Converter.CartItemRepository
-            .FindByCartId(entity.Id, cancellationToken);
-        await Converter.CartItemRepository.UpdateProductsAsync(oldItems, entity.Items, cancellationToken);
-        return await UpdateImplAsync(entity, cancellationToken);
     }
 
     public async Task<Cart> UpdateAsync(Cart oldEntity, Cart newEntity, CancellationToken cancellationToken = default) {
         await Converter.CartItemRepository.UpdateProductsAsync(oldEntity.Items, newEntity.Items, cancellationToken);
-        return await UpdateImplAsync(newEntity, cancellationToken);
+        var dataModel = Converter.ConvertFromDomain(newEntity);
+        dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
+        newEntity = Converter.ApplyDataModel(newEntity, dataModel);
+        return newEntity;
     }
 
     public async Task DeleteAsync(Cart entity, CancellationToken cancellationToken = default) {
@@ -71,13 +67,6 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
         await Dao.DeleteAsync(dataModels, cancellationToken);
     }
     
-    private async Task<Cart> UpdateImplAsync(Cart entity, CancellationToken cancellationToken = default) {
-        var dataModel = Converter.ConvertFromDomain(entity);
-        dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
-        entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
-        return entity;
-    }
-
     private class CartDomainModelConvert : IDomainReadModelConverter<CartDataModel, Cart> {
         public IEnumerable<OrderParameter>? DefaultOrderParameters => null;
 
@@ -88,6 +77,10 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
             ICustomerRepository customerRepository) {
             CartItemRepository = new CartItemRepository(cartItemDao, productRepository);
             CustomerRepository = customerRepository;
+        }
+
+        public Cart ApplyDataModel(Cart domainModel, CartDataModel dataModel) {
+            return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
         }
         
         public IReadOnlyList<CartDataModel> ConvertFromDomain(IEnumerable<Cart> domainModels)

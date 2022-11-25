@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 using CaaS.Api.Base.Attributes;
+using CaaS.Api.ProductApi.Models;
 using CaaS.Core.ProductAggregate;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,30 +13,35 @@ namespace CaaS.Api.ProductApi;
 [CaasApiConvention]
 public class ProductAdministrationController : ControllerBase {
     private readonly IProductService _productService;
+    private readonly IMapper _mapper;
 
-    public ProductAdministrationController(IProductService productService) {
+    public ProductAdministrationController(IProductService productService, IMapper mapper) {
         _productService = productService;
+        _mapper = mapper;
     }
     
     [HttpPost]
-    public async Task<ActionResult<Product>> AddProduct(string name, decimal price, 
-        string description = "", string downloadLink = "", CancellationToken cancellationToken = default) {
-        var product = await _productService.AddProduct(name, price, description, downloadLink, cancellationToken);
+    public async Task<ActionResult> AddProduct(ProductForCreationDto productDto, CancellationToken cancellationToken = default) {
+        var product = _mapper.Map<Product>(productDto);
+        await _productService.AddProduct(product, cancellationToken);
         
+        //201 to be documented
         return CreatedAtAction(
             actionName: nameof(AddProduct),
             routeValues: new { productId = product.Id },
-            value: product);
+            value: null);
     }
     
-    [HttpPut("{productId:guid}/price/{price}")]
-    public async Task<Product> SetPriceOfProduct(Guid productId, [Required][FromQuery] decimal price,
+    [HttpPut("{productId:guid}")]
+    public async Task<ProductDto> SetPriceOfProduct(Guid productId, [FromQuery][Required] decimal price,
         CancellationToken cancellationToken = default) {
-        return await _productService.SetPriceOfProduct(productId, price, cancellationToken);
+        var result = await _productService.SetPriceOfProduct(productId, price, cancellationToken);
+        return _mapper.Map<ProductDto>(result);
     }
     
     [HttpDelete("{productId:guid}")]
-    public async Task DeleteProduct(Guid productId, CancellationToken cancellationToken = default) {
+    public async Task<ActionResult> DeleteProduct(Guid productId, CancellationToken cancellationToken = default) {
         await _productService.DeleteProduct(productId, cancellationToken);
+        return NoContent();
     }
 }
