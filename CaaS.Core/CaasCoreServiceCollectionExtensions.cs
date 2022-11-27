@@ -4,7 +4,6 @@ using CaaS.Core.Base;
 using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Impl;
-using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +25,7 @@ public static class CaasCoreServiceCollectionExtensions {
 
     public static IServiceCollection AddCaasDiscountCore(this IServiceCollection services) {
         services.AddSingleton<IDiscountComponentFactory, DiscountComponentFactory>();
+        services.AddSingleton<IDiscountComponentProvider>(sp => sp.GetRequiredService<IDiscountComponentFactory>());
         services.AddScoped<IDiscountService, CaasDiscountService>();
         services.AddDiscountRule<MinProductCountDiscountRule, MinProductCountSettings>(MinProductCountDiscountRule.Id);
         services.AddDiscountRule<TimeWindowDiscountRule, TimeWindowDiscountSettings>(TimeWindowDiscountRule.Id);

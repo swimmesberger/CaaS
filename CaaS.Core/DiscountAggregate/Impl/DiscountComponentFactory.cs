@@ -35,6 +35,20 @@ public class DiscountComponentFactory : IDiscountComponentFactory {
         );
     }
 
+    public IDiscountRule CreateRule(DiscountSettingMetadata settingMetadata) {
+        if (!_discountComponents.TryGetValue(settingMetadata.Id, out var rule)) {
+            throw new CaasDiscountException($"Can't find discount rule with id {settingMetadata.Id}");
+        }
+        return CreateRule(rule, settingMetadata.Parameters);
+    }
+
+    public IDiscountAction CreateAction(DiscountSettingMetadata settingMetadata) {
+        if (!_discountComponents.TryGetValue(settingMetadata.Id, out var action)) {
+            throw new CaasDiscountException($"Can't find discount action with id {settingMetadata.Id}");
+        }
+        return CreateAction(action, settingMetadata.Parameters);
+    }
+
     private IDiscountRule CreateRule(DiscountComponentMetadata component, DiscountParameters settings) {
         if (component.ComponentType != DiscountComponentType.Rule) throw new ArgumentException();
         return (IDiscountRule)ActivatorUtilities.CreateInstance(CreateDiscountOptionsProvider(settings), component.ServiceType);

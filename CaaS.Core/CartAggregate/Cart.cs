@@ -15,4 +15,17 @@ public record Cart : IEntityBase {
     public IImmutableList<Discount> CartDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
     public DateTimeOffset LastAccess { get; init; } = DateTimeOffsetProvider.GetNow();
     public string ConcurrencyToken { get; init; } = string.Empty;
+
+    public decimal TotalPrice {
+        get {
+            var price = Items.Select(i => i.TotalPrice).Sum();
+            foreach (var cartCoupon in Coupons) {
+                price -= cartCoupon.Value;
+            }
+            foreach (var cartDiscount in CartDiscounts) {
+                price -= cartDiscount.DiscountValue;
+            }
+            return price;
+        }
+    }
 }

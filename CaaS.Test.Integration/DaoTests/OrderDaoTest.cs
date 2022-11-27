@@ -56,12 +56,12 @@ public class OrderDaoTest : BaseDaoTest {
     [Fact]
     public async Task FindByOrderNumberLessAndGreater() {
         var orderDao = GetOrderDao(ShopTenantId);
-        
-        var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Order.OrderNumber), 2628 , comparator: WhereComparator.GreaterOrEqual),
-            QueryParameter.From(nameof(Order.OrderNumber), 3000 , comparator: WhereComparator.LessOrEqual),
-        };
 
+
+        var parameters = new List<QueryParameter> {
+            QueryParameter.From(nameof(Order.OrderNumber), 3000 , comparator: WhereComparator.LessOrEqual),
+            QueryParameter.From(nameof(Order.OrderNumber), 2628 , comparator: WhereComparator.GreaterOrEqual),
+        };
         var products = await orderDao.FindBy(StatementParameters
             .CreateWhere(parameters)).ToListAsync();
         

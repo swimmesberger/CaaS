@@ -37,8 +37,8 @@ public class CaasDiscountService : IDiscountService {
         }
 
         public static RuleCheckDiscountAction ForAll(IReadOnlyCollection<DiscountComponent> discountComponents) {
-            var rule = new CompositeDiscountRule(discountComponents);
-            var action = new AndDiscountAction(discountComponents);
+            var rule = new CompositeDiscountRule(discountComponents.Select(c => c.Rule));
+            var action = new AndDiscountAction(discountComponents.Select(c => c.Action));
             return new RuleCheckDiscountAction(new DiscountComponent(rule, action));
         }
     }

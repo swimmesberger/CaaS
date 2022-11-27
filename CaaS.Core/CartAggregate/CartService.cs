@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using FluentValidation.Results;
@@ -9,15 +10,17 @@ namespace CaaS.Core.CartAggregate;
 
 public class CartService : ICartService {
     private readonly ICartRepository _cartRepository;
-    private readonly ITenantIdAccessor _tenantIdAccessor;
     private readonly IShopRepository _shopRepository;
+    private readonly IDiscountService _discountService;
+    private readonly ITenantIdAccessor _tenantIdAccessor;
     private readonly IDateTimeOffsetProvider _timeProvider;
 
-    public CartService(ICartRepository cartRepository, ITenantIdAccessor tenantIdAccessor, IShopRepository shopRepository, 
-        IDateTimeOffsetProvider timeProvider) {
+    public CartService(ICartRepository cartRepository, IShopRepository shopRepository, IDiscountService discountService, 
+        ITenantIdAccessor tenantIdAccessor,  IDateTimeOffsetProvider timeProvider) {
         _cartRepository = cartRepository;
-        _tenantIdAccessor = tenantIdAccessor;
         _shopRepository = shopRepository;
+        _discountService = discountService;
+        _tenantIdAccessor = tenantIdAccessor;
         _timeProvider = timeProvider;
     }
 
@@ -25,7 +28,9 @@ public class CartService : ICartService {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) return null;
         var updatedCart = cart with { LastAccess = _timeProvider.GetNow() };
-        return await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
+        cart = await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
+        cart = await PostProcessCart(cart);
+        return cart;
     }
 
     public async Task<int> DeleteExpiredCarts(CancellationToken cancellationToken = default) {
@@ -75,7 +80,9 @@ public class CartService : ICartService {
                 LastAccess = _timeProvider.GetNow()
             };
         }
-        return await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
+        updatedCart = await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
+        updatedCart = await PostProcessCart(updatedCart);
+        return updatedCart;
     }
     
     public async Task<Cart> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default) {
@@ -91,7 +98,9 @@ public class CartService : ICartService {
             Items = changedProducts,
             LastAccess = _timeProvider.GetNow()
         };
-        return await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
+        updatedCart = await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
+        updatedCart = await PostProcessCart(updatedCart);
+        return updatedCart;
     }
     
     public async Task<Cart> SetProductQuantityInCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
@@ -114,6 +123,12 @@ public class CartService : ICartService {
             Items = cart.Items.SetItem(productItemIdx, productItem),
             LastAccess = _timeProvider.GetNow()
         };
-        return await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
+        updatedCart = await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
+        updatedCart = await PostProcessCart(updatedCart);
+        return updatedCart;
+    }
+
+    private async Task<Cart> PostProcessCart(Cart cart) {
+        return await _discountService.ApplyDiscountAsync(cart);
     }
 }

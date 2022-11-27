@@ -1,10 +1,16 @@
-﻿using CaaS.Core.Base;
+﻿using System.Collections.Immutable;
+using CaaS.Core.Base;
 using CaaS.Core.CartAggregate;
+using CaaS.Core.DiscountAggregate;
+using CaaS.Core.DiscountAggregate.Base;
+using CaaS.Core.DiscountAggregate.Impl;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CustomerData;
+using CaaS.Infrastructure.DiscountData;
 using CaaS.Infrastructure.ProductData;
 using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
+using Microsoft.Extensions.Options;
 
 namespace CaaS.Test; 
 
@@ -97,6 +103,7 @@ public class CartServiceTest {
         var cartItemDao = new MemoryDao<ProductCartDataModel>(new List<ProductCartDataModel>() {
             new ProductCartDataModel() { Amount = 2, CartId = ExistingCartId, ProductId = ProductAId }
         });
+        var discountSettingsDao = new MemoryDao<DiscountSettingDataModel>(new List<DiscountSettingDataModel>());
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
         var productRepository = new ProductRepository(productDao, shopRepository);
@@ -104,6 +111,10 @@ public class CartServiceTest {
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
         var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository, DateTimeOffsetProvider.Instance);
-        return new CartService(cartRepository, tenantIdAccessor, shopRepository, DateTimeOffsetProvider.Instance);
+        var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, 
+            new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()));
+        var discountService = new CaasDiscountService(discountSettingsRepository, 
+            new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!));
+        return new CartService(cartRepository,  shopRepository, discountService, tenantIdAccessor, DateTimeOffsetProvider.Instance);
     }
 }

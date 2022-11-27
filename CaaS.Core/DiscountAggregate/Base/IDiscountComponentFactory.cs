@@ -2,8 +2,10 @@
 
 namespace CaaS.Core.DiscountAggregate.Base; 
 
-public interface IDiscountComponentFactory {
+public interface IDiscountComponentFactory : IDiscountComponentProvider {
     DiscountComponent CreateComponent(DiscountSetting discountSetting);
     
-    IEnumerable<DiscountComponentMetadata> GetDiscountMetadata();
+    IDiscountRule CreateRule(DiscountSettingMetadata settingMetadata);
+
+    IDiscountAction CreateAction(DiscountSettingMetadata settingMetadata);
 }

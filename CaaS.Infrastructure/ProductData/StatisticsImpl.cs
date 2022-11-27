@@ -1,7 +1,6 @@
 using System.Data;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Tenant;
-using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
 

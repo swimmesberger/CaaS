@@ -12,10 +12,3 @@ public record DiscountSetting : IEntityBase {
     public Shop Shop { get; init; } = Shop.Empty;
     public string ConcurrencyToken { get; init; } = string.Empty;
 }
-
-public record DiscountSettingMetadata {
-    public static readonly DiscountSettingMetadata Empty = new DiscountSettingMetadata();
-    
-    public Guid Id { get; init; } = Guid.NewGuid();
-    public DiscountParameters Parameters { get; init; } = DiscountParameters.Empty;
-}

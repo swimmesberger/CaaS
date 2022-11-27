@@ -5,10 +5,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace CaaS.Api.DiscountApi.Swagger; 
 
 public class DiscountSettingsOpenApiDocumentFilter : IDocumentFilter {
-    private readonly IDiscountComponentFactory _discountComponentFactory;
+    private readonly IDiscountComponentProvider _discountComponentProvider;
 
-    public DiscountSettingsOpenApiDocumentFilter(IDiscountComponentFactory discountService) {
-        _discountComponentFactory = discountService;
+    public DiscountSettingsOpenApiDocumentFilter(IDiscountComponentProvider discountService) {
+        _discountComponentProvider = discountService;
     }
     
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context) {
@@ -18,7 +18,7 @@ public class DiscountSettingsOpenApiDocumentFilter : IDocumentFilter {
             Properties = new Dictionary<string, OpenApiSchema>() { [OpenApiConstants.DollarRef] = new OpenApiSchema { Type = "string" } },
             AdditionalPropertiesAllowed = false
         };
-        foreach (var discountComponentMetadata in _discountComponentFactory.GetDiscountMetadata()) {
+        foreach (var discountComponentMetadata in _discountComponentProvider.GetDiscountMetadata()) {
             context.SchemaGenerator.GenerateSchema(discountComponentMetadata.SettingsType, context.SchemaRepository);
         }
     }

@@ -5,7 +5,6 @@ using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.DiscountAggregate.Base;
-using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
@@ -31,6 +30,13 @@ public static class CaasInfrastructureServiceCollectionExtensions {
     public static IServiceCollection AddCaasInfrastructure(this IServiceCollection services) {
         services.AddDatabase();
         services.AddRepositories();
+        services.AddCaasDiscountInfrastructure();
+        return services;
+    }
+
+    public static IServiceCollection AddCaasDiscountInfrastructure(this IServiceCollection services) {
+        services.AddOptions<DiscountJsonOptions>().Configure<IEnumerable<DiscountComponentMetadata>>((options, metadatas) 
+            => options.JsonSerializerOptions.Converters.Add(new DiscountSettingsJsonConverter(metadatas)));
         return services;
     }
 
@@ -61,8 +67,6 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddScoped<IShopAdminRepository, ShopAdminRepository>();
         services.AddScoped<IStatisticsService, StatisticsImpl>();
         services.AddScoped<IDiscountSettingRepository, DiscountSettingsRepository>();
-        services.AddOptions<DiscountJsonOptions>();
-        services.AddScoped<DiscountSettingsJsonConverter>();
         return services;
     }
 

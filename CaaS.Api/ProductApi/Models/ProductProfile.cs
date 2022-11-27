@@ -1,6 +1,5 @@
 using AutoMapper;
 using CaaS.Core.ProductAggregate;
-using CaaS.Core.ShopAggregate;
 
 namespace CaaS.Api.ProductApi.Models; 
 

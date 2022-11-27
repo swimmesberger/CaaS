@@ -1,5 +1,4 @@
 ﻿using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.Mapping;
 
 namespace CaaS.Infrastructure.Base.Ado; 
 

@@ -1,5 +1,4 @@
-﻿using CaaS.Core.Base;
-using CaaS.Infrastructure.Base.Ado.Model.Where;
+﻿using CaaS.Infrastructure.Base.Ado.Model.Where;
 
 namespace CaaS.Infrastructure.Base.Ado.Model;
 

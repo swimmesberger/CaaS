@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using CaaS.Api.Base.Attributes;
+﻿using CaaS.Api.Base.Attributes;
 using CaaS.Core.Base;
 using CaaS.Core.CartAggregate;
 using Microsoft.AspNetCore.Mvc;
