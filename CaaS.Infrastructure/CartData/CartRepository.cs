@@ -5,6 +5,7 @@ using CaaS.Core.CustomerAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Model.Where;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.CartData; 
@@ -31,7 +32,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
 
     public async Task<IReadOnlyList<Cart>> FindExpiredCarts(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Cart.LastAccess), DateTimeOffsetProvider.GetNow().Subtract(TimeSpan.FromMinutes(lifeTimeMinutes)), comparator: Comparators.Less),
+            QueryParameter.From(nameof(Cart.LastAccess), DateTimeOffsetProvider.GetNow().Subtract(TimeSpan.FromMinutes(lifeTimeMinutes)), comparator: WhereComparator.Less),
         };
 
         return await Converter.ConvertToDomain(Dao.FindBy(StatementParameters.CreateWhere(parameters), cancellationToken), cancellationToken);

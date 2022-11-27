@@ -23,7 +23,7 @@ public record Statement {
     }
 
     public Statement AddWhereParameter(string name, object value) {
-        return AddParameters(new StatementParameters() { Where = new List<QueryParameter>() { QueryParameter.From(name, value) } });
+        return AddParameters(StatementParameters.CreateWhere(QueryParameter.From(name, value)));
     }
 
     public MaterializedStatements Materialize() => _sqlGenerator.MaterializeStatement(this);

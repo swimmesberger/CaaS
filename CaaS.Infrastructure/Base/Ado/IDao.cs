@@ -8,7 +8,7 @@ public interface IDao<T> {
     IAsyncEnumerable<T> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
     IAsyncEnumerable<T> FindBy(StatementParameters parameters, CancellationToken cancellationToken = default);
 
-    Task<long> CountAsync(CancellationToken cancellationToken = default);
+    Task<long> CountAsync(StatementParameters? parameters = null, CancellationToken cancellationToken = default);
 
     Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<T>> AddAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default);

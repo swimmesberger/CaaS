@@ -1,8 +1,10 @@
-﻿using CaaS.Core.Base.Exceptions;
+﻿using CaaS.Core.Base;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Model.Where;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.ProductData; 
@@ -10,12 +12,12 @@ public class ProductRepository : CrudRepository<ProductDataModel, Product>, IPro
     public ProductRepository(IDao<ProductDataModel> productDao, IShopRepository shopRepository) : 
             base(productDao, new ProductDomainModelConvert(shopRepository)) {}
 
-    public async Task<IReadOnlyList<Product>> FindByTextSearchAsync(string text, CancellationToken cancellationToken = default) {
-        // simple in-memory search for now
-        // TODO: switch to SQL search
-        return await Converter.ConvertToDomain(Dao.FindAllAsync(cancellationToken).Where(p =>
-            p.Name.Contains(text, StringComparison.CurrentCultureIgnoreCase) ||
-            p.Description.Contains(text, StringComparison.CurrentCultureIgnoreCase)), cancellationToken);
+    public async Task<PagedResult<Product>> FindByTextSearchAsync(string text, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
+        var statementParameters = StatementParameters.CreateWhere(new SearchWhere(new[] {
+            new QueryParameter(nameof(ProductDataModel.Name)) { Value = text },
+            new QueryParameter(nameof(ProductDataModel.Description)) { Value = text }
+        }));
+        return await FindByPagedAsync(statementParameters, null, paginationToken, cancellationToken);
     }
 }
 

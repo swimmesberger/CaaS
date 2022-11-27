@@ -3,10 +3,8 @@ using CaaS.Infrastructure.Base.Mapping;
 
 namespace CaaS.Infrastructure.Base.Ado; 
 
-public interface IStatementGenerator<T> {
-    IDataRecordMapper<T> DataRecordMapper { get; }
-    
-    Statement CreateCount();
+public interface IStatementGenerator<T> : IDataRecordProvider<T> {
+    Statement CreateCount(StatementParameters statementParameters);
 
     Statement CreateFind(StatementParameters statementParameters);
 

@@ -21,6 +21,7 @@ public static class CaasApiServiceCollectionExtensions {
     public static IServiceCollection AddCaas(this IServiceCollection services, IConfiguration configuration) {
         services.AddAutoMapper(typeof(CaasApiServiceCollectionExtensions));
         services.AddControllers(options => {
+            options.ReturnHttpNotAcceptable = true;
             // remove text/plain support
             options.OutputFormatters.RemoveType<StringOutputFormatter>();
         }).AddMvcOptions(options => {

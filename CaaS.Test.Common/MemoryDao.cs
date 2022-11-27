@@ -30,7 +30,7 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
     public IAsyncEnumerable<T> FindBy(StatementParameters parameters, CancellationToken cancellationToken = default) {
         var properties = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p);
         var enumerable = _data.Where(d => {
-            foreach (var param in parameters.Where) {
+            foreach (var param in parameters.Where.Parameters) {
                 var prop = properties[param.Name];
                 if (param.Value is IEnumerable enumerable and not string) {
                     var lookup = enumerable.Cast<object?>().ToHashSet();
@@ -61,7 +61,12 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
         return enumerable.ToAsyncEnumerable();
     }
 
-    public Task<long> CountAsync(CancellationToken cancellationToken = default) => Task.FromResult<long>(_data.Count);
+    public async Task<long> CountAsync(StatementParameters? parameters = null, CancellationToken cancellationToken = default) {
+        if (parameters == null) {
+            return _data.Count; 
+        }
+        return await FindBy(parameters, cancellationToken).CountAsync(cancellationToken);
+    }
     
     public Task<T> AddAsync(T entity, CancellationToken cancellationToken = default) {
         _data.Add(entity);

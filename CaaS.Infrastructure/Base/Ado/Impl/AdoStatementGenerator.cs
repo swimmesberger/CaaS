@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Text;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Model.Where;
 using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
 
@@ -13,14 +15,15 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         DataRecordMapper = recordMapper;
     }
 
-    public Statement CreateCount() => new Statement(StatementType.Count, this);
-
-    public Statement CreateFind(StatementParameters statementParameters) {
-        // ReSharper disable once PossibleMultipleEnumeration
-        return new Statement(StatementType.Find, this) {
+    public Statement CreateCount(StatementParameters statementParameters) 
+        => new Statement(StatementType.Count, this) {
             Parameters = statementParameters
         };
-    }
+
+    public Statement CreateFind(StatementParameters statementParameters)
+        => new Statement(StatementType.Find, this) {
+            Parameters = statementParameters
+        };
 
     public Statement CreateInsert(T entity) {
         return CreateInsert(new[] { entity });
@@ -89,20 +92,16 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         var propertyMapper = DataRecordMapper.ByPropertyName();
         
         return new Statement(StatementType.Delete, this) {
-            Parameters = new StatementParameters() {
-                Where = new List<QueryParameter>(){ 
-                    QueryParameter.From(
-                        propertyMapper.MapName(nameof(IDataModelBase.Id)), 
-                        entities.Select(e => e.Id)
-                    ) 
-                }
-            }
+            Parameters = StatementParameters.CreateWhere(QueryParameter.From(
+                propertyMapper.MapName(nameof(IDataModelBase.Id)), 
+                entities.Select(e => e.Id)
+            ))
         };
     }
 
     public MaterializedStatements MaterializeStatement(Statement statement) {
         return statement.Type switch {
-            StatementType.Count => new MaterializedStatements(new MaterializedStatement($"SELECT COUNT(*) FROM {GetTableName()}")),
+            StatementType.Count => new MaterializedStatements(MaterializeCount(statement)),
             StatementType.Create => new MaterializedStatements(MaterializeInsert(statement)),
             StatementType.Update => MaterializeUpdate(statement),
             StatementType.Delete => new MaterializedStatements(MaterializeDelete(statement)),
@@ -159,20 +158,79 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
     
     private MaterializedStatement MaterializeFind(Statement statement) {
         var sql = new StringBuilder($"SELECT {GetColumnNamesString()} FROM {GetTableName()}");
-        var whereParams = CreateWhereClause(sql, statement.Parameters.Where);
+        var parameters = CreateWhereClause(sql, statement.Parameters.Where);
         AddOrderByClause(sql, statement.Parameters.OrderBy);
+        if (statement.Parameters.Limit != null) {
+            sql.Append($" LIMIT @{QueryParameter.LimitParamName}");
+            parameters.Add(QueryParameter.From(QueryParameter.LimitParamName, statement.Parameters.Limit.Value));
+        }
         return new MaterializedStatement(sql.ToString()) {
-            Parameters = whereParams
+            Parameters = parameters
         };
     }
-    private IEnumerable<QueryParameter> CreateWhereClause(StringBuilder sql, IEnumerable<QueryParameter> parameters) {
-        var newParams = new List<QueryParameter>();
-        AddWhereClause(sql, newParams, parameters);
-        return newParams;
+
+    private MaterializedStatement MaterializeCount(Statement statement) {
+        var sql = new StringBuilder($"SELECT COUNT(*) FROM {GetTableName()}");
+        var parameters = CreateWhereClause(sql, statement.Parameters.Where);
+        return new MaterializedStatement(sql.ToString()) {
+            Parameters = parameters
+        };
+    }
+    
+    private List<QueryParameter> CreateWhereClause(StringBuilder sql, WhereParameters multiWhere) {
+        return CreateWhereClause(sql, multiWhere.Statements);
     }
 
-    private void AddWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<QueryParameter> parameters) {
+    private List<QueryParameter> CreateWhereClause(StringBuilder sql, IEnumerable<QueryParameter> whereStatements) {
+        return CreateWhereClause(sql, new[] { new SimpleWhere(whereStatements) });
+    }
+
+    private List<QueryParameter> CreateWhereClause(StringBuilder sql, IEnumerable<IWhereStatement> whereStatements) {
+        var newParams = new List<QueryParameter>();
+        AddWhereClause(sql, newParams, whereStatements);
+        return newParams;
+    }
+    
+    private void AddWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<IWhereStatement> whereStatements) {
         var first = true;
+        foreach (var whereStatement in whereStatements) {
+            switch (whereStatement) {
+                case SimpleWhere simpleWhere:
+                    AddSimpleWhereClause(sql, newParams, simpleWhere.Parameters, ref first);
+                    break;
+                case RowValueWhere rowValueWhere:
+                    AddRowValueWhereClause(sql, newParams, rowValueWhere, ref first);
+                    break;
+                case SearchWhere searchWhere:
+                    AddSearchWhereClause(sql, newParams, searchWhere, ref first);
+                    break;
+                default:
+                    throw new ArgumentException($"Unsupported where clause '{whereStatement.GetType()}'");
+            }
+        }
+    }
+    
+    private void AddRowValueWhereClause(StringBuilder sql, List<QueryParameter> newParams, RowValueWhere rowValueWhere, ref bool first) {
+        if (!rowValueWhere.Parameters.Any()) {
+            return;
+        }
+        if (first) {
+            first = false;
+            sql.Append(" WHERE");
+        } else {
+            sql.Append(" AND");
+        }
+        sql.Append(" (");
+        sql.Append(string.Join(',', rowValueWhere.Parameters.Select(p => $"{p.Name}")));
+        sql.Append(')');
+        sql.Append(ComparatorToSqlOperator(rowValueWhere.Comparator));
+        sql.Append(" (");
+        sql.Append(string.Join(',', rowValueWhere.Parameters.Select(p => $"@{p.ParameterName}")));
+        sql.Append(')');
+        newParams.AddRange(rowValueWhere.Parameters);
+    }
+
+    private void AddSimpleWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<QueryParameter> parameters, ref bool first) {
         foreach (var queryParameter in parameters) {
             var explodedParams = ExplodeParameters(queryParameter).ToList();
             if (explodedParams.Count <= 0) continue;
@@ -198,17 +256,53 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         }
     }
 
-    private string ComparatorToSqlOperator(Comparators comparator) {
+    private void AddSearchWhereClause(StringBuilder sql, List<QueryParameter> newParams, SearchWhere searchWhere, ref bool first) {
+        var parameters = searchWhere.Parameters.ToList();
+        if (!parameters.Any()) {
+            return;
+        }
+        if (first) {
+            first = false;
+            sql.Append(" WHERE");
+        } else {
+            sql.Append(" AND");
+        }
+        if (parameters.Count == 1) {
+            AddLikeClause(sql, newParams, parameters[0]);
+            return;
+        }
+        sql.Append(' ').Append('(');
+        var innerFirst = true;
+        foreach (var queryParameter in parameters) {
+            if (queryParameter.Value == null) {
+                throw new CaasDbException($"Null parameter {queryParameter.Name} not allowed in search");
+            }
+            if (innerFirst) {
+                innerFirst = false;
+            } else {
+                sql.Append(" OR ");
+            }
+            AddLikeClause(sql, newParams, queryParameter);
+        }
+        sql.Append(')');
+    }
+
+    private void AddLikeClause(StringBuilder sql, List<QueryParameter> newParams, QueryParameter queryParameter) {
+        sql.Append($"LOWER({queryParameter.Name}) LIKE @{queryParameter.ParameterName}");
+        newParams.Add(queryParameter with { Value = $"%{queryParameter.Value!.ToString()!.ToLowerInvariant()}%" });
+    }
+
+    private string ComparatorToSqlOperator(WhereComparator comparator) {
         switch (comparator) {
-            case Comparators.Equal:
+            case WhereComparator.Equal:
                 return "=";
-            case Comparators.Greater:
+            case WhereComparator.Greater:
                 return ">";
-            case Comparators.Less:
+            case WhereComparator.Less:
                 return "<";
-            case Comparators.GreatOrEqual:
+            case WhereComparator.GreaterOrEqual:
                 return ">=";
-            case Comparators.LessOrEqual:
+            case WhereComparator.LessOrEqual:
                 return "<=";
             default:
                 throw new ArgumentException($"Operator '{comparator}' is invalid.");
@@ -259,4 +353,6 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         }
         return new[] { queryParameter };
     }
+
+    private static bool IsExplodeableParameter(QueryParameter queryParameter) => queryParameter.Value is IEnumerable enumerable and not string;
 }

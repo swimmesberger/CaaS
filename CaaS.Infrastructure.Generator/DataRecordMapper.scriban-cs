@@ -15,12 +15,18 @@ public sealed class {{ Entity.EntityName }}DataRecordMapper : IDataRecordMapper<
     
     public string MappedTypeName { get; } = "{{ Entity.TableName }}";
     
+    public IRecordMetadataProvider MetadataProvider { get; }
+    
     private readonly IPropertyMapper _propertyMapper = new {{ Entity.EntityName }}PropertyToColumnMapper();
     private readonly IPropertyMapper _columnMapper = new {{ Entity.EntityName }}ColumnToPropertyMapper();
     
     public IPropertyMapper ByColumName() => _columnMapper;
     
     public IPropertyMapper ByPropertyName() => _propertyMapper;
+    
+    public {{ Entity.EntityName }}DataRecordMapper() {
+        MetadataProvider = RecordFromEntity(new {{ Entity.TypeName }}()).ByPropertyName();
+    }
     
     public async ValueTask<{{ Entity.TypeName }}> EntityFromRecordAsync(DbDataReader record, CancellationToken cancellationToken = default) {
         return new {{ Entity.TypeName }} {
@@ -76,6 +82,15 @@ internal sealed class {{ Entity.EntityName }}PropertyRecordValues : IRecordValue
             default: return null;
         }
     }
+    
+    public Type GetPropertyType(string key) {
+        switch(key){
+{{ for prop in Entity.Properties ~}}
+            case "{{ prop.PropertyName }}": return typeof({{ prop.TypeName }});
+{{ end ~}}
+            default: throw new ArgumentException($"Invalid property name {key}", nameof(key));
+        }
+    }
         
     public object? GetObject(string key) {
         switch(key) {
@@ -99,6 +114,11 @@ internal sealed class {{ Entity.EntityName }}ColumnRecordValues : IRecordValues 
     }
     
     public string MapName(string key) => _mapper.MapName(key);
+    
+    public Type GetPropertyType(string key) {
+        key = _mapper.MapName(key);
+        return _record.GetPropertyType(key);
+    }
     
     public int? GetObjectType(string key) {
         key = _mapper.MapName(key);

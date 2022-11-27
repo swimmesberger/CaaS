@@ -19,6 +19,11 @@ public class CrudReadRepository<TData, TDomain> : IRepository
     public async Task<IReadOnlyList<TDomain>> FindAllAsync(CancellationToken cancellationToken = default) 
         => await Converter.ConvertToDomain(Dao.FindBy(PreProcessFindManyParameters(StatementParameters.Empty), cancellationToken), cancellationToken);
 
+    public Task<PagedResult<TDomain>> FindAllPagedAsync(PaginationToken? paginationToken = null,
+        CancellationToken cancellationToken = default) {
+        return FindByPagedAsync(StatementParameters.Empty, null, paginationToken, cancellationToken);
+    }
+    
     public async Task<TDomain?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
         var dataModel = await Dao.FindByIdAsync(id, cancellationToken);
         if (dataModel == null) return null;
@@ -29,9 +34,25 @@ public class CrudReadRepository<TData, TDomain> : IRepository
         var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
-    
+
+    protected async Task<PagedResult<TDomain>> FindByPagedAsync(StatementParameters parameters, long? pageSize = null, PaginationToken? paginationToken = null, 
+        CancellationToken cancellationToken = default) {
+        if (!parameters.OrderBy.Any()) {
+            parameters = parameters.WithOrderBy(GetPaginationOrderByParameters());
+        }
+        var pagesModels = await Dao.FindByPagedAsync(parameters, pageSize, paginationToken, cancellationToken);
+        return await pagesModels.MapAsync(items => 
+            Converter.ConvertToDomain(items.ToAsyncEnumerable(), cancellationToken));
+    }
+
     public async Task<long> CountAsync(CancellationToken cancellationToken = default)
-        => await Dao.CountAsync(cancellationToken);
+        => await Dao.CountAsync(cancellationToken: cancellationToken);
+
+    protected IEnumerable<OrderParameter> GetPaginationOrderByParameters() {
+        var orderParameters = Converter.DefaultOrderParameters;
+        orderParameters = orderParameters == null ? GetFallbackOrderParameters() : orderParameters.Concat(GetFallbackOrderParameters());
+        return orderParameters;
+    }
 
     private StatementParameters PreProcessFindManyParameters(StatementParameters parameters) {
         return parameters.WithOrderBy(Converter.DefaultOrderParameters ?? GetFallbackOrderParameters());

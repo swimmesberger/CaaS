@@ -10,13 +10,13 @@ using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Infrastructure.Base.Ado.Impl;
 
-public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
+public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : DataModel, new() {
     private readonly IStatementExecutor _statementExecutor;
     private readonly IStatementGenerator<T> _statementGenerator;
     private readonly ITenantIdAccessor? _tenantService;
     private readonly ITenantIdProvider<T>? _tenantIdProvider;
 
-    private IDataRecordMapper<T> DataRecordMapper => _statementGenerator.DataRecordMapper;
+    public IDataRecordMapper<T> DataRecordMapper => _statementGenerator.DataRecordMapper;
     
     public GenericDao(IStatementExecutor statementExecutor, 
             IStatementGenerator<T> statementGenerator, 
@@ -54,8 +54,9 @@ public sealed class GenericDao<T> : IDao<T> where T : DataModel, new() {
         return QueryAsync(parameters.MapParameterNames(name => DataRecordMapper.ByPropertyName().MapName(name)), cancellationToken);
     }
 
-    public async Task<long> CountAsync(CancellationToken cancellationToken = default) {
-        return (long)(await QueryScalarAsync(_statementGenerator.CreateCount(), cancellationToken) ?? throw new InvalidOperationException());
+    public async Task<long> CountAsync(StatementParameters? parameters = null, CancellationToken cancellationToken = default) {
+        parameters ??= StatementParameters.Empty;
+        return (long)(await QueryScalarAsync(_statementGenerator.CreateCount(parameters), cancellationToken) ?? throw new InvalidOperationException());
     }
     
     public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default) {

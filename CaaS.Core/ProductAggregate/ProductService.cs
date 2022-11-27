@@ -17,11 +17,10 @@ public class ProductService : IProductService {
         _tenantIdAccessor = tenantIdAccessor;
     }
     
-    public async Task<CountedResult<Product>> GetByTextSearch(string text, CancellationToken cancellationToken = default) {
-        var totalCount = await _productRepository.CountAsync(cancellationToken);
-        var items = await _productRepository.FindByTextSearchAsync(text, cancellationToken);
-        return new CountedResult<Product>() { TotalCount = totalCount, Items = items };
+    public async Task<PagedResult<Product>> GetByTextSearch(string text, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
+        return await _productRepository.FindByTextSearchAsync(text, paginationToken, cancellationToken);
     }
+    
     public async Task<Product> AddProduct(Product product, CancellationToken cancellationToken = default) {
         var shop =  await _shopRepository.FindByIdAsync(_tenantIdAccessor.GetTenantGuid(), cancellationToken);
         if (shop == null) {
