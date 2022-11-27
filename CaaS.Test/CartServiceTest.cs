@@ -103,7 +103,7 @@ public class CartServiceTest {
         var customerRepository = new CustomerRepository(customerDao);
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
-        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository);
-        return new CartService(cartRepository, tenantIdAccessor, shopRepository);
+        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository, DateTimeOffsetProvider.Instance);
+        return new CartService(cartRepository, tenantIdAccessor, shopRepository, DateTimeOffsetProvider.Instance);
     }
 }

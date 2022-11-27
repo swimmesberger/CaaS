@@ -19,9 +19,8 @@ public class DiscountServiceTest {
     [Fact]
     public async Task ApplyDiscountTimeOutOfRange() {
         // out of range date
-        DateTimeOffsetProvider.Instance = new StaticDateTimeOffsetProvider(AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local)));
-        
-        await using var serviceProvider = SetupDiscountServiceProvider();
+        var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
+        await using var serviceProvider = SetupDiscountServiceProvider(currentTime);
         var discountService = serviceProvider.GetRequiredService<IDiscountService>();
         var cart = CreateTestCart();
         cart = await discountService.ApplyDiscountAsync(cart);
@@ -32,9 +31,8 @@ public class DiscountServiceTest {
     [Fact]
     public async Task ApplyDiscountTimeInRange() {
         // in range date
-        DateTimeOffsetProvider.Instance = new StaticDateTimeOffsetProvider(AsUtc(new DateTime(2022, 11, 25, 0, 0, 0, DateTimeKind.Local)));
-        
-        await using var serviceProvider = SetupDiscountServiceProvider();
+        var currentTime = AsUtc(new DateTime(2022, 11, 25, 0, 0, 0, DateTimeKind.Local));
+        await using var serviceProvider = SetupDiscountServiceProvider(currentTime);
         var discountService = serviceProvider.GetRequiredService<IDiscountService>();
         var cart = CreateTestCart();
         cart = await discountService.ApplyDiscountAsync(cart);
@@ -43,7 +41,7 @@ public class DiscountServiceTest {
         cart.Items.Should().AllSatisfy(i => i.CartItemDiscounts.Should().HaveCount(0));
     }
 
-    private ServiceProvider SetupDiscountServiceProvider() {
+    private ServiceProvider SetupDiscountServiceProvider(DateTimeOffset currentTime) {
         var discountSettingsDao = new MemoryDao<DiscountSettingDataModel>(new List<DiscountSettingDataModel>() {
             new DiscountSettingDataModel() {
                 ShopId = TestShopId, 
@@ -66,6 +64,7 @@ public class DiscountServiceTest {
         serviceCollection.AddSingleton<IDao<DiscountSettingDataModel>>(_ => discountSettingsDao);
         serviceCollection.AddScoped<IDiscountSettingRepository, DiscountSettingsRepository>();
         serviceCollection.AddScoped(_ => new JsonSerializerOptions());
+        serviceCollection.AddSingleton<IDateTimeOffsetProvider>(new StaticDateTimeOffsetProvider(currentTime));
         serviceCollection.AddCaasDiscountCore();
 
         return serviceCollection.BuildServiceProvider();

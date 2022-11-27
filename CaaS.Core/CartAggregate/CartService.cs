@@ -11,17 +11,20 @@ public class CartService : ICartService {
     private readonly ICartRepository _cartRepository;
     private readonly ITenantIdAccessor _tenantIdAccessor;
     private readonly IShopRepository _shopRepository;
+    private readonly IDateTimeOffsetProvider _timeProvider;
 
-    public CartService(ICartRepository cartRepository, ITenantIdAccessor tenantIdAccessor, IShopRepository shopRepository) {
+    public CartService(ICartRepository cartRepository, ITenantIdAccessor tenantIdAccessor, IShopRepository shopRepository, 
+        IDateTimeOffsetProvider timeProvider) {
         _cartRepository = cartRepository;
         _tenantIdAccessor = tenantIdAccessor;
         _shopRepository = shopRepository;
+        _timeProvider = timeProvider;
     }
 
     public async Task<Cart?> GetCartById(Guid cartId, CancellationToken cancellationToken = default) {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) return null;
-        var updatedCart = cart with { LastAccess = DateTimeOffsetProvider.GetNow() };
+        var updatedCart = cart with { LastAccess = _timeProvider.GetNow() };
         return await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
     }
 
@@ -45,7 +48,8 @@ public class CartService : ICartService {
             // create cart if it does not exist yet
             cart = new Cart() {
                 Id = cartId,
-                ShopId = _tenantIdAccessor.GetTenantGuid()
+                ShopId = _tenantIdAccessor.GetTenantGuid(),
+                LastAccess = _timeProvider.GetNow()
             };
             cart = await _cartRepository.AddAsync(cart, cancellationToken);
         }
@@ -58,7 +62,7 @@ public class CartService : ICartService {
             };
             updatedCart = cart with {
                 Items = cart.Items.SetItem(productItemIdx, productItem),
-                LastAccess = DateTimeOffsetProvider.GetNow()
+                LastAccess = _timeProvider.GetNow()
             };
         } else {
             var productItem = new CartItem() {
@@ -68,7 +72,7 @@ public class CartService : ICartService {
             };
             updatedCart = cart with {
                 Items = cart.Items.Add(productItem),
-                LastAccess = DateTimeOffsetProvider.GetNow()
+                LastAccess = _timeProvider.GetNow()
             };
         }
         return await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
@@ -85,7 +89,7 @@ public class CartService : ICartService {
         }
         var updatedCart = cart with {
             Items = changedProducts,
-            LastAccess = DateTimeOffsetProvider.GetNow()
+            LastAccess = _timeProvider.GetNow()
         };
         return await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
     }
@@ -108,7 +112,7 @@ public class CartService : ICartService {
         };
         var updatedCart = cart with {
             Items = cart.Items.SetItem(productItemIdx, productItem),
-            LastAccess = DateTimeOffsetProvider.GetNow()
+            LastAccess = _timeProvider.GetNow()
         };
         return await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
     }

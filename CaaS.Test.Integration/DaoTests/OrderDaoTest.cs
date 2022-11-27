@@ -3,6 +3,7 @@ using CaaS.Core.Base.Exceptions;
 using CaaS.Core.OrderAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Model.Where;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.OrderData;
 using Xunit.Abstractions;
@@ -37,7 +38,7 @@ public class OrderDaoTest : BaseDaoTest {
     }
     
     [Fact]
-    public async Task FindByOrderIdAndNameReturnsEntities() {
+    public async Task FindByOrderIdAndNumberReturnsEntities() {
         var orderDao = GetOrderDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
@@ -50,6 +51,40 @@ public class OrderDaoTest : BaseDaoTest {
         
         products.Count.Should().NotBe(0);
         products[0].Id.Should().Be("aca58853-bd61-4517-9907-ca51a50b7225");
+    }
+    
+    [Fact]
+    public async Task FindByOrderNumberLessAndGreater() {
+        var orderDao = GetOrderDao(ShopTenantId);
+        
+        var parameters = new List<QueryParameter> {
+            QueryParameter.From(nameof(Order.OrderNumber), 2628 , comparator: WhereComparator.GreaterOrEqual),
+            QueryParameter.From(nameof(Order.OrderNumber), 3000 , comparator: WhereComparator.LessOrEqual),
+        };
+
+        var products = await orderDao.FindBy(StatementParameters
+            .CreateWhere(parameters)).ToListAsync();
+        
+        products.Count.Should().NotBe(0);
+        products.Count.Should().Be(1);
+        products[0].Id.Should().Be("41b1fa55-fd34-4611-bda0-f3821f6db52b");
+    }
+    
+    [Fact]
+    public async Task FindByOrderDate() {
+        var orderDao = GetOrderDao(ShopTenantId);
+        DateTimeOffset date = DateTimeOffset.Parse("2022-07-18 09:38:13+00");
+
+        var parameters = new List<QueryParameter> {
+            QueryParameter.From(nameof(Order.OrderDate), date),
+        };
+
+        var products = await orderDao.FindBy(StatementParameters
+            .CreateWhere(parameters)).ToListAsync();
+        
+        products.Count.Should().NotBe(0);
+        products.Count.Should().Be(1);
+        products[0].Id.Should().Be("41b1fa55-fd34-4611-bda0-f3821f6db52b");
     }
     
     [Fact]

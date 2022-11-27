@@ -11,7 +11,11 @@ public class AdoStatementExecutor : IStatementExecutor {
         _unitOfWorkManager = unitOfWorkManager;
     }
 
-    public async Task<object?> QueryScalarAsync(Statement statement, CancellationToken cancellationToken = default) {
+    public Task<object?> QueryScalarAsync(Statement statement, CancellationToken cancellationToken = default) {
+        return QueryScalarAsync(statement.Materialize(), cancellationToken);
+    }
+
+    public async Task<object?> QueryScalarAsync(MaterializedStatements statement, CancellationToken cancellationToken = default) {
         await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
         await using var cmd = await CreateCommand(statement, connectionProvider, cancellationToken);
         return await cmd.ExecuteScalarAsync(cancellationToken);
@@ -30,7 +34,12 @@ public class AdoStatementExecutor : IStatementExecutor {
         return items;
     }
 
-    public async IAsyncEnumerable<T> StreamAsync<T>(Statement statement, RowMapper<T> mapper, 
+    public IAsyncEnumerable<T> StreamAsync<T>(Statement statement, RowMapper<T> mapper, 
+            CancellationToken cancellationToken = default) {
+        return StreamAsync(statement.Materialize(), mapper, cancellationToken);
+    }
+    
+    public async IAsyncEnumerable<T> StreamAsync<T>(MaterializedStatements statement, RowMapper<T> mapper, 
             [EnumeratorCancellation] CancellationToken cancellationToken = default) {
         await using var connectionProvider = _unitOfWorkManager.ConnectionProvider;
         await using var cmd = await CreateCommand(statement, connectionProvider, cancellationToken);
@@ -39,7 +48,7 @@ public class AdoStatementExecutor : IStatementExecutor {
             yield return await mapper(reader, cancellationToken);
         }
     }
-
+    
     public async Task<int> ExecuteAsync(Statement statement,
             CancellationToken cancellationToken = default) {
         if (statement == Statement.Empty) return 0;
@@ -49,9 +58,13 @@ public class AdoStatementExecutor : IStatementExecutor {
         return result;
     }
 
-    private async Task<DbBatch> CreateCommand(Statement statement, IConnectionProvider connectionProvider, 
+    private Task<DbBatch> CreateCommand(Statement statement, IConnectionProvider connectionProvider,
         CancellationToken cancellationToken = default) {
-        var materializedStatements = statement.Materialize();
+        return CreateCommand(statement.Materialize(), connectionProvider, cancellationToken);
+    }
+    
+    private async Task<DbBatch> CreateCommand(MaterializedStatements materializedStatements, IConnectionProvider connectionProvider, 
+        CancellationToken cancellationToken = default) {
         var dbConnection = await connectionProvider
                 .GetDbConnectionAsync(cancellationToken: cancellationToken);
         var batch = dbConnection.CreateBatch();

@@ -14,8 +14,9 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     private new CartDomainModelConvert Converter => (CartDomainModelConvert)base.Converter;
     
     public CartRepository(IDao<CartDataModel> dao, IDao<ProductCartDataModel> cartItemDao, 
-            IProductRepository productRepository, ICustomerRepository customerRepository) : 
-            base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository)) { }
+            IProductRepository productRepository, ICustomerRepository customerRepository, IDateTimeOffsetProvider timeProvider) : 
+            base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository, timeProvider)) {
+    }
 
     public async Task<Cart?> FindCartByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
         var dataModel = await Dao.FindBy(StatementParameters.CreateWhere(nameof(CartDataModel.CustomerId), customerId), cancellationToken)
@@ -32,7 +33,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
 
     public async Task<IReadOnlyList<Cart>> FindExpiredCarts(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Cart.LastAccess), DateTimeOffsetProvider.GetNow().Subtract(TimeSpan.FromMinutes(lifeTimeMinutes)), comparator: WhereComparator.Less),
+            QueryParameter.From(nameof(Cart.LastAccess), Converter.TimeProvider.GetNow().Subtract(TimeSpan.FromMinutes(lifeTimeMinutes)), comparator: WhereComparator.Less),
         };
 
         return await Converter.ConvertToDomain(Dao.FindBy(StatementParameters.CreateWhere(parameters), cancellationToken), cancellationToken);
@@ -40,13 +41,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
 
     public async Task<Cart> AddAsync(Cart entity, CancellationToken cancellationToken = default) {
         await Converter.CartItemRepository.AddAsync(entity.Items, cancellationToken);
-        var dataModel =  new CartDataModel() {
-            Id = entity.Id,
-            ShopId = entity.ShopId,
-            CustomerId = entity.Customer?.Id,
-            LastAccess = entity.LastAccess,
-            RowVersion = entity.GetRowVersion()
-        };
+        var dataModel = Converter.ConvertFromDomain(entity);
         dataModel = await Dao.AddAsync(dataModel, cancellationToken);
         entity = Converter.ApplyDataModel(entity, dataModel);
         return entity;
@@ -72,12 +67,14 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
         public IEnumerable<OrderParameter>? DefaultOrderParameters => null;
 
         internal CartItemRepository CartItemRepository { get; }
+        internal IDateTimeOffsetProvider TimeProvider { get; }
         private ICustomerRepository CustomerRepository { get; }
 
         public CartDomainModelConvert(IDao<ProductCartDataModel> cartItemDao, IProductRepository productRepository, 
-            ICustomerRepository customerRepository) {
+            ICustomerRepository customerRepository, IDateTimeOffsetProvider timeProvider) {
             CartItemRepository = new CartItemRepository(cartItemDao, productRepository);
             CustomerRepository = customerRepository;
+            TimeProvider = timeProvider;
         }
 
         public Cart ApplyDataModel(Cart domainModel, CartDataModel dataModel) {
@@ -93,7 +90,9 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
                 CustomerId = domainModel.Customer?.Id,
                 ShopId = domainModel.ShopId,
                 LastAccess = domainModel.LastAccess,
-                RowVersion = domainModel.GetRowVersion()
+                RowVersion = domainModel.GetRowVersion(),
+                CreationTime = TimeProvider.GetNow(),
+                LastModificationTime = TimeProvider.GetNow()
             };
         }
 

@@ -65,7 +65,7 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
                 .ToList();
             var whereParameters = new List<QueryParameter>() {
                 QueryParameter.From(idColumnName, versionedEntity.Entity.Id),
-                QueryParameter.From(rowVersionColumnName, versionedEntity.RowVersion, $"curRowVersion_{idx}")
+                QueryParameter.From(rowVersionColumnName, versionedEntity.RowVersion, "curRowVersion")
             };
             updateParameterList.Add(new UpdateParameter() {
                 Values = updateParameterValues,
@@ -214,12 +214,7 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         if (!rowValueWhere.Parameters.Any()) {
             return;
         }
-        if (first) {
-            first = false;
-            sql.Append(" WHERE");
-        } else {
-            sql.Append(" AND");
-        }
+        AddAndOrWhere(sql, ref first);
         sql.Append(" (");
         sql.Append(string.Join(',', rowValueWhere.Parameters.Select(p => $"{p.Name}")));
         sql.Append(')');
@@ -231,29 +226,52 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
     }
 
     private void AddSimpleWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<QueryParameter> parameters, ref bool first) {
+        parameters = PreprocessParameters(parameters);
         foreach (var queryParameter in parameters) {
-            var explodedParams = ExplodeParameters(queryParameter).ToList();
-            if (explodedParams.Count <= 0) continue;
-            if (first) {
-                first = false;
-                sql.Append(" WHERE");
-            } else {
-                sql.Append(" AND");
-            }
-            if (explodedParams.Count > 1) {
-                var inParamList = string.Join(',', explodedParams.Select(p => $"@{p.ParameterName}"));
-                sql.Append($" {queryParameter.Name} IN({inParamList})");
-                newParams.AddRange(explodedParams);
-            } else {
-                var parameter = explodedParams[0];
-                if (parameter.Value == null) {
-                    sql.Append($" {queryParameter.Name} IS NULL");
-                } else {
-                    sql.Append($" {queryParameter.Name} {ComparatorToSqlOperator(parameter.Comparator)} @{parameter.ParameterName}");
-                    newParams.Add(parameter);
-                }
+            if (!AddInClause(sql, newParams, queryParameter, ref first)) {
+                AddComparisonClause(sql, newParams, queryParameter, ref first);
             }
         }
+    }
+
+    private void AddAndOrWhere(StringBuilder sql, ref bool first) {
+        if (first) {
+            first = false;
+            sql.Append(" WHERE");
+        } else {
+            sql.Append(" AND");
+        }
+    }
+
+    private void AddComparisonClause(StringBuilder sql, List<QueryParameter> newParams, QueryParameter parameter, ref bool first) {
+        AddAndOrWhere(sql, ref first);
+        if (parameter.Value == null) {
+            sql.Append($" {parameter.Name} IS NULL");
+        } else {
+            sql.Append($" {parameter.Name} {ComparatorToSqlOperator(parameter.Comparator)} @{parameter.ParameterName}");
+            newParams.Add(parameter);
+        }
+    }
+
+    private bool AddInClause(StringBuilder sql, List<QueryParameter> newParams, QueryParameter queryParameter, ref bool first) {
+        if (queryParameter.Value is string)
+            return false;
+        if(queryParameter.Value is not IEnumerable enumerable)
+            return false;
+        var inParameters = CreateInParameters(queryParameter, enumerable).ToList();
+        if (inParameters.Count <= 0) 
+            return true;
+        
+        if (inParameters.Count == 1) {
+            queryParameter = inParameters[0];
+            AddComparisonClause(sql, newParams, queryParameter, ref first);
+            return true;
+        }
+        AddAndOrWhere(sql, ref first);
+        var inParamList = string.Join(',', inParameters.Select(p => $"@{p.ParameterName}"));
+        sql.Append($" {queryParameter.Name} IN({inParamList})");
+        newParams.AddRange(inParameters);
+        return true;
     }
 
     private void AddSearchWhereClause(StringBuilder sql, List<QueryParameter> newParams, SearchWhere searchWhere, ref bool first) {
@@ -261,12 +279,7 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         if (!parameters.Any()) {
             return;
         }
-        if (first) {
-            first = false;
-            sql.Append(" WHERE");
-        } else {
-            sql.Append(" AND");
-        }
+        AddAndOrWhere(sql, ref first);
         if (parameters.Count == 1) {
             AddLikeClause(sql, newParams, parameters[0]);
             return;
@@ -344,15 +357,15 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
 
     private string GetTableName() => $"\"{DataRecordMapper.MappedTypeName}\"" ;
     
-    private static IEnumerable<QueryParameter> ExplodeParameters(QueryParameter queryParameter) {
-        if (queryParameter.Value is IEnumerable enumerable and not string) {
-            return enumerable.OfType<object>().Select((value, idx) => queryParameter with {
-                    Value = value, 
-                    ParameterName = $"{queryParameter.Name}_{idx}"
-            });
-        }
-        return new[] { queryParameter };
+    private static IEnumerable<QueryParameter> CreateInParameters(QueryParameter queryParameter, IEnumerable enumerable) {
+        return enumerable.OfType<object>().Select((value, idx) => queryParameter with {
+            Value = value, 
+            ParameterName = $"{queryParameter.ParameterName}_{idx}"
+        });
     }
 
-    private static bool IsExplodeableParameter(QueryParameter queryParameter) => queryParameter.Value is IEnumerable enumerable and not string;
+    private static IEnumerable<QueryParameter> PreprocessParameters(IEnumerable<QueryParameter> parameters) {
+        return parameters.Select((queryParameter, parameterIdx) => 
+            queryParameter with { ParameterName = $"{queryParameter.ParameterName}_{parameterIdx}" });
+    }
 }

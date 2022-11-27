@@ -53,6 +53,17 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
         return entity;
     }
     
+    public async Task<IReadOnlyList<Order>> FindByDateRange(DateTimeOffset from, DateTimeOffset until, CancellationToken cancellationToken = default) {
+        var parameters = new List<QueryParameter> {
+            QueryParameter.From(nameof(OrderDataModel.CreationTime), from, ">="),
+            QueryParameter.From(nameof(OrderDataModel.CreationTime), until, "<="),
+        };
+        
+        return (await Converter.ConvertToDomain(Dao
+                .FindBy(StatementParameters.CreateWhere(parameters), cancellationToken), cancellationToken))
+            .ToList();
+    }
+    
     public async Task AddAsync(IEnumerable<Order> entities, CancellationToken cancellationToken = default) {
         var domainModels = entities.ToList();
         var orderItems = domainModels.SelectMany(o => o.Items);

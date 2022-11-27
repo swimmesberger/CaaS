@@ -5,7 +5,8 @@ public interface IDateTimeOffsetProvider {
 }
 
 public static class DateTimeOffsetProvider {
-    public static IDateTimeOffsetProvider Instance = new DefaultDateTimeOffsetProvider();
+    public static readonly IDateTimeOffsetProvider Instance = new DefaultDateTimeOffsetProvider();
+    
     public static DateTimeOffset GetNow() => Instance.GetNow();
 }
 

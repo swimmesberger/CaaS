@@ -13,17 +13,21 @@ namespace CaaS.Infrastructure.Base.Ado.Impl;
 public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : DataModel, new() {
     private readonly IStatementExecutor _statementExecutor;
     private readonly IStatementGenerator<T> _statementGenerator;
+    private readonly IDateTimeOffsetProvider _timeProvider;
     private readonly ITenantIdAccessor? _tenantService;
     private readonly ITenantIdProvider<T>? _tenantIdProvider;
+
 
     public IDataRecordMapper<T> DataRecordMapper => _statementGenerator.DataRecordMapper;
     
     public GenericDao(IStatementExecutor statementExecutor, 
             IStatementGenerator<T> statementGenerator, 
+            IDateTimeOffsetProvider timeProvider, 
             IServiceProvider<ITenantIdAccessor>? tenantService = null) {
         tenantService ??= IServiceProvider<ITenantIdAccessor>.Empty;
         _statementExecutor = statementExecutor;
         _statementGenerator = statementGenerator;
+        _timeProvider = timeProvider;
         if (DataRecordMapper is ITenantIdProvider<T> tenantIdProvider) {
             _tenantIdProvider = tenantIdProvider;
             _tenantService = tenantService.GetRequiredService();
@@ -80,7 +84,7 @@ public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : Da
         var origRowVersion = entity.RowVersion;
         entity = entity with {
             RowVersion = origRowVersion+1,
-            LastModificationTime = DateTimeOffsetProvider.GetNow()
+            LastModificationTime = _timeProvider.GetNow()
         };
         var statement = _statementGenerator.CreateUpdate(entity, origRowVersion);
         var changedCount = await ExecuteAsync(statement, cancellationToken);
@@ -96,7 +100,7 @@ public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : Da
             var origRowVersion = e.RowVersion;
             return new VersionedEntity<T>(e with {
                 RowVersion = origRowVersion + 1,
-                LastModificationTime = DateTimeOffsetProvider.GetNow()
+                LastModificationTime = _timeProvider.GetNow()
             }, origRowVersion);
         }).ToList();
         var statement = _statementGenerator.CreateUpdate(versionedEntities);

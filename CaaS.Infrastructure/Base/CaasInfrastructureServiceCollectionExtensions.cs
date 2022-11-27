@@ -3,6 +3,7 @@ using CaaS.Core.Base;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
+using CaaS.Core.OrderAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
@@ -58,6 +59,7 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<ICouponRepository, CouponRepository>();
         services.AddScoped<IShopAdminRepository, ShopAdminRepository>();
+        services.AddScoped<IStatisticsService, StatisticsImpl>();
         services.AddScoped<IDiscountSettingRepository, DiscountSettingsRepository>();
         services.AddOptions<DiscountJsonOptions>();
         services.AddScoped<DiscountSettingsJsonConverter>();

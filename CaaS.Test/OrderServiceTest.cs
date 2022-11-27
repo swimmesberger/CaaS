@@ -99,7 +99,7 @@ public class OrderServiceTest {
         var customerRepository = new CustomerRepository(customerDao);
         var couponRepository = new CouponRepository(couponDao);
         
-        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository);
+        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository, DateTimeOffsetProvider.Instance);
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
         var orderRepository = new OrderRepository(orderDao, orderItemDao, orderItemDiscountDao, orderDiscountDao, 

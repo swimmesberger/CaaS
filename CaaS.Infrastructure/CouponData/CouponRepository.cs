@@ -14,10 +14,11 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
     
     public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIds(IEnumerable<Guid> orderIds,
         CancellationToken cancellationToken = default) {
+        
         return (await Converter
                 .ConvertToDomain(Dao
                     .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.OrderId), orderIds), cancellationToken), cancellationToken))
-            .GroupBy(i => i.OrderId!.Value)
+            .GroupBy(i => i.OrderId!.Value) //orderId cant be null because of where statement
             .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<Coupon>)grp.ToList());
     }
     

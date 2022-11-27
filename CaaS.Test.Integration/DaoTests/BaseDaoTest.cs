@@ -1,4 +1,5 @@
-﻿using CaaS.Core.Base.Tenant;
+﻿using CaaS.Core.Base;
+using CaaS.Core.Base.Tenant;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Impl;
 using CaaS.Infrastructure.Base.Ado.Model;
@@ -61,7 +62,7 @@ public class BaseDaoTest : IAsyncLifetime {
         if (tenantId != null) {
             spTenantService = new StaticTenantIdAccessor(tenantId).AsTypedService();
         }
-        return new GenericDao<T>(statementExecutor, statementGenerator, spTenantService);
+        return new GenericDao<T>(statementExecutor, statementGenerator, DateTimeOffsetProvider.Instance, spTenantService);
     }
 
     private AdoUnitOfWorkManager GetAdoUnitOfWorkManager() {

@@ -35,7 +35,7 @@ INSERT INTO "order"(id,row_version,creation_time,last_modification_time,shop_id,
             2628,'9234a988-0abd-4b44-808a-9e7a8852e19c','2022-07-18 09:38:13');
 INSERT INTO "order"(id,row_version,creation_time,last_modification_time,shop_id,order_number,customer_id,order_date)
     VALUES ('aca58853-bd61-4517-9907-ca51a50b7225',4,'2022-07-18 09:38:13','2022-09-22 03:26:33','a468d796-db09-496d-9794-f6b42f8c7c0b',
-            7785,'9234a988-0abd-4b44-808a-9e7a8852e19c','2022-07-18 09:38:13');
+            7785,'9234a988-0abd-4b44-808a-9e7a8852e19c','2022-07-08 09:38:13');
 
 INSERT INTO product_order(id,row_version,creation_time,last_modification_time,shop_id,product_id,order_id,amount,price_per_piece) 
     VALUES ('363bffa6-e73d-4aa1-be30-aa636fa823c0',9,'2022-01-04 08:00:50','2022-05-10 08:01:26','a468d796-db09-496d-9794-f6b42f8c7c0b',
