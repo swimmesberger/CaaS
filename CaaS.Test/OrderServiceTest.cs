@@ -105,6 +105,6 @@ public class OrderServiceTest {
         var orderRepository = new OrderRepository(orderDao, orderItemDao, orderItemDiscountDao, orderDiscountDao, 
                                                     productRepository, customerRepository, couponRepository);
         
-        return new OrderService(orderRepository, tenantIdAccessor, customerRepository, cartRepository);
+        return new OrderService(orderRepository, customerRepository, cartRepository, tenantIdAccessor);
     }
 }

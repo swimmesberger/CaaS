@@ -36,10 +36,6 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
     }
     
     public async Task<Order> AddAsync(Order entity, CancellationToken cancellationToken = default) {
-        await Converter.OrderItemRepository.AddAsync(entity.Items, cancellationToken);
-        await Converter.OrderDiscountRepository.AddAsync(entity.OrderDiscounts, cancellationToken);
-        await Converter.CouponRepository.AddAsync(entity.Coupons);
-            
         var dataModel =  new OrderDataModel() {
             Id = entity.Id,
             ShopId = entity.ShopId,
@@ -49,6 +45,11 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
             RowVersion = entity.GetRowVersion()
         };
         dataModel = await Dao.AddAsync(dataModel, cancellationToken);
+        
+        await Converter.OrderItemRepository.AddAsync(entity.Items, cancellationToken);
+        await Converter.OrderDiscountRepository.AddAsync(entity.OrderDiscounts, cancellationToken);
+        await Converter.CouponRepository.AddAsync(entity.Coupons, cancellationToken);
+
         entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
         return entity;
     }
@@ -137,6 +138,11 @@ internal class OrderDomainModelConvert : IDomainReadModelConverter<OrderDataMode
             OrderDate = domainModel.OrderDate,
             CustomerId = domainModel.Customer.Id,
             ShopId = domainModel.ShopId,
+            AddressCountry = domainModel.Address.Country,
+            AddressCity = domainModel.Address.City,
+            AddressState = domainModel.Address.State,
+            AddressStreet = domainModel.Address.Street,
+            AddressZipCode = domainModel.Address.ZipCode,
             RowVersion = domainModel.GetRowVersion()
         };
     }
@@ -179,6 +185,13 @@ internal class OrderDomainModelConvert : IDomainReadModelConverter<OrderDataMode
                 OrderNumber = dataModel.OrderNumber,
                 Coupons = coupons,
                 OrderDiscounts = orderDiscounts,
+                Address = new Address() {
+                    Street = dataModel.AddressStreet,
+                    City = dataModel.AddressCity,
+                    State = dataModel.AddressState,
+                    Country = dataModel.AddressCountry,
+                    ZipCode = dataModel.AddressZipCode
+                },
                 ConcurrencyToken = dataModel.GetConcurrencyToken()
             });
         }

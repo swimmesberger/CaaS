@@ -7,5 +7,6 @@ public interface IOrderService {
 
     Task<Order> CreateOrder(Guid customerId, CancellationToken cancellationToken = default);
     
-    Task<Order> CreateOrderFromCart(Guid cartId, CancellationToken cancellationToken = default);
+    Task<Order> CreateOrderFromCart(Guid cartId, Address billingAddress, CancellationToken cancellationToken = default);
+
 }

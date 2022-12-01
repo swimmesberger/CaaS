@@ -47,18 +47,18 @@ internal class OrderItemRepository {
     }
     
     public async Task AddAsync(OrderItem entity, CancellationToken cancellationToken = default) {
-        await Converter.OrderItemDiscountRepository.AddAsync(entity.OrderItemDiscounts, cancellationToken);
         var dataModel = Converter.ConvertFromDomain(entity);
         await Dao.AddAsync(dataModel, cancellationToken);
+        await Converter.OrderItemDiscountRepository.AddAsync(entity.OrderItemDiscounts, cancellationToken);
     }
     
     public async Task AddAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {
         var domainModels = entities.ToList();
+        var dataModels = Converter.ConvertFromDomain(domainModels);
+        await Dao.AddAsync(dataModels, cancellationToken);
         var orderItemDiscounts = domainModels.SelectMany(e => e.OrderItemDiscounts);
         await Converter.OrderItemDiscountRepository.AddAsync(orderItemDiscounts, cancellationToken);
         
-        var dataModels = Converter.ConvertFromDomain(domainModels);
-        await Dao.AddAsync(dataModels, cancellationToken);
     }
     
     public async Task UpdateAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {

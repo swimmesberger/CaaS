@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.OrderApi.Models;
@@ -20,8 +21,14 @@ public class OrderController : ControllerBase {
     }
     
     [HttpGet("{orderId:guid}")]
-    public async Task<OrderDto?> GetCartById(Guid orderId, CancellationToken cancellationToken = default) {
+    public async Task<OrderDto?> GetOrderById(Guid orderId, CancellationToken cancellationToken = default) {
         var result = await _orderService.FindOrderById(orderId, cancellationToken);
+        return _mapper.Map<OrderDto>(result);
+    }
+
+    [HttpPost("{cartId:guid}")]
+    public async Task<OrderDto> CreateOrderFromCart(Guid cartId, [FromBody][Required] Address billingAddress, CancellationToken cancellationToken = default) {
+        var result = await _orderService.CreateOrderFromCart(cartId, billingAddress, cancellationToken);
         return _mapper.Map<OrderDto>(result);
     }
 }

@@ -9,17 +9,16 @@ namespace CaaS.Core.OrderAggregate;
 
 public class OrderService : IOrderService {
     private readonly IOrderRepository _orderRepository;
-    private readonly ITenantIdAccessor _tenantIdAccessor;
-    
     private readonly ICustomerRepository _customerRepository;
     private readonly ICartRepository _cartRepository;
+    private readonly ITenantIdAccessor _tenantIdAccessor;
 
-    public OrderService(IOrderRepository orderRepository, ITenantIdAccessor tenantIdAccessor, 
-        ICustomerRepository customerRepository, ICartRepository cartRepository) {
+    public OrderService(IOrderRepository orderRepository, ICustomerRepository customerRepository, 
+        ICartRepository cartRepository, ITenantIdAccessor tenantIdAccessor) {
         _orderRepository = orderRepository;
-        _tenantIdAccessor = tenantIdAccessor;
         _customerRepository = customerRepository;
         _cartRepository = cartRepository;
+        _tenantIdAccessor = tenantIdAccessor;
     }
 
     public async Task<Order?> FindOrderById(Guid orderId, CancellationToken cancellationToken = default) {
@@ -41,19 +40,18 @@ public class OrderService : IOrderService {
         return await _orderRepository.AddAsync(order, cancellationToken);
     }
     
-    public async Task<Order> CreateOrderFromCart(Guid cartId, CancellationToken cancellationToken = default) {
+    public async Task<Order> CreateOrderFromCart(Guid cartId, Address billingAddress, CancellationToken cancellationToken = default) {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
 
         if (cart == null) {
             throw new CaasItemNotFoundException();
         }
         
-        if (cart.Customer == null) {
+        if (cart.Customer == null || cart.Customer.Id.Equals(Guid.Empty)) {
             throw new CaasItemNotFoundException("a cart needs a customer when an order is created out of it");
         }
-
-        var orderId = Guid.NewGuid();
         
+        var orderId = Guid.NewGuid();
         var orderItems = new List<OrderItem>();
         foreach (var item in cart.Items) {
             var orderItem = new OrderItem {
@@ -72,13 +70,13 @@ public class OrderService : IOrderService {
             Id = orderId,
             ShopId = _tenantIdAccessor.GetTenantGuid(),
             Customer = cart.Customer,
-            Items = orderItems.ToImmutableArray(),
+            Items = orderItems.ToImmutableList(),
             Coupons = cart.Coupons,
+            Address = billingAddress,
             OrderDiscounts = cart.CartDiscounts,
             OrderDate = DateTimeOffsetProvider.GetNow()
         };
 
-        var savedOrder = await _orderRepository.AddAsync(order, cancellationToken);
-        return savedOrder;
+        return await _orderRepository.AddAsync(order, cancellationToken);
     }
 }

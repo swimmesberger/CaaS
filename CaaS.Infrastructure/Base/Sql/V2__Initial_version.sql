@@ -137,6 +137,11 @@ CREATE TABLE "order" (
      "shop_id" uuid NOT NULL,
      "order_number" SERIAL,
      "customer_id" uuid,
+     "address_street" varchar(255),
+     "address_city" varchar(255),
+     "address_state" varchar(255),
+     "address_country" varchar(255),
+     "address_zip_code" varchar(255),
      "order_date" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
      CONSTRAINT "FK_order.shop_id"
          FOREIGN KEY ("shop_id")

@@ -17,7 +17,6 @@ namespace CaaS.Test.Integration.DaoTests;
 public class BaseDaoTest : IAsyncLifetime {
     private const string PostgresProviderName = "Npgsql";
     private const string PostgreSqlImage = "postgres:15";
-    private static bool NpsqlLoggerSet = false;
 
     private readonly TestcontainerDatabase _postgresqlContainer;
     private IConnectionFactory? _connectionFactory;
