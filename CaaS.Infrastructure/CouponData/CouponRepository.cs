@@ -22,6 +22,16 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
             .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<Coupon>)grp.ToList());
     }
     
+    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByCartIds(IEnumerable<Guid> cartIds,
+        CancellationToken cancellationToken = default) {
+        
+        return (await Converter
+                .ConvertToDomain(Dao
+                    .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.CartId), cartIds), cancellationToken), cancellationToken))
+            .GroupBy(i => i.CartId!.Value) //cartId cant be null because of where statement
+            .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<Coupon>)grp.ToList());
+    }
+    
     public async Task<IReadOnlyList<Coupon>> FindByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(Coupon.CustomerId), customerId), cancellationToken), cancellationToken))
@@ -56,7 +66,7 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
         newEntity = Converter.ApplyDataModel(newEntity, dataModel);
         return newEntity;
     }
-
+    
     public async Task UpdateAsync(IEnumerable<Coupon> oldDomainModels, IEnumerable<Coupon> newDomainModels, CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);

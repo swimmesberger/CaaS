@@ -10,7 +10,7 @@ using CaaS.Infrastructure.Base.Repository;
 namespace CaaS.Infrastructure.ProductData; 
 public class ProductRepository : CrudRepository<ProductDataModel, Product>, IProductRepository {
     public ProductRepository(IDao<ProductDataModel> productDao, IShopRepository shopRepository) : 
-            base(productDao, new ProductDomainModelConvert(shopRepository)) {}
+            base(productDao, new ProductDomainModelConverter(shopRepository)) {}
 
     public async Task<PagedResult<Product>> FindByTextSearchAsync(string text, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
         var statementParameters = StatementParameters.CreateWhere(new SearchWhere(new[] {
@@ -21,12 +21,12 @@ public class ProductRepository : CrudRepository<ProductDataModel, Product>, IPro
     }
 }
 
-internal class ProductDomainModelConvert : IDomainModelConverter<ProductDataModel, Product> {
+internal class ProductDomainModelConverter : IDomainModelConverter<ProductDataModel, Product> {
     public IEnumerable<OrderParameter> DefaultOrderParameters { get; } = OrderParameter.From(nameof(ProductDataModel.Name));
     
     private readonly IShopRepository _shopRepository;
 
-    public ProductDomainModelConvert(IShopRepository shopRepository) {
+    public ProductDomainModelConverter(IShopRepository shopRepository) {
         _shopRepository = shopRepository;
     }
     

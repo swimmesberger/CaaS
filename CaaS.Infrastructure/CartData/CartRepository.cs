@@ -1,12 +1,14 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base;
 using CaaS.Core.CartAggregate;
+using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Ado.Model.Where;
 using CaaS.Infrastructure.Base.Repository;
+using CaaS.Infrastructure.CouponData;
 
 namespace CaaS.Infrastructure.CartData; 
 
@@ -14,8 +16,8 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     private new CartDomainModelConvert Converter => (CartDomainModelConvert)base.Converter;
     
     public CartRepository(IDao<CartDataModel> dao, IDao<ProductCartDataModel> cartItemDao, 
-            IProductRepository productRepository, ICustomerRepository customerRepository, IDateTimeOffsetProvider timeProvider) : 
-            base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository, timeProvider)) {
+            IProductRepository productRepository, ICustomerRepository customerRepository, ICouponRepository couponRepository, IDateTimeOffsetProvider timeProvider) : 
+            base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository, timeProvider, couponRepository)) {
     }
 
     public async Task<Cart?> FindCartByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
@@ -67,14 +69,16 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
         public IEnumerable<OrderParameter>? DefaultOrderParameters => null;
 
         internal CartItemRepository CartItemRepository { get; }
-        internal IDateTimeOffsetProvider TimeProvider { get; }
+        internal ICouponRepository CouponRepository { get; }
         private ICustomerRepository CustomerRepository { get; }
+        internal IDateTimeOffsetProvider TimeProvider { get; }
 
         public CartDomainModelConvert(IDao<ProductCartDataModel> cartItemDao, IProductRepository productRepository, 
-            ICustomerRepository customerRepository, IDateTimeOffsetProvider timeProvider) {
+            ICustomerRepository customerRepository, IDateTimeOffsetProvider timeProvider, ICouponRepository couponRepository) {
             CartItemRepository = new CartItemRepository(cartItemDao, productRepository);
             CustomerRepository = customerRepository;
             TimeProvider = timeProvider;
+            CouponRepository = couponRepository;
         }
 
         public Cart ApplyDataModel(Cart domainModel, CartDataModel dataModel) {
@@ -115,17 +119,21 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
             var customerDict = (await CustomerRepository
                     .FindByIdsAsync(customerIds, cancellationToken))
                 .ToDictionary(s => s.Id, s => s);
+            var couponsDict = await CouponRepository.FindByCartIds(cartIds, cancellationToken);
             var domainModels = ImmutableList.CreateBuilder<Cart>();
             foreach (var dataModel in dataModels) {
                 var cartItems = cartItemsDict.TryGetValue(dataModel.Id, out var cartItemsList)
                     ? cartItemsList.ToImmutableArray()
                     : ImmutableArray<CartItem>.Empty;
                 var customer = dataModel.CustomerId.HasValue ? customerDict.GetValueOrDefault(dataModel.CustomerId.Value) : null;
+                var coupons = couponsDict.TryGetValue(dataModel.Id, out var couponsList) ? 
+                    couponsList.ToImmutableArray() : ImmutableArray<Coupon>.Empty;
                 domainModels.Add(new Cart() {
                     Id = dataModel.Id,
                     Customer = customer,
                     ShopId = dataModel.ShopId,
                     Items = cartItems,
+                    Coupons = coupons,
                     LastAccess = dataModel.LastAccess,
                     ConcurrencyToken = dataModel.GetConcurrencyToken()
                 });

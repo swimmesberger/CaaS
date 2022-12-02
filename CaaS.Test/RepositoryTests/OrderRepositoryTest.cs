@@ -31,6 +31,13 @@ public class OrderRepositoryTest  {
     private static readonly Guid OrderItemBId = new Guid("F113EA14-3CA5-9097-DFDB-CF648F7DA31F");
     private static readonly Guid OrderItemDiscountA = new Guid("DE123EA1-3CA5-9097-DFDB-CF648F7DA31F");
     private static readonly Guid OrderItemDiscountB = new Guid("BB123EA1-3CA5-9097-DFDB-CF648F7DA31F");
+    private static readonly Address Address = new() {
+        Street = "Street",
+        City = "City",
+        State = "State",
+        Country = "Country",
+        ZipCode = "ZipCode"
+    };
     
     private ICustomerRepository GetCustomerRepository() {
         var customerDao = new MemoryDao<CustomerDataModel>(new List<CustomerDataModel>() {
@@ -230,7 +237,7 @@ public class OrderRepositoryTest  {
     public async Task AddOrderAddsEntity() {
         var orderToBeAdded = await CreateNewOrderDomainModel();
         var orderRepository = GetOrderRepository();
-        var returnedOrder = await orderRepository.AddAsync(orderToBeAdded);
+        var returnedOrder = await orderRepository.AddAsync(orderToBeAdded, Address);
         returnedOrder.Id.Should().Be(orderToBeAdded.Id);
         returnedOrder.Items.Count.Should().Be(2);
         returnedOrder.Items[0].Id.Should().Be(orderToBeAdded.Items[0].Id);
@@ -241,8 +248,6 @@ public class OrderRepositoryTest  {
         returnedOrder.Items[1].OrderItemDiscounts[0].DiscountValue.Should().Be((decimal)0.99);
         returnedOrder.OrderDiscounts.Count.Should().Be(1);
         returnedOrder.OrderDiscounts[0].DiscountName.Should().Be("my test discount");
-        returnedOrder.Coupons.Count.Should().Be(2);
-        returnedOrder.Coupons[0].Id.Should().Be(orderToBeAdded.Coupons[0].Id);
     }
 
     [Fact]

@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Test.Integration", "Ca
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Test.Common", "CaaS.Test.Common\CaaS.Test.Common.csproj", "{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwKo.Pay", "SwKo.Pay\SwKo.Pay.csproj", "{A5C7BBBA-DF77-4F02-AE18-26814AC5D81F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwKo.Pay.Api", "SwKo.Pay.Api\SwKo.Pay.Api.csproj", "{138CE981-3A50-45D5-9405-96CE12DB6D7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5C7BBBA-DF77-4F02-AE18-26814AC5D81F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5C7BBBA-DF77-4F02-AE18-26814AC5D81F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5C7BBBA-DF77-4F02-AE18-26814AC5D81F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5C7BBBA-DF77-4F02-AE18-26814AC5D81F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{138CE981-3A50-45D5-9405-96CE12DB6D7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{138CE981-3A50-45D5-9405-96CE12DB6D7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{138CE981-3A50-45D5-9405-96CE12DB6D7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{138CE981-3A50-45D5-9405-96CE12DB6D7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

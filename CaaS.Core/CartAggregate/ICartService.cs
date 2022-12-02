@@ -9,4 +9,5 @@ public interface ICartService {
     Task<Cart> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default);
     
     Task<Cart> SetProductQuantityInCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default);
+    Task DeleteCart(Guid cartId, CancellationToken cancellationToken = default);
 }

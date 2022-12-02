@@ -8,6 +8,7 @@ public interface ICouponRepository : IRepository {
     Task<IReadOnlyList<Coupon>> FindByCartId(Guid cartId, CancellationToken cancellationToken = default);
 
     Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIds(IEnumerable<Guid> orderIds, CancellationToken cancellationToken = default);
+    Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByCartIds(IEnumerable<Guid> cartIds, CancellationToken cancellationToken = default);
 
     Task<Coupon> AddAsync(Coupon entity, CancellationToken cancellationToken = default);
     Task AddAsync(IEnumerable<Coupon> entities, CancellationToken cancellationToken = default);

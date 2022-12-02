@@ -25,6 +25,8 @@ using CaaS.Infrastructure.ShopData;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql.Logging;
+using SwKo.Pay;
+using SwKo.Pay.Api;
 
 namespace CaaS.Infrastructure.Base; 
 
@@ -33,6 +35,7 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddDatabase();
         services.AddRepositories();
         services.AddCaasDiscountInfrastructure();
+        services.AddSingleton<IPaymentService, PaymentServiceImpl>();
         services.AddScoped<StaticTenantIdAccessor>();
         services.AddScoped<ITenantIdAccessor>(sp => sp.GetRequiredService<StaticTenantIdAccessor>());
         services.AddComposite<ITenantIdAccessor, CompositeTenantIdAccessor>();

@@ -1,6 +1,7 @@
 using CaaS.Core.CartAggregate;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.Base;
+using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Impl;
@@ -17,6 +18,7 @@ public static class CaasCoreServiceCollectionExtensions {
         services.AddScoped<IShopService, ShopService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IDateTimeOffsetProvider, DefaultDateTimeOffsetProvider>();
+        services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IOrderService, OrderService>();
 
         services = services.AddCaasDiscountCore();

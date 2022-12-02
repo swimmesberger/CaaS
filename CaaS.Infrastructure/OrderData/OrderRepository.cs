@@ -35,20 +35,24 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
                 .FindBy(StatementParameters.CreateWhere(nameof(OrderDataModel.CustomerId), customerId), cancellationToken), cancellationToken);
     }
     
-    public async Task<Order> AddAsync(Order entity, CancellationToken cancellationToken = default) {
+    public async Task<Order> AddAsync(Order entity, Address address, CancellationToken cancellationToken = default) {
         var dataModel =  new OrderDataModel() {
             Id = entity.Id,
             ShopId = entity.ShopId,
             CustomerId = entity.Customer.Id,
             OrderNumber = entity.OrderNumber,
             OrderDate = entity.OrderDate,
+            AddressStreet = address.Street,
+            AddressCity = address.City,
+            AddressZipCode = address.ZipCode,
+            AddressState = address.State,
+            AddressCountry = address.Country,
             RowVersion = entity.GetRowVersion()
         };
         dataModel = await Dao.AddAsync(dataModel, cancellationToken);
         
         await Converter.OrderItemRepository.AddAsync(entity.Items, cancellationToken);
         await Converter.OrderDiscountRepository.AddAsync(entity.OrderDiscounts, cancellationToken);
-        await Converter.CouponRepository.AddAsync(entity.Coupons, cancellationToken);
 
         entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
         return entity;
@@ -72,10 +76,7 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
 
         var orderDiscounts = domainModels.SelectMany(o => o.OrderDiscounts);
         await Converter.OrderDiscountRepository.AddAsync(orderDiscounts, cancellationToken);
-
-        var coupons = domainModels.SelectMany(o => o.Coupons);
-        await Converter.CouponRepository.AddAsync(coupons, cancellationToken);
-
+        
         var dataModels = Converter.ConvertFromDomain(domainModels);
         await Dao.AddAsync(dataModels, cancellationToken);
     }

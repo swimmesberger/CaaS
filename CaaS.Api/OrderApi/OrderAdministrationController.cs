@@ -3,7 +3,7 @@ using CaaS.Core.Base;
 using CaaS.Core.OrderAggregate;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CaaS.Api.Controllers; 
+namespace CaaS.Api.OrderApi; 
 
 [ApiController]
 [Route("[controller]")]

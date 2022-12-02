@@ -259,8 +259,11 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         if(queryParameter.Value is not IEnumerable enumerable)
             return false;
         var inParameters = CreateInParameters(queryParameter, enumerable).ToList();
-        if (inParameters.Count <= 0) 
+        if (inParameters.Count <= 0) {
+            AddAndOrWhere(sql, ref first);
+            sql.Append(" 1 != 1");      //is never true for empty in clause
             return true;
+        }
         
         if (inParameters.Count == 1) {
             queryParameter = inParameters[0];

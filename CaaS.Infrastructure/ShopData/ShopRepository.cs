@@ -71,9 +71,8 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
 
     public async Task<IReadOnlyList<Shop>> ConvertToDomain(IAsyncEnumerable<ShopDataModel> dataModels, 
             CancellationToken cancellationToken = default) {
-        return await dataModels
-                .SelectAwaitWithCancellation(ConvertToDomain)
-                .ToListAsync(cancellationToken);
+        var items = await dataModels.ToListAsync(cancellationToken);
+        return await ConvertToDomain(items, cancellationToken);
     }
 
     private Shop ConvertToDomain(ShopDataModel dataModel, IReadOnlyDictionary<Guid, ShopAdmin> shopAdminDomainModels) {

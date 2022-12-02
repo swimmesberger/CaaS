@@ -7,6 +7,7 @@ using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Impl;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
+using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.CustomerData;
 using CaaS.Infrastructure.DiscountData;
 using CaaS.Infrastructure.ProductData;
@@ -22,6 +23,8 @@ public class CartServiceTest {
     private static readonly Guid ExistingCartId = new Guid("0EE2F24E-E2DF-4A0E-B055-C804A6672D44");
     private static readonly Guid ProductAId = new Guid("05B7F6AB-4409-4417-9F76-34035AC92AE9");
     private static readonly Guid ProductBId = new Guid("DD7E1EA1-6D85-4596-AADB-A4648F7DA31F");
+    private static readonly Guid CouponIdA = new Guid("BB791EA1-3CA5-9097-DFDB-CF648F7DA31F");
+    private static readonly Guid CouponIdB = new Guid("3EC1A6BE-BBE7-4F62-8C85-601031D644B6");
 
     [Fact]
     public async Task CreateCartOptimistic() {
@@ -105,18 +108,23 @@ public class CartServiceTest {
         var cartItemDao = new MemoryDao<ProductCartDataModel>(new List<ProductCartDataModel>() {
             new ProductCartDataModel() { Amount = 2, CartId = ExistingCartId, ProductId = ProductAId }
         });
+        var couponDao = new MemoryDao<CouponDataModel>(new List<CouponDataModel>() {
+            new CouponDataModel { Id = CouponIdA, ShopId = TestShopId, Value = 4, OrderId = null, CartId = ExistingCartId, RedeemedBy = null},
+            new CouponDataModel { Id = CouponIdB, ShopId = TestShopId, Value = 2, OrderId = null, CartId = ExistingCartId, RedeemedBy = null}
+        });
         var discountSettingsDao = new MemoryDao<DiscountSettingDataModel>(new List<DiscountSettingDataModel>());
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
         var productRepository = new ProductRepository(productDao, shopRepository);
         var customerRepository = new CustomerRepository(customerDao);
+        var couponRepository = new CouponRepository(couponDao);
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
-        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository, DateTimeOffsetProvider.Instance);
+        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository,  couponRepository, DateTimeOffsetProvider.Instance);
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, 
             new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()));
         var discountService = new CaasDiscountService(discountSettingsRepository, 
             new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!));
-        return new CartService(cartRepository,  shopRepository, discountService, tenantIdAccessor, DateTimeOffsetProvider.Instance);
+        return new CartService(cartRepository,  shopRepository, discountService, tenantIdAccessor, DateTimeOffsetProvider.Instance, customerRepository, productRepository);
     }
 }

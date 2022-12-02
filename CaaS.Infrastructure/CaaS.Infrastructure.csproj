@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\CaaS.Core\CaaS.Core.csproj" />
       <ProjectReference Include="..\CaaS.Infrastructure.Generator\CaaS.Infrastructure.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+      <ProjectReference Include="..\SwKo.Pay\SwKo.Pay.csproj" />
     </ItemGroup>
 
     <ItemGroup>
