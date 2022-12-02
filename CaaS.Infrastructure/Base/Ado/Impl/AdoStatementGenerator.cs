@@ -157,7 +157,7 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
     }
     
     private MaterializedStatement MaterializeFind(Statement statement) {
-        var sql = new StringBuilder($"SELECT {GetColumnNamesString()} FROM {GetTableName()}");
+        var sql = new StringBuilder($"SELECT {GetColumnNamesString(statement.Parameters.Select)} FROM {GetTableName()}");
         var parameters = CreateWhereClause(sql, statement.Parameters.Where);
         AddOrderByClause(sql, statement.Parameters.OrderBy);
         if (statement.Parameters.Limit != null) {
@@ -347,7 +347,9 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T>, IStatementSqlGen
         };
     }
 
-    private string GetColumnNamesString() => GetColumnNamesString(GetColumnNames());
+    private string GetColumnNamesString(SelectParameters select) {
+        return GetColumnNamesString(select.Properties ?? GetColumnNames());
+    }
     
     private string GetColumnNamesString(IEnumerable<string> columnNames) => string.Join(',', columnNames);
 

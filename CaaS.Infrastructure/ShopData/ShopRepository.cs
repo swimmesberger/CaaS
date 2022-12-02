@@ -2,6 +2,7 @@
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Model.Where;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.ShopData;
@@ -16,6 +17,14 @@ public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopReposito
                 .FirstOrDefaultAsync(cancellationToken);
         if (dataModel == null) return null;
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
+    }
+
+    public async Task<int?> FindCartLifetimeByIdAsync(Guid id, CancellationToken cancellationToken = default) {
+        var parameters = new StatementParameters {
+            Select = SelectParameters.Create(nameof(ShopDataModel.CartLifetimeMinutes)),
+            Where = WhereParameters.CreateFromParameters(nameof(ShopDataModel.Id), id)
+        };
+        return await Dao.FindScalarBy<int>(parameters, cancellationToken).FirstOrDefaultAsync(cancellationToken);
     }
 }
 

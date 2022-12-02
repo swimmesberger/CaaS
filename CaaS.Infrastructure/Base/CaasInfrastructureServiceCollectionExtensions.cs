@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using CaaS.Core.Base;
+using CaaS.Core.Base.Tenant;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
@@ -12,6 +13,7 @@ using CaaS.Infrastructure.Base.Ado.Impl;
 using CaaS.Infrastructure.Base.Ado.Impl.Npgsql;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Di;
+using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.CustomerData;
@@ -31,6 +33,9 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddDatabase();
         services.AddRepositories();
         services.AddCaasDiscountInfrastructure();
+        services.AddScoped<StaticTenantIdAccessor>();
+        services.AddScoped<ITenantIdAccessor>(sp => sp.GetRequiredService<StaticTenantIdAccessor>());
+        services.AddComposite<ITenantIdAccessor, CompositeTenantIdAccessor>();
         return services;
     }
 
@@ -38,6 +43,34 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddOptions<DiscountJsonOptions>().Configure<IEnumerable<DiscountComponentMetadata>>((options, metadatas) 
             => options.JsonSerializerOptions.Converters.Add(new DiscountSettingsJsonConverter(metadatas)));
         return services;
+    }
+    
+    public static void AddComposite<TInterface, TConcrete>(this IServiceCollection services)
+        where TInterface : class
+        where TConcrete : class, TInterface {
+        var wrappedDescriptors = services.Where(s => s.ServiceType == typeof(TInterface)).ToList();
+        foreach (var descriptor in wrappedDescriptors)
+            services.Remove(descriptor);
+
+        var objectFactory = ActivatorUtilities.CreateFactory(
+            typeof(TConcrete),
+            new[] { typeof(IEnumerable<TInterface>) });
+
+        services.Add(ServiceDescriptor.Describe(
+            typeof(TInterface),
+            s => (TInterface)objectFactory(s, new object?[] { wrappedDescriptors.Select(s.CreateInstance).Cast<TInterface>() }),
+            wrappedDescriptors.Select(d => d.Lifetime).Max())
+        );
+    }
+    
+    private static object CreateInstance(this IServiceProvider services, ServiceDescriptor descriptor) {
+        if (descriptor.ImplementationInstance != null)
+            return descriptor.ImplementationInstance;
+
+        if (descriptor.ImplementationFactory != null)
+            return descriptor.ImplementationFactory(services);
+
+        return ActivatorUtilities.GetServiceOrCreateInstance(services, descriptor.ImplementationType ?? throw new ArgumentException("Invalid service descriptor"));
     }
 
     // ReSharper disable once UnusedMethodReturnValue.Local

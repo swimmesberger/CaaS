@@ -6,6 +6,7 @@ using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Di;
 using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
+using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Test.Common;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;

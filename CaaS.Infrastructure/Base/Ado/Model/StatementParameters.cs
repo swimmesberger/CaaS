@@ -5,6 +5,7 @@ namespace CaaS.Infrastructure.Base.Ado.Model;
 public record StatementParameters {
     public static readonly StatementParameters Empty = new StatementParameters();
     
+    public SelectParameters Select = SelectParameters.Empty;
     public WhereParameters Where { get; init; } = WhereParameters.Empty;
     public IEnumerable<OrderParameter> OrderBy { get; init; } = Enumerable.Empty<OrderParameter>();
     public InsertParameters Insert { get; init; } = InsertParameters.Empty;
@@ -16,6 +17,7 @@ public record StatementParameters {
         orderBy.AddRange(OrderBy);
         orderBy.AddRange(parameters.OrderBy);
         return this with {
+            Select = Select.Add(parameters.Select),
             Where = Where.Add(parameters.Where),
             OrderBy = orderBy,
             Insert = Insert.Add(parameters.Insert),
@@ -26,11 +28,16 @@ public record StatementParameters {
     
     public StatementParameters MapParameterNames(Func<string, string> selector) {
         return new StatementParameters() {
+            Select = Select.MapParameterNames(selector),
             Where = Where.MapParameterNames(selector),
             OrderBy = OrderBy.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList(),
             Insert = Insert.MapParameterNames(selector),
             Update = Update.MapParameterNames(selector)
         };
+    }
+
+    public StatementParameters WithSelect(params string[] properties) {
+        return Add(new StatementParameters() { Select = new SelectParameters(properties) });
     }
 
     public StatementParameters WithWhere(string name, object value) {

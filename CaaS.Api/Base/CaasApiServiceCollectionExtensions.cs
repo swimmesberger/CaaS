@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using CaaS.Api.BackgroundServices;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.Base.Swagger;
 using CaaS.Api.DiscountApi.Swagger;
@@ -45,6 +46,7 @@ public static class CaasApiServiceCollectionExtensions {
             options.OperationFilter<CaasConventionOperationFilter>();
             options.DocumentFilter<DiscountSettingsOpenApiDocumentFilter>();
         });
+        services.AddHostedService<CartCleanupService>();
 
         services.AddCaasInfrastructure();
         services.AddCaasCore();

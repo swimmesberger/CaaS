@@ -34,14 +34,13 @@ public class CartService : ICartService {
     }
 
     public async Task<int> DeleteExpiredCarts(CancellationToken cancellationToken = default) {
-        var shops = await _shopRepository.FindAllAsync(cancellationToken);
-        int count = 0;
-        foreach (var shop in shops) {
-            var expiredCarts = await _cartRepository.FindExpiredCarts(shop.CartLifetimeMinutes, cancellationToken);
-            await _cartRepository.DeleteAsync(expiredCarts, cancellationToken);
-            count += expiredCarts.Count;
+        var cartLifetime = await _shopRepository.FindCartLifetimeByIdAsync(_tenantIdAccessor.GetTenantGuid(), cancellationToken);
+        if (cartLifetime == null) {
+            throw new CaasValidationException(new ValidationFailure("tenantId", "Invalid tenant id"));
         }
-        return count;
+        var expiredCarts = await _cartRepository.FindExpiredCarts(cartLifetime.Value, cancellationToken);
+        await _cartRepository.DeleteAsync(expiredCarts, cancellationToken);
+        return expiredCarts.Count;
     }
 
     public async Task<Cart> AddProductToCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {

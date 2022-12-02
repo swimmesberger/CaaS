@@ -1,9 +1,11 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base;
+using CaaS.Core.Base.Tenant;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Impl;
+using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CustomerData;
 using CaaS.Infrastructure.DiscountData;

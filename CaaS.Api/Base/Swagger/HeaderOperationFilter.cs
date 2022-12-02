@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using CaaS.Api.Base.Attributes;
+﻿using CaaS.Api.Base.Attributes;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -12,17 +11,19 @@ public class HeaderOperationFilter : IOperationFilter {
     }
 
     private void ApplyProducesHeader(OpenApiOperation operation, OperationFilterContext context) {
-        if (context.MethodInfo.GetCustomAttribute(typeof(ProducesHeaderAttribute)) is not ProducesHeaderAttribute attribute) return;
+        var attribute = context.MethodInfo.GetAttribute<ProducesHeaderAttribute>();
+        if (attribute == null) return;
         foreach (var openApiResponse in operation.Responses.Values) {
             ApplyProducesHeader(openApiResponse, context, attribute);
         }
     }
     
     private void ApplyConsumesHeader(OpenApiOperation operation, OperationFilterContext context) {
-        if (context.MethodInfo.GetCustomAttribute(typeof(ConsumesHeaderAttribute)) is not ConsumesHeaderAttribute attribute) return;
+        var attribute = context.MethodInfo.GetAttribute<ConsumesHeaderAttribute>();
+        if (attribute == null) return;
         ApplyConsumesHeader(operation, context, attribute);
     }
-    
+
     internal static void ApplyProducesHeader(OpenApiResponse openApiResponse, OperationFilterContext context, ProducesHeaderAttribute attribute) {
         openApiResponse.Headers[attribute.Name] = new OpenApiHeader() {
             Description = attribute.Description,

@@ -1,5 +1,7 @@
 ﻿using CaaS.Core.Base;
+using CaaS.Core.Base.Tenant;
 using CaaS.Core.OrderAggregate;
+using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.CustomerData;

@@ -19,6 +19,11 @@ public class CrudReadRepository<TData, TDomain> : IRepository
     public async Task<IReadOnlyList<TDomain>> FindAllAsync(CancellationToken cancellationToken = default) 
         => await Converter.ConvertToDomain(Dao.FindBy(PreProcessFindManyParameters(StatementParameters.Empty), cancellationToken), cancellationToken);
 
+    public async Task<IReadOnlyList<Guid>> FindAllIdsAsync(CancellationToken cancellationToken = default) {
+        var parameters = PreProcessFindManyParameters(new StatementParameters { Select = SelectParameters.Create(nameof(IDataModelBase.Id))});
+        return await Dao.FindScalarBy<Guid>(parameters, cancellationToken).ToListAsync(cancellationToken);
+    }
+    
     public Task<PagedResult<TDomain>> FindAllPagedAsync(PaginationToken? paginationToken = null,
         CancellationToken cancellationToken = default) {
         return FindByPagedAsync(StatementParameters.Empty, null, paginationToken, cancellationToken);
@@ -54,7 +59,7 @@ public class CrudReadRepository<TData, TDomain> : IRepository
         return orderParameters;
     }
 
-    private StatementParameters PreProcessFindManyParameters(StatementParameters parameters) {
+    protected StatementParameters PreProcessFindManyParameters(StatementParameters parameters) {
         return parameters.WithOrderBy(Converter.DefaultOrderParameters ?? GetFallbackOrderParameters());
     }
 
