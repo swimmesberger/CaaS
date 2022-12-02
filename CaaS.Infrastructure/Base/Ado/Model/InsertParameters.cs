@@ -8,6 +8,11 @@ public record InsertParameters {
     public IEnumerable<string> ColumnNames { get; init; } = ImmutableList<string>.Empty;
     public IEnumerable<IReadOnlyList<QueryParameter>> Values { get; init; } = ImmutableList<IReadOnlyList<QueryParameter>>.Empty;
 
+    public IEnumerable<QueryParameter> Parameters {
+        get => Values.SelectMany(s => s);
+        init => Values = new IReadOnlyList<QueryParameter>[] { value.ToImmutableArray() };
+    }
+
     public InsertParameters MapParameterNames(Func<string, string> selector) {
         return new InsertParameters() {
             ColumnNames = ColumnNames.Select(selector.Invoke).ToList(),
@@ -21,6 +26,14 @@ public record InsertParameters {
         values.AddRange(parameters.Values);
         return parameters with {
             Values = values
+        };
+    }
+
+    public static InsertParameters CreateFromParameters(IEnumerable<QueryParameter> parameters) {
+        var queryParameters = parameters.ToImmutableArray();
+        return new InsertParameters() {
+            Parameters = queryParameters,
+            ColumnNames = queryParameters.Select(p => p.Name)
         };
     }
 }

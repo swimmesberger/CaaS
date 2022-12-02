@@ -10,15 +10,15 @@ using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Infrastructure.Base.Ado.Impl;
 
-public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : DataModel, new() {
+public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : DataModel, new() {
     private readonly IStatementExecutor _statementExecutor;
     private readonly IStatementGenerator<T> _statementGenerator;
     private readonly IDateTimeOffsetProvider _timeProvider;
     private readonly ITenantIdAccessor? _tenantService;
     private readonly ITenantIdProvider<T>? _tenantIdProvider;
-
-    public IDataRecordMapper<T> DataRecordMapper => _statementGenerator.DataRecordMapper;
     
+    public IRecordMetadataProvider MetadataProvider => _statementGenerator.DataRecordMapper.MetadataProvider;
+
     public GenericDao(IStatementExecutor statementExecutor, 
             IStatementGenerator<T> statementGenerator, 
             IDateTimeOffsetProvider timeProvider, 
@@ -27,7 +27,7 @@ public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : Da
         _statementExecutor = statementExecutor;
         _statementGenerator = statementGenerator;
         _timeProvider = timeProvider;
-        if (DataRecordMapper is ITenantIdProvider<T> tenantIdProvider) {
+        if (_statementGenerator.DataRecordMapper is ITenantIdProvider<T> tenantIdProvider) {
             _tenantIdProvider = tenantIdProvider;
             _tenantService = tenantService.GetRequiredService();
         }
@@ -38,28 +38,24 @@ public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : Da
     }
 
     public IAsyncEnumerable<T> FindBy(StatementParameters parameters, CancellationToken cancellationToken = default) {
-        return QueryAsync(parameters.MapParameterNames(name => DataRecordMapper.ByPropertyName().MapName(name)), cancellationToken);
+        return QueryAsync(parameters, cancellationToken);
     }
     
     public IAsyncEnumerable<TValue> FindScalarBy<TValue>(StatementParameters parameters, CancellationToken cancellationToken = default) {
-        if (parameters.Select.Properties == null || parameters.Select.Properties.Count > 1) {
+        if (parameters.SelectParameters.Properties == null || parameters.SelectParameters.Properties.Count > 1) {
             throw new CaasDbException("Invalid select for FindScalarBy");
         }
-        parameters = parameters
-            .MapParameterNames(name => DataRecordMapper.ByPropertyName().MapName(name));
         return QueryAsync((record, token) => record.GetValueAsync<TValue>(0, token), parameters, cancellationToken);
     }
 
     public IAsyncEnumerable<Guid> FindIdsBy(StatementParameters parameters, CancellationToken cancellationToken = default) {
-        parameters = parameters
-            .WithSelect(nameof(DataModel.Id))
-            .MapParameterNames(name => DataRecordMapper.ByPropertyName().MapName(name));
         return QueryAsync((record, _) => new ValueTask<Guid>(record.GetGuid(0)), parameters, cancellationToken);
     }
 
     public async Task<long> CountAsync(StatementParameters? parameters = null, CancellationToken cancellationToken = default) {
         parameters ??= StatementParameters.Empty;
-        return (long)(await QueryScalarAsync(_statementGenerator.CreateCount(parameters), cancellationToken) ?? throw new InvalidOperationException());
+        long? count = await QueryScalarAsync(_statementGenerator.CreateCount(parameters), cancellationToken);
+        return count ?? throw new InvalidOperationException();
     }
     
     public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default) {
@@ -125,7 +121,16 @@ public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : Da
         }
     }
 
-    private async Task<object?> QueryScalarAsync(Statement statement, CancellationToken cancellationToken = default) {
+    public IReadOnlyDictionary<string, object?> ReadPropertiesFromModel(T model, IEnumerable<string> properties) {
+        var recordValues = _statementGenerator.DataRecordMapper.RecordFromEntity(model).ByPropertyName();
+        var propertyValuePairs = new Dictionary<string, object?>();
+        foreach (var property in properties) {
+            propertyValuePairs[property] = recordValues.GetObject(property);
+        }
+        return propertyValuePairs;
+    }
+
+    private async Task<TResult?> QueryScalarAsync<TResult>(Statement<TResult> statement, CancellationToken cancellationToken = default) {
         try {
             return await _statementExecutor.QueryScalarAsync(statement, cancellationToken);
         } catch (DbException ex) {
@@ -141,18 +146,24 @@ public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : Da
         }
     }
 
-    private IAsyncEnumerable<T> QueryAsync(StatementParameters? parameters = null, 
-            CancellationToken cancellationToken = default) => QueryAsync(DataRecordMapper.EntityFromRecordAsync, parameters, cancellationToken);
-    
-    private async IAsyncEnumerable<TR> QueryAsync<TR>(RowMapper<TR> rowMapper, StatementParameters? parameters = null, 
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+    private IAsyncEnumerable<T> QueryAsync(StatementParameters? parameters = null, CancellationToken cancellationToken = default) {
         parameters ??= StatementParameters.Empty;
         var statement = _statementGenerator.CreateFind(parameters);
+        return QueryAsync(statement, cancellationToken);
+    }
+    
+    private IAsyncEnumerable<TR> QueryAsync<TR>(RowMapper<TR> rowMapper, StatementParameters? parameters = null, 
+        CancellationToken cancellationToken = default) {
+        parameters ??= StatementParameters.Empty;
+        var statement = _statementGenerator.CreateFind(parameters, rowMapper);
+        return QueryAsync(statement, cancellationToken);
+    }
+    
+    private async IAsyncEnumerable<TR> QueryAsync<TR>(Statement<TR> statement, [EnumeratorCancellation] CancellationToken cancellationToken = default) {
         statement = PostProcessStatement(statement);
         IAsyncEnumerable<TR> enumerable;
         try {
-            enumerable = _statementExecutor
-                .StreamAsync(statement, rowMapper, cancellationToken: cancellationToken);
+            enumerable = _statementExecutor.StreamAsync(statement, cancellationToken: cancellationToken);
         } catch (DbException ex) {
             throw new CaasDbException("Failed to execute statement", ex);
         }
@@ -161,12 +172,11 @@ public sealed class GenericDao<T> : IDao<T>, IDataRecordProvider<T> where T : Da
         }
     }
 
-    private Statement PostProcessStatement(Statement statement) {
+    private Statement<TResult> PostProcessStatement<TResult>(Statement<TResult> statement) {
         if (_tenantService == null || _tenantIdProvider == null) {
             return statement;
         }
         var tenantId = _tenantService!.GetTenantGuid();
-        var tenantIdColumnName = DataRecordMapper.ByPropertyName().MapName(_tenantIdProvider!.TenantIdPropertyName);
-        return statement.AddWhereParameter(tenantIdColumnName, tenantId);
+        return statement.AddWhereParameter(_tenantIdProvider!.TenantIdPropertyName, tenantId);
     }
 }

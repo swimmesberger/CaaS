@@ -6,6 +6,8 @@ public record MaterializedStatements {
     public static readonly MaterializedStatements Empty = new MaterializedStatements();
     
     public IImmutableList<MaterializedStatement> Statements { get; init; } = ImmutableArray<MaterializedStatement>.Empty;
+    
+    public MaterializedStatement Statement => Statements[0];
 
     public int Count => Statements.Count;
 
@@ -20,4 +22,8 @@ public record MaterializedStatements {
     public MaterializedStatements() { }
 
     public MaterializedStatements Add(MaterializedStatement statement) => new MaterializedStatements(Statements.Add(statement));
+
+    public override string ToString() {
+        return string.Join(", ", Statements.Select(s => s.ToString()));
+    }
 }

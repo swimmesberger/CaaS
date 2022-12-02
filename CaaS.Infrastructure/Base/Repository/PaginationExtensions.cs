@@ -23,7 +23,7 @@ public static class PaginationExtensions {
         if (!columns.Any()) {
             throw new InvalidOperationException("There should be at least one configured column in the keyset.");
         }
-        var where = statementParameters.Where;
+        var where = statementParameters.WhereParameters;
         if (paginationToken.Reference != null) {
             var parameters = paginationToken.Reference.PropertyValues
                 .Select(entry => QueryParameter.From(entry.Key, entry.Value)).ToList();
@@ -40,7 +40,7 @@ public static class PaginationExtensions {
             return c with { OrderType = isDescending ? OrderType.Desc : OrderType.Asc };
         }).ToList();
         return statementParameters with {
-            Where = where,
+            WhereParameters = where,
             OrderBy = orderBy,
             Limit = pageSize
         };
@@ -78,25 +78,18 @@ public static class PaginationExtensions {
     }
 
     private static IRecordMetadataProvider CreateMetadataProvider<T>(this IDao<T> dao) {
-        IDataRecordMapper<T> dataRecordMapper;
-        if (dao is IDataRecordProvider<T> genericDao) {
-            dataRecordMapper = genericDao.DataRecordMapper;
+        IRecordMetadataProvider metadataProvider;
+        if (dao is IHasMetadataProvider hasMetadataProvider) {
+            metadataProvider = hasMetadataProvider.MetadataProvider;
         } else {
             throw new ArgumentException("Unsupported dao type");
         }
-        return dataRecordMapper.MetadataProvider;
+        return metadataProvider;
     }
 
     private static ParsedPaginationToken? CreatePaginationToken<T>(this IDao<T> dao, T? model, IEnumerable<string> properties, 
         KeysetPaginationDirection direction) {
-        IDataRecordMapper<T> dataRecordMapper;
-        if (dao is IDataRecordProvider<T> genericDao) {
-            dataRecordMapper = genericDao.DataRecordMapper;
-        } else {
-            throw new ArgumentException("Unsupported dao type");
-        }
-        var recordValues = model == null ? null : dataRecordMapper.RecordFromEntity(model).ByPropertyName();
-        var token = SkipTokenUtil.CreateFromRecord(recordValues, properties);
+        var token = model == null ? null : new SkipTokenValue() { PropertyValues = dao.ReadPropertiesFromModel(model, properties) };
         return token == null ? null : new ParsedPaginationToken(direction, token);
     }
 }

@@ -13,8 +13,6 @@ namespace {{ Namespace }};
 public sealed class {{ Entity.EntityName }}DataRecordMapper : IDataRecordMapper<{{ Entity.TypeName }}>{{ if (Entity.TenantIdProperty) }}, ITenantIdProvider<{{ Entity.TypeName }}> {{ end }}{
     public Type MappedType { get; } = typeof({{ Entity.TypeName }});
     
-    public string MappedTypeName { get; } = "{{ Entity.TableName }}";
-    
     public IRecordMetadataProvider MetadataProvider { get; }
     
     private readonly IPropertyMapper _propertyMapper = new {{ Entity.EntityName }}PropertyToColumnMapper();
@@ -65,6 +63,7 @@ internal sealed class {{ Entity.EntityName }}PropertyRecordValues : IRecordValue
     private readonly {{ Entity.TypeName }} _record;
     private readonly IPropertyMapper _mapper;
     
+    public string MappedTypeName => _mapper.MappedTypeName;
     public IEnumerable<string> Keys => _mapper.Keys;
         
     public {{Entity.EntityName}}PropertyRecordValues({{ Entity.TypeName }} record, IPropertyMapper mapper) {
@@ -106,6 +105,7 @@ internal sealed class {{ Entity.EntityName }}ColumnRecordValues : IRecordValues 
     private readonly IRecordValues _record;
     private readonly IPropertyMapper _mapper;
     
+    public string MappedTypeName => _mapper.MappedTypeName;
     public IEnumerable<string> Keys => _mapper.Keys;
         
     public {{Entity.EntityName}}ColumnRecordValues(IRecordValues record, IPropertyMapper mapper) {
@@ -132,6 +132,8 @@ internal sealed class {{ Entity.EntityName }}ColumnRecordValues : IRecordValues 
 }
 
 internal sealed class {{ Entity.EntityName }}PropertyToColumnMapper : IPropertyMapper {
+    public string MappedTypeName { get; } = "{{ Entity.TableName }}";
+    
     private string[] _propertyNames = new string[] {
 {{ for prop in Entity.Properties ~}}
         "{{ prop.PropertyName }}",
@@ -151,6 +153,8 @@ internal sealed class {{ Entity.EntityName }}PropertyToColumnMapper : IPropertyM
 }
 
 internal sealed class {{ Entity.EntityName }}ColumnToPropertyMapper : IPropertyMapper {
+    public string MappedTypeName { get; } = "{{ Entity.EntityName }}";
+    
     private string[] _columnNames = new string[] {
 {{ for prop in Entity.Properties ~}}
         "{{ prop.ColumnName }}",

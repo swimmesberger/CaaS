@@ -7,7 +7,6 @@ using CaaS.Infrastructure.Base.Di;
 using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
 using CaaS.Infrastructure.Base.Tenant;
-using CaaS.Test.Common;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -59,7 +58,7 @@ public class BaseDaoTest : IAsyncLifetime {
     
     protected GenericDao<T> GetDao<T>(IDataRecordMapper<T> dataRecordMapper, string? tenantId = null) where T : DataModel, new() {
         var statementExecutor = new AdoStatementExecutor(GetAdoUnitOfWorkManager());
-        var statementGenerator = new AdoStatementGenerator<T>(dataRecordMapper);
+        var statementGenerator = new AdoStatementGenerator<T>(dataRecordMapper, new AdoStatementMaterializer());
         var spTenantService = IServiceProvider<ITenantIdAccessor>.Empty;
         if (tenantId != null) {
             spTenantService = new StaticTenantIdAccessor(tenantId).AsTypedService();

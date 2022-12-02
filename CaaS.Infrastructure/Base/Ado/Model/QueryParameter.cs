@@ -3,8 +3,6 @@
 namespace CaaS.Infrastructure.Base.Ado.Model;
 
 public record QueryParameter(string Name) {
-    public static readonly string LimitParamName = "limitParamName";
-    
     public string ParameterName { get; init; } = Name;
 
     public TypedValue TypedValue { get; init; }
@@ -15,7 +13,14 @@ public record QueryParameter(string Name) {
         get => TypedValue.Value;
         init => TypedValue = new TypedValue() { Value = value };
     }
+
+    public QueryParameter(string name, WhereComparator comparator, object? value) : this(name) {
+        Value = value;
+        Comparator = comparator;
+    }
     
+    public QueryParameter(string name, object? value) : this(name, WhereComparator.Equal, value) { }
+
     public static QueryParameter From(string name, object? value, string? parameterName = null, WhereComparator comparator = WhereComparator.Equal) {
         return FromTyped(name, new TypedValue { Value = value }, parameterName, comparator);
     }

@@ -14,5 +14,7 @@ public interface IDao<T> {
     Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<T>> UpdateAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default);
     Task DeleteAsync(T entity, CancellationToken cancellationToken = default );
-    Task DeleteAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default );
+    Task DeleteAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default);
+
+    IReadOnlyDictionary<string, object?> ReadPropertiesFromModel(T model, IEnumerable<string> properties);
 }

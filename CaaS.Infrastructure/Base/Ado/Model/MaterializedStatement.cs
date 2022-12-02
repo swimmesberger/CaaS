@@ -10,4 +10,8 @@ public record MaterializedStatement(string Sql) {
             Parameters = statement.Parameters.ToList()
         };
     }
+
+    public override string ToString() {
+        return $"{nameof(Sql)}: {Sql}";
+    }
 }

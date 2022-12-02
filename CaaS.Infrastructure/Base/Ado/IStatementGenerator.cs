@@ -3,19 +3,21 @@
 namespace CaaS.Infrastructure.Base.Ado; 
 
 public interface IStatementGenerator<T> : IDataRecordProvider<T> {
-    Statement CreateCount(StatementParameters statementParameters);
+    Statement<long> CreateCount(StatementParameters statementParameters);
 
-    Statement CreateFind(StatementParameters statementParameters);
-
-    Statement CreateInsert(T entity);
+    Statement<T> CreateFind(StatementParameters statementParameters);
     
-    Statement CreateInsert(IEnumerable<T> entities);
+    Statement<TResult> CreateFind<TResult>(StatementParameters statementParameters, RowMapper<TResult> mapper);
 
-    Statement CreateUpdate(T entity, int origRowVersion);
+    Statement<T> CreateInsert(T entity);
     
-    Statement CreateUpdate(IEnumerable<VersionedEntity<T>> entities);
+    Statement<T> CreateInsert(IEnumerable<T> entities);
 
-    Statement CreateDelete(T entity);
+    Statement<T> CreateUpdate(T entity, int origRowVersion);
     
-    Statement CreateDelete(IEnumerable<T> entities);
+    Statement<T> CreateUpdate(IEnumerable<VersionedEntity<T>> entities);
+
+    Statement<T> CreateDelete(T entity);
+    
+    Statement<T> CreateDelete(IEnumerable<T> entities);
 }

@@ -21,8 +21,8 @@ public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopReposito
 
     public async Task<int?> FindCartLifetimeByIdAsync(Guid id, CancellationToken cancellationToken = default) {
         var parameters = new StatementParameters {
-            Select = SelectParameters.Create(nameof(ShopDataModel.CartLifetimeMinutes)),
-            Where = WhereParameters.CreateFromParameters(nameof(ShopDataModel.Id), id)
+            SelectParameters = SelectParameters.Create(nameof(ShopDataModel.CartLifetimeMinutes)),
+            WhereParameters = WhereParameters.CreateFromParameters(nameof(ShopDataModel.Id), id)
         };
         return await Dao.FindScalarBy<int>(parameters, cancellationToken).FirstOrDefaultAsync(cancellationToken);
     }

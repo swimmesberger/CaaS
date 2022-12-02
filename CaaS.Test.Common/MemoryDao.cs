@@ -22,7 +22,7 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
 
     public IAsyncEnumerable<TValue> FindScalarBy<TValue>(StatementParameters parameters, CancellationToken cancellationToken = default) {
         return FindBy(parameters, cancellationToken).Select(model => {
-            var propName = parameters.Select.Properties![0];
+            var propName = parameters.SelectParameters.Properties![0];
             return (TValue)_properties[propName].GetValue(model)!;
         });
     }
@@ -30,7 +30,7 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public IAsyncEnumerable<T> FindBy(StatementParameters parameters, CancellationToken cancellationToken = default) {
         var enumerable = _data.Where(d => {
-            foreach (var param in parameters.Where.Parameters) {
+            foreach (var param in parameters.WhereParameters.Parameters) {
                 var prop = _properties[param.Name];
                 if (param.Value is IEnumerable enumerable and not string) {
                     var lookup = enumerable.Cast<object?>().ToHashSet();
@@ -103,5 +103,13 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
         foreach (var entity in entities) {
             await DeleteAsync(entity, cancellationToken);
         }
+    }
+
+    public IReadOnlyDictionary<string, object?> ReadPropertiesFromModel(T model, IEnumerable<string> properties) {
+        var propertyValuePairs = new Dictionary<string, object?>();
+        foreach (var property in properties) {
+            propertyValuePairs[property] = _properties[property].GetValue(model);
+        }
+        return propertyValuePairs;
     }
 }

@@ -20,7 +20,7 @@ public class CrudReadRepository<TData, TDomain> : IRepository
         => await Converter.ConvertToDomain(Dao.FindBy(PreProcessFindManyParameters(StatementParameters.Empty), cancellationToken), cancellationToken);
 
     public async Task<IReadOnlyList<Guid>> FindAllIdsAsync(CancellationToken cancellationToken = default) {
-        var parameters = PreProcessFindManyParameters(new StatementParameters { Select = SelectParameters.Create(nameof(IDataModelBase.Id))});
+        var parameters = PreProcessFindManyParameters(new StatementParameters { SelectParameters = SelectParameters.Create(nameof(IDataModelBase.Id))});
         return await Dao.FindScalarBy<Guid>(parameters, cancellationToken).ToListAsync(cancellationToken);
     }
     

@@ -5,10 +5,26 @@ namespace CaaS.Infrastructure.Base.Ado.Model;
 public record StatementParameters {
     public static readonly StatementParameters Empty = new StatementParameters();
     
-    public SelectParameters Select = SelectParameters.Empty;
-    public WhereParameters Where { get; init; } = WhereParameters.Empty;
+    public SelectParameters SelectParameters { get; init; } = SelectParameters.All;
+    public IEnumerable<string> Select {
+        get => SelectParameters.Properties;
+        init => SelectParameters = SelectParameters.Create(value);
+    }
+    
+    public WhereParameters WhereParameters { get; init; } = WhereParameters.Empty;
+    public IEnumerable<QueryParameter> Where {
+        get => WhereParameters.Parameters;
+        init => WhereParameters = WhereParameters.CreateFromParameters(value);
+    }
+    
     public IEnumerable<OrderParameter> OrderBy { get; init; } = Enumerable.Empty<OrderParameter>();
-    public InsertParameters Insert { get; init; } = InsertParameters.Empty;
+
+    public InsertParameters InsertParameters { get; init; } = InsertParameters.Empty;
+    public IEnumerable<QueryParameter> Insert {
+        get => InsertParameters.Parameters;
+        init => InsertParameters = InsertParameters.CreateFromParameters(value);
+    }
+
     public UpdateParameters Update { get; init; } = UpdateParameters.Empty;
     public long? Limit { get; init; }
     
@@ -17,10 +33,10 @@ public record StatementParameters {
         orderBy.AddRange(OrderBy);
         orderBy.AddRange(parameters.OrderBy);
         return this with {
-            Select = Select.Add(parameters.Select),
-            Where = Where.Add(parameters.Where),
+            SelectParameters = SelectParameters.Add(parameters.SelectParameters),
+            WhereParameters = WhereParameters.Add(parameters.WhereParameters),
             OrderBy = orderBy,
-            Insert = Insert.Add(parameters.Insert),
+            InsertParameters = InsertParameters.Add(parameters.InsertParameters),
             Update = Update.Add(parameters.Update),
             Limit = Limit ?? parameters.Limit
         };
@@ -28,16 +44,21 @@ public record StatementParameters {
     
     public StatementParameters MapParameterNames(Func<string, string> selector) {
         return new StatementParameters() {
-            Select = Select.MapParameterNames(selector),
-            Where = Where.MapParameterNames(selector),
+            SelectParameters = SelectParameters.MapParameterNames(selector),
+            WhereParameters = WhereParameters.MapParameterNames(selector),
             OrderBy = OrderBy.Select(p => p with { Name = selector.Invoke(p.Name) }).ToList(),
-            Insert = Insert.MapParameterNames(selector),
-            Update = Update.MapParameterNames(selector)
+            InsertParameters = InsertParameters.MapParameterNames(selector),
+            Update = Update.MapParameterNames(selector),
+            Limit = Limit
         };
     }
 
     public StatementParameters WithSelect(params string[] properties) {
-        return Add(new StatementParameters() { Select = new SelectParameters(properties) });
+        return Add(new StatementParameters() { SelectParameters = new SelectParameters(properties) });
+    }
+    
+    public StatementParameters WithSelect(IEnumerable<string> properties) {
+        return Add(new StatementParameters() { SelectParameters = SelectParameters.Create(properties) });
     }
 
     public StatementParameters WithWhere(string name, object value) {
@@ -49,11 +70,11 @@ public record StatementParameters {
     }
     
     public StatementParameters WithWhere(IEnumerable<QueryParameter> parameters) {
-        return Add(new StatementParameters() { Where = WhereParameters.CreateFromParameters(parameters) });
+        return Add(new StatementParameters() { WhereParameters = WhereParameters.CreateFromParameters(parameters) });
     }
     
     public StatementParameters WithWhere(IWhereStatement whereStatement) {
-        return Add(new StatementParameters() { Where = WhereParameters.Create(whereStatement) });
+        return Add(new StatementParameters() { WhereParameters = WhereParameters.Create(whereStatement) });
     }
     
     public StatementParameters WithOrderBy(string name, OrderType orderType = OrderType.Asc) {
