@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace CaaS.Infrastructure.Base.Ado.Model;
+namespace CaaS.Infrastructure.Base.Ado.Query.Parameters;
 
 public record InsertParameters {
     public static readonly InsertParameters Empty = new InsertParameters();
@@ -11,6 +11,14 @@ public record InsertParameters {
     public IEnumerable<QueryParameter> Parameters {
         get => Values.SelectMany(s => s);
         init => Values = new IReadOnlyList<QueryParameter>[] { value.ToImmutableArray() };
+    }
+
+    public InsertParameters() { }
+
+    public InsertParameters(IEnumerable<QueryParameter> parameters) {
+        var queryParameters = parameters.ToImmutableArray();
+        Parameters = queryParameters;
+        ColumnNames = queryParameters.Select(p => p.Name);
     }
 
     public InsertParameters MapParameterNames(Func<string, string> selector) {
@@ -26,14 +34,6 @@ public record InsertParameters {
         values.AddRange(parameters.Values);
         return parameters with {
             Values = values
-        };
-    }
-
-    public static InsertParameters CreateFromParameters(IEnumerable<QueryParameter> parameters) {
-        var queryParameters = parameters.ToImmutableArray();
-        return new InsertParameters() {
-            Parameters = queryParameters,
-            ColumnNames = queryParameters.Select(p => p.Name)
         };
     }
 }

@@ -2,7 +2,7 @@
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Repository;
 using Microsoft.Extensions.Options;
 
@@ -14,7 +14,7 @@ public class DiscountSettingsRepository : CrudRepository<DiscountSettingDataMode
 }
 
 internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSettingDataModel, DiscountSetting> {
-    public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = OrderParameter.From(nameof(DiscountSettingDataModel.Name));
+    public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(DiscountSettingDataModel.Name));
     
     private readonly JsonSerializerOptions _jsonOptions;
 

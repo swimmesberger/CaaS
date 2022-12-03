@@ -1,7 +1,7 @@
 ﻿using CaaS.Core.Base;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.Ado.Model.Where;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Base.Mapping;
 
 namespace CaaS.Infrastructure.Base.Repository; 
@@ -26,7 +26,7 @@ public static class PaginationExtensions {
         var where = statementParameters.WhereParameters;
         if (paginationToken.Reference != null) {
             var parameters = paginationToken.Reference.PropertyValues
-                .Select(entry => QueryParameter.From(entry.Key, entry.Value)).ToList();
+                .Select(entry => new QueryParameter(entry.Key, entry.Value)).ToList();
             var greaterThan = paginationToken.Direction switch {
                 KeysetPaginationDirection.Forward => true,
                 KeysetPaginationDirection.Backward => false,

@@ -1,6 +1,8 @@
-﻿using CaaS.Infrastructure.Base.Ado.Impl;
+﻿using CaaS.Infrastructure.Base.Ado;
+using CaaS.Infrastructure.Base.Ado.Impl;
 using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.Ado.Model.Where;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.Gen;
 using Xunit.Abstractions;
@@ -18,7 +20,8 @@ public class StatementGeneratorTest {
 
     [Fact]
     public void CreateFind() {
-        var generator = new AdoStatementGenerator<CartDataModel>(new CartDataRecordMapper(), new AdoStatementMaterializer());
+        var generator = new AdoStatementGenerator<CartDataModel>(new CartDataRecordMapper());
+        IStatementMaterializer materializer = new AdoStatementMaterializer();
         var statement = generator.CreateFind(new StatementParameters() {
             Select = new[] { nameof(CartDataModel.Id), nameof(CartDataModel.CustomerId) },
             Where = new QueryParameter[] { 
@@ -28,6 +31,9 @@ public class StatementGeneratorTest {
             OrderBy = new OrderParameter[] { new(nameof(CartDataModel.CreationTime)) },
             Limit = 1000
         });
-        _testOutputHelper.WriteLine(statement.Materialize().ToString());
+        var sqlStatement = materializer.MaterializeStatement(statement);
+        _testOutputHelper.WriteLine(sqlStatement.Sql);
+        sqlStatement.Sql.Should().BeEquivalentTo(
+            "SELECT id,customer_id FROM \"cart\" WHERE customer_id = @CustomerId_0 AND last_access >= @LastAccess_1 ORDER BY creation_time ASC LIMIT @_Limit_0");
     }
 }

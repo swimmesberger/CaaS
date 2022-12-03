@@ -2,6 +2,7 @@
 using CaaS.Core.CustomerAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.CustomerData;
 using CaaS.Infrastructure.Gen;
 using Xunit.Abstractions;
@@ -40,12 +41,11 @@ public class CustomerDaoTest : BaseDaoTest {
         var customerDao = GetCustomerDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Customer.Name), "Frances Hallums"),
-            QueryParameter.From(nameof(Customer.EMail), "fhallums2r@edublogs.org"),
+            new(nameof(Customer.Name), "Frances Hallums"),
+            new(nameof(Customer.EMail), "fhallums2r@edublogs.org"),
         };
 
-        var customers = await customerDao.FindBy(StatementParameters
-                .CreateWhere(parameters)).ToListAsync();
+        var customers = await customerDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         customers.Count.Should().NotBe(0);
         customers[0].Id.Should().Be("9234a988-0abd-4b44-808a-9e7a8852e19c");

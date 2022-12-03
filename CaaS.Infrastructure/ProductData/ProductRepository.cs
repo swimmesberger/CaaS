@@ -3,8 +3,8 @@ using CaaS.Core.Base.Exceptions;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.Ado.Model.Where;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.ProductData; 
@@ -13,16 +13,18 @@ public class ProductRepository : CrudRepository<ProductDataModel, Product>, IPro
             base(productDao, new ProductDomainModelConverter(shopRepository)) {}
 
     public async Task<PagedResult<Product>> FindByTextSearchAsync(string text, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
-        var statementParameters = StatementParameters.CreateWhere(new SearchWhere(new[] {
-            new QueryParameter(nameof(ProductDataModel.Name)) { Value = text },
-            new QueryParameter(nameof(ProductDataModel.Description)) { Value = text }
-        }));
+        var statementParameters = new StatementParameters() {
+            WhereParameters = new WhereParameters(new SearchWhere(new[] {
+                new QueryParameter(nameof(ProductDataModel.Name)) { Value = text },
+                new QueryParameter(nameof(ProductDataModel.Description)) { Value = text }
+            }))
+        };
         return await FindByPagedAsync(statementParameters, null, paginationToken, cancellationToken);
     }
 }
 
 internal class ProductDomainModelConverter : IDomainModelConverter<ProductDataModel, Product> {
-    public IEnumerable<OrderParameter> DefaultOrderParameters { get; } = OrderParameter.From(nameof(ProductDataModel.Name));
+    public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(ProductDataModel.Name));
     
     private readonly IShopRepository _shopRepository;
 

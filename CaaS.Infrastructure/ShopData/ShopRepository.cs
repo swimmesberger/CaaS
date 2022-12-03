@@ -1,8 +1,8 @@
 ﻿using CaaS.Core.Base.Exceptions;
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.Ado.Model.Where;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.ShopData;
@@ -21,15 +21,15 @@ public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopReposito
 
     public async Task<int?> FindCartLifetimeByIdAsync(Guid id, CancellationToken cancellationToken = default) {
         var parameters = new StatementParameters {
-            SelectParameters = SelectParameters.Create(nameof(ShopDataModel.CartLifetimeMinutes)),
-            WhereParameters = WhereParameters.CreateFromParameters(nameof(ShopDataModel.Id), id)
+            SelectParameters = new SelectParameters(nameof(ShopDataModel.CartLifetimeMinutes)),
+            WhereParameters = new WhereParameters(nameof(ShopDataModel.Id), id)
         };
         return await Dao.FindScalarBy<int>(parameters, cancellationToken).FirstOrDefaultAsync(cancellationToken);
     }
 }
 
 internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, Shop> {
-    public IEnumerable<OrderParameter> DefaultOrderParameters { get; } = OrderParameter.From(nameof(ShopDataModel.Name));
+    public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(ShopDataModel.Name));
 
     private readonly ShopAdminRepository _shopAdminRepository;
 

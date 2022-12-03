@@ -4,6 +4,8 @@ using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Di;
 using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
@@ -12,6 +14,7 @@ namespace CaaS.Infrastructure.Base.Ado.Impl;
 
 public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : DataModel, new() {
     private readonly IStatementExecutor _statementExecutor;
+    private readonly IStatementMaterializer _statementMaterializer;
     private readonly IStatementGenerator<T> _statementGenerator;
     private readonly IDateTimeOffsetProvider _timeProvider;
     private readonly ITenantIdAccessor? _tenantService;
@@ -19,12 +22,14 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
     
     public IRecordMetadataProvider MetadataProvider => _statementGenerator.DataRecordMapper.MetadataProvider;
 
-    public GenericDao(IStatementExecutor statementExecutor, 
-            IStatementGenerator<T> statementGenerator, 
-            IDateTimeOffsetProvider timeProvider, 
+    public GenericDao(IStatementExecutor statementExecutor,
+            IStatementMaterializer statementMaterializer,
+            IStatementGenerator<T> statementGenerator,
+            IDateTimeOffsetProvider timeProvider,
             IServiceProvider<ITenantIdAccessor>? tenantService = null) {
         tenantService ??= IServiceProvider<ITenantIdAccessor>.Empty;
         _statementExecutor = statementExecutor;
+        _statementMaterializer = statementMaterializer;
         _statementGenerator = statementGenerator;
         _timeProvider = timeProvider;
         if (_statementGenerator.DataRecordMapper is ITenantIdProvider<T> tenantIdProvider) {
@@ -132,15 +137,19 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
 
     private async Task<TResult?> QueryScalarAsync<TResult>(Statement<TResult> statement, CancellationToken cancellationToken = default) {
         try {
-            return await _statementExecutor.QueryScalarAsync(statement, cancellationToken);
+            return await _statementExecutor.QueryScalarAsync(_statementMaterializer.MaterializeStatement(statement), cancellationToken);
         } catch (DbException ex) {
             throw new CaasDbException("Failed to execute statement", ex);
         }
     }
 
-    private async Task<int> ExecuteAsync(Statement statement, CancellationToken cancellationToken = default) {
+    private Task<int> ExecuteAsync(Statement statement, CancellationToken cancellationToken = default) {
+        return ExecuteAsync(new StatementBatch(statement), cancellationToken);
+    }
+
+    private async Task<int> ExecuteAsync(StatementBatch batch, CancellationToken cancellationToken = default) {
         try {
-            return await _statementExecutor.ExecuteAsync(statement, cancellationToken);
+            return await _statementExecutor.ExecuteAsync(_statementMaterializer.MaterializeBatch(batch), cancellationToken);
         } catch (DbException ex) {
             throw new CaasDbException("Failed to execute statement", ex);
         }
@@ -163,7 +172,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
         statement = PostProcessStatement(statement);
         IAsyncEnumerable<TR> enumerable;
         try {
-            enumerable = _statementExecutor.StreamAsync(statement, cancellationToken: cancellationToken);
+            enumerable = _statementExecutor.StreamAsync(_statementMaterializer.MaterializeStatement(statement), cancellationToken: cancellationToken);
         } catch (DbException ex) {
             throw new CaasDbException("Failed to execute statement", ex);
         }

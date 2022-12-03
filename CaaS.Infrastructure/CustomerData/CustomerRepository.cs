@@ -1,6 +1,6 @@
 ﻿using CaaS.Core.CustomerAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.CustomerData;
@@ -11,8 +11,8 @@ public class CustomerRepository : CrudRepository<CustomerDataModel, Customer>, I
 }
 
 internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerDataModel, Customer> {
-    public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = OrderParameter.From(nameof(CustomerDataModel.Name));
-    
+    public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(CustomerDataModel.Name));
+
     public ValueTask<Customer> ConvertToDomain(CustomerDataModel dataModel, CancellationToken cancellationToken) {
         return new ValueTask<Customer>(new Customer() {
             Id = dataModel.Id,

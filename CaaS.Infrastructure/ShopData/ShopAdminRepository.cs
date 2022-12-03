@@ -1,6 +1,6 @@
 ﻿using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.ShopData; 
@@ -25,7 +25,7 @@ internal class ShopAdminRepository : IShopAdminRepository {
     }
 
     private class ShopAdminDomainModelConverter : IDomainReadModelConverter<ShopAdminDataModel, ShopAdmin> {
-        public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = OrderParameter.From(nameof(ShopAdminDataModel.Name));
+        public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(ShopAdminDataModel.Name));
 
         public ValueTask<ShopAdmin> ConvertToDomain(ShopAdminDataModel dataModel, CancellationToken cancellationToken) {
             return new ValueTask<ShopAdmin>(new ShopAdmin() {

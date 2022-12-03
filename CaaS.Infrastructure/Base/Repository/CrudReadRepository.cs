@@ -1,6 +1,6 @@
 ﻿using CaaS.Core.Base;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Infrastructure.Base.Repository; 
@@ -20,7 +20,7 @@ public class CrudReadRepository<TData, TDomain> : IRepository
         => await Converter.ConvertToDomain(Dao.FindBy(PreProcessFindManyParameters(StatementParameters.Empty), cancellationToken), cancellationToken);
 
     public async Task<IReadOnlyList<Guid>> FindAllIdsAsync(CancellationToken cancellationToken = default) {
-        var parameters = PreProcessFindManyParameters(new StatementParameters { SelectParameters = SelectParameters.Create(nameof(IDataModelBase.Id))});
+        var parameters = PreProcessFindManyParameters(new StatementParameters { SelectParameters = new SelectParameters(nameof(IDataModelBase.Id))});
         return await Dao.FindScalarBy<Guid>(parameters, cancellationToken).ToListAsync(cancellationToken);
     }
     
@@ -53,9 +53,9 @@ public class CrudReadRepository<TData, TDomain> : IRepository
     public async Task<long> CountAsync(CancellationToken cancellationToken = default)
         => await Dao.CountAsync(cancellationToken: cancellationToken);
 
-    protected IEnumerable<OrderParameter> GetPaginationOrderByParameters() {
+    protected OrderParameters GetPaginationOrderByParameters() {
         var orderParameters = Converter.DefaultOrderParameters;
-        orderParameters = orderParameters == null ? GetFallbackOrderParameters() : orderParameters.Concat(GetFallbackOrderParameters());
+        orderParameters = orderParameters.Add(GetFallbackOrderParameters());
         return orderParameters;
     }
 
@@ -63,5 +63,5 @@ public class CrudReadRepository<TData, TDomain> : IRepository
         return parameters.WithOrderBy(Converter.DefaultOrderParameters ?? GetFallbackOrderParameters());
     }
 
-    private static IEnumerable<OrderParameter> GetFallbackOrderParameters() => OrderParameter.From(nameof(IDataModelBase.Id));
+    private static OrderParameters GetFallbackOrderParameters() => new OrderParameters(nameof(IDataModelBase.Id));
 }

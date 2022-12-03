@@ -2,7 +2,8 @@ using System.Data;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Tenant;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 
 namespace CaaS.Infrastructure.ProductData;
 
@@ -29,15 +30,15 @@ public class StatisticsImpl : IStatisticsService {
                      "sum(po.amount) DESC " +
                      "limit 1";
 
-        MaterializedStatements statements = new MaterializedStatements(new MaterializedStatement(sql) {
-            Parameters = new[] {
-                QueryParameter.From("shop_id", _tenantIdAccessor.GetTenantGuid()),
-                QueryParameter.From("from", from),
-                QueryParameter.From("until", until),
+        var statement = new MaterializedStatement(sql) {
+            Parameters = new QueryParameter[] {
+                new("shop_id", _tenantIdAccessor.GetTenantGuid()),
+                new("from", from),
+                new("until", until),
             }
-        });
+        };
 
-        return await _statementExecutor.StreamAsync(statements,
+        return await _statementExecutor.StreamAsync(statement,
             async (record, token) => new MostSoldProductResult(
                 await record.GetFieldValueAsync<Guid>("product_id", token),
                 await record.GetFieldValueAsync<long>("sum", token)
@@ -85,16 +86,16 @@ public class StatisticsImpl : IStatisticsService {
             "AND order_date <= @until " +
             "ORDER BY order_statistic.order_id) statistics";
 
-        MaterializedStatements statements = new MaterializedStatements(new MaterializedStatement(sql) {
-            Parameters = new[] {
-                QueryParameter.From("shop_id", _tenantIdAccessor.GetTenantGuid()),
-                QueryParameter.From("from", from),
-                QueryParameter.From("until", until),
+        var statement = new MaterializedStatement(sql) {
+            Parameters = new QueryParameter[] {
+                new("shop_id", _tenantIdAccessor.GetTenantGuid()),
+                new("from", from),
+                new("until", until),
             }
-        });
+        };
 
-        var result = (decimal)(await _statementExecutor.QueryScalarAsync(statements, cancellationToken) ?? 0);
-        return result;
+        decimal? result = await _statementExecutor.QueryScalarAsync<decimal>(statement, cancellationToken);
+        return result.GetValueOrDefault();
     }
     
     public async Task<decimal> AverageValueOfOrdersInTimePeriod(DateTimeOffset from, DateTimeOffset until,
@@ -116,15 +117,15 @@ public class StatisticsImpl : IStatisticsService {
 
 
         MaterializedStatements statements = new MaterializedStatements(new MaterializedStatement(sql) {
-            Parameters = new[] {
-                QueryParameter.From("shop_id", _tenantIdAccessor.GetTenantGuid()),
-                QueryParameter.From("from", from),
-                QueryParameter.From("until", until),
+            Parameters = new QueryParameter[] {
+                new("shop_id", _tenantIdAccessor.GetTenantGuid()),
+                new("from", from),
+                new("until", until),
             }
         });
 
-        var result = (decimal)(await _statementExecutor.QueryScalarAsync(statements, cancellationToken) ?? 0);
-        return result;
+        decimal? result = await _statementExecutor.QueryScalarAsync<decimal>(statements, cancellationToken);
+        return result.GetValueOrDefault();
     }
 
     public async Task<CartStatisticsResult> GetCartStatistics(DateTimeOffset from, DateTimeOffset until,
@@ -153,10 +154,10 @@ public class StatisticsImpl : IStatisticsService {
                             "pc.cart_id) as base";
         
         MaterializedStatements statements = new MaterializedStatements(new MaterializedStatement(sql) {
-            Parameters = new[] {
-                QueryParameter.From("shop_id", _tenantIdAccessor.GetTenantGuid()),
-                QueryParameter.From("from", from),
-                QueryParameter.From("until", until),
+            Parameters = new QueryParameter[] {
+                new("shop_id", _tenantIdAccessor.GetTenantGuid()),
+                new("from", from),
+                new("until", until),
             }
         });
 

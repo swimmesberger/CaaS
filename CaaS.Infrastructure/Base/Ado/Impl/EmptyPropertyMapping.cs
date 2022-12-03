@@ -6,13 +6,12 @@ public class EmptyPropertyMapping : IPropertyMapping {
     public static readonly IPropertyMapping Empty = new EmptyPropertyMapping();
     public static readonly IPropertyMapper EmptyMapper = new EmptyPropertyMapper();
 
-    public string MappedTypeName => string.Empty;
-
     public IPropertyMapper ByColumName() => EmptyMapper;
 
     public IPropertyMapper ByPropertyName() => EmptyMapper;
 
     private class EmptyPropertyMapper : IPropertyMapper {
+        public string TypeName => string.Empty;
         public string MappedTypeName => string.Empty;
         
         public IEnumerable<string> Keys => Enumerable.Empty<string>();

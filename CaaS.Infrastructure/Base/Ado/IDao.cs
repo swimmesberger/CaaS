@@ -1,4 +1,4 @@
-﻿using CaaS.Infrastructure.Base.Ado.Model;
+﻿using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 
 namespace CaaS.Infrastructure.Base.Ado; 
 

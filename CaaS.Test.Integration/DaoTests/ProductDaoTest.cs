@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.ProductData;
 using Xunit.Abstractions;
@@ -39,12 +40,11 @@ public class ProductDaoTest : BaseDaoTest {
         var productDao = GetProductDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Product.Name), "HDMI cable"),
-            QueryParameter.From(nameof(Product.Price), 5.99),
+            new(nameof(Product.Name), "HDMI cable"),
+            new(nameof(Product.Price), 5.99),
         };
 
-        var products = await productDao.FindBy(StatementParameters
-                .CreateWhere(parameters)).ToListAsync();
+        var products = await productDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         products.Count.Should().NotBe(0);
         products[0].Id.Should().Be("ff66c1f5-d79e-4797-a03c-a665ae26b171");

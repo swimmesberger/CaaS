@@ -57,13 +57,14 @@ public class BaseDaoTest : IAsyncLifetime {
     }
     
     protected GenericDao<T> GetDao<T>(IDataRecordMapper<T> dataRecordMapper, string? tenantId = null) where T : DataModel, new() {
+        var statementGenerator = new AdoStatementGenerator<T>(dataRecordMapper);
+        var sqlGenerator = new AdoStatementMaterializer();
         var statementExecutor = new AdoStatementExecutor(GetAdoUnitOfWorkManager());
-        var statementGenerator = new AdoStatementGenerator<T>(dataRecordMapper, new AdoStatementMaterializer());
         var spTenantService = IServiceProvider<ITenantIdAccessor>.Empty;
         if (tenantId != null) {
             spTenantService = new StaticTenantIdAccessor(tenantId).AsTypedService();
         }
-        return new GenericDao<T>(statementExecutor, statementGenerator, DateTimeOffsetProvider.Instance, spTenantService);
+        return new GenericDao<T>(statementExecutor, sqlGenerator, statementGenerator, DateTimeOffsetProvider.Instance, spTenantService);
     }
 
     private AdoUnitOfWorkManager GetAdoUnitOfWorkManager() {

@@ -2,6 +2,7 @@
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.ShopData;
 using Xunit.Abstractions;
@@ -40,12 +41,11 @@ public class ShopAdminDaoTest : BaseDaoTest {
         var shopAdminDao = GetShopAdminDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(ShopAdmin.Name), "Kanya Pavey"),
-            QueryParameter.From(nameof(ShopAdmin.EMail), "kpavey0@google.ca"),
+            new(nameof(ShopAdmin.Name), "Kanya Pavey"),
+            new(nameof(ShopAdmin.EMail), "kpavey0@google.ca"),
         };
 
-        var shopAdmins = await shopAdminDao.FindBy(StatementParameters
-                .CreateWhere(parameters)).ToListAsync();
+        var shopAdmins = await shopAdminDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         shopAdmins.Count.Should().NotBe(0);
         shopAdmins[0].Id.Should().Be("a5c992d5-5065-41fe-b2d0-2fa4b5945b56");

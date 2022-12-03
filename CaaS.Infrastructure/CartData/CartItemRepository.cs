@@ -4,7 +4,7 @@ using CaaS.Core.Base.Exceptions;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.CartData;
@@ -56,7 +56,7 @@ internal class CartItemRepository : IRepository {
 
     private class CartItemDomainModelConvert : IDomainReadModelConverter<ProductCartDataModel, CartItem> {
         // CreationTime = time added to cart
-        public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = OrderParameter.From(nameof(ProductCartDataModel.CreationTime));
+        public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(ProductCartDataModel.CreationTime));
         private readonly IProductRepository _productRepository;
 
         public CartItemDomainModelConvert(IProductRepository productRepository) {

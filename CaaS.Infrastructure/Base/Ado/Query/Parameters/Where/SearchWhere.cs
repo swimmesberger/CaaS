@@ -1,8 +1,12 @@
-﻿namespace CaaS.Infrastructure.Base.Ado.Model.Where; 
+﻿using System.Collections.Immutable;
+
+namespace CaaS.Infrastructure.Base.Ado.Query.Parameters.Where; 
 
 // row value where: WHERE LOWER(x) LIKE %LOWER(a)%
 public record SearchWhere(IEnumerable<QueryParameter> Parameters) : IWhereStatement {
     public static readonly SearchWhere Empty = new SearchWhere(Enumerable.Empty<QueryParameter>());
+    
+    public SearchWhere(QueryParameter parameter) : this(ImmutableArray.Create(parameter)) { }
     
     IWhereStatement IWhereStatement.MapParameterNames(Func<string, string> selector) => MapParameterNames(selector);
 

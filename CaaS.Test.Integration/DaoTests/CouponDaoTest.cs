@@ -2,6 +2,7 @@
 using CaaS.Core.CouponAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.Gen;
 using Xunit.Abstractions;
@@ -40,11 +41,10 @@ public class CouponDaoTest : BaseDaoTest {
         var couponDao = GetCouponDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Coupon.Value), 7)
+            new(nameof(Coupon.Value), 7)
         };
 
-        var products = await couponDao.FindBy(StatementParameters
-                .CreateWhere(parameters)).ToListAsync();
+        var products = await couponDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         products.Count.Should().NotBe(0);
         products[0].Id.Should().Be("aff66783-ed9c-4838-9642-72042883fffe");

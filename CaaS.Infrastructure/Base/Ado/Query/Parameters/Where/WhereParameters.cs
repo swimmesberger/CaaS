@@ -1,7 +1,25 @@
-﻿namespace CaaS.Infrastructure.Base.Ado.Model.Where;
+﻿using System.Collections.Immutable;
 
-public record WhereParameters(IEnumerable<IWhereStatement> Statements) : IWhereStatement {
-    public static readonly WhereParameters Empty = new WhereParameters(Enumerable.Empty<IWhereStatement>());
+namespace CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
+
+public record WhereParameters : IWhereStatement {
+    public static readonly WhereParameters Empty = new WhereParameters();
+
+    public IEnumerable<IWhereStatement> Statements { get; init; } = Enumerable.Empty<IWhereStatement>();
+
+    public WhereParameters() { }
+
+    public WhereParameters(IEnumerable<IWhereStatement> statements) {
+        Statements = Simplify(statements);
+    }
+
+    public WhereParameters(IWhereStatement statement) : this(ImmutableArray.Create(statement)) { }
+    
+    public WhereParameters(IEnumerable<QueryParameter> parameters) : this(new SimpleWhere(parameters)) { }
+
+    public WhereParameters(QueryParameter parameter) : this(new SimpleWhere(parameter)) { }
+    
+    public WhereParameters(string name, object value) : this(new QueryParameter(name, value)) { }
 
     public IEnumerable<QueryParameter> Parameters => Statements.SelectMany(s => s.Parameters);
     
@@ -9,29 +27,28 @@ public record WhereParameters(IEnumerable<IWhereStatement> Statements) : IWhereS
 
     IWhereStatement IWhereStatement.Add(IWhereStatement where) => Add((WhereParameters)where);
     
-
     public WhereParameters Add(WhereParameters where) {
         var statements = new List<IWhereStatement>();
         statements.AddRange(Statements);
         statements.AddRange(where.Statements);
-        return Create(statements);
+        return new WhereParameters(statements);
     }
     
     public WhereParameters Add(IWhereStatement statement) {
         var statements = new List<IWhereStatement>();
         statements.AddRange(Statements);
         statements.Add(statement);
-        return Create(statements);
+        return new WhereParameters(statements);
     }
 
     public WhereParameters MapParameterNames(Func<string, string> selector) 
         => new WhereParameters(Statements.Select(s => s.MapParameterNames(selector)).ToList());
     
-    public WhereParameters Simplify() {
+    private static IEnumerable<IWhereStatement> Simplify(IEnumerable<IWhereStatement> statements) {
         var simpleWhere = SimpleWhere.Empty;
         var rowValueWhere = RowValueWhere.Empty;
         var searchWhere = SearchWhere.Empty;
-        foreach (var whereStatement in Statements) {
+        foreach (var whereStatement in statements) {
             switch (whereStatement) {
                 case SimpleWhere addedSimpleWhere:
                     simpleWhere = simpleWhere.Add(addedSimpleWhere);
@@ -56,24 +73,6 @@ public record WhereParameters(IEnumerable<IWhereStatement> Statements) : IWhereS
         if (searchWhere.Parameters.Any()) {
             whereStatements.Add(searchWhere);
         }
-        if (!whereStatements.Any()) {
-            return Empty;
-        }
-        return new WhereParameters(whereStatements);
+        return whereStatements;
     }
-
-    public static WhereParameters Create(IEnumerable<IWhereStatement> statements) 
-        => new WhereParameters(statements).Simplify();
-
-    public static WhereParameters Create(IWhereStatement statement)
-        => Create(new[] { statement });
-    
-    public static WhereParameters CreateFromParameters(IEnumerable<QueryParameter> parameters) 
-        => new WhereParameters(new [] { new SimpleWhere(parameters) });
-    
-    public static WhereParameters CreateFromParameters(string name, object value)
-        => CreateFromParameter(QueryParameter.From(name, value));
-
-    public static WhereParameters CreateFromParameter(QueryParameter parameter) 
-        => CreateFromParameters(new[] { parameter });
 }

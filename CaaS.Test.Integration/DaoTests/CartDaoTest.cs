@@ -2,6 +2,7 @@
 using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.Gen;
 using Xunit.Abstractions;
@@ -40,11 +41,10 @@ public class CartDaoTest : BaseDaoTest {
         var cartDao = GetCartDao(ShopTenantId);
 
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(CartDataModel.CustomerId), null)
+            new(nameof(CartDataModel.CustomerId), null)
         };
 
-        var carts = await cartDao.FindBy(StatementParameters
-            .CreateWhere(parameters)).ToListAsync();
+        var carts = await cartDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
 
         carts.Count.Should().NotBe(0);
         carts.Count.Should().Be(1);

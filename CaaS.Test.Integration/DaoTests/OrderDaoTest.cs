@@ -2,8 +2,8 @@
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.OrderAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.Ado.Model.Where;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.OrderData;
 using Xunit.Abstractions;
@@ -42,12 +42,11 @@ public class OrderDaoTest : BaseDaoTest {
         var orderDao = GetOrderDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Order.Id), Guid.Parse("aca58853-bd61-4517-9907-ca51a50b7225")),
-            QueryParameter.From(nameof(Order.OrderNumber), 7785),
+            new(nameof(Order.Id), Guid.Parse("aca58853-bd61-4517-9907-ca51a50b7225")),
+            new(nameof(Order.OrderNumber), 7785),
         };
 
-        var products = await orderDao.FindBy(StatementParameters
-                .CreateWhere(parameters)).ToListAsync();
+        var products = await orderDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         products.Count.Should().NotBe(0);
         products[0].Id.Should().Be("aca58853-bd61-4517-9907-ca51a50b7225");
@@ -59,11 +58,10 @@ public class OrderDaoTest : BaseDaoTest {
 
 
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Order.OrderNumber), 3000 , comparator: WhereComparator.LessOrEqual),
-            QueryParameter.From(nameof(Order.OrderNumber), 2628 , comparator: WhereComparator.GreaterOrEqual),
+            new(nameof(Order.OrderNumber), WhereComparator.LessOrEqual, 3000),
+            new(nameof(Order.OrderNumber), WhereComparator.GreaterOrEqual, 2628)
         };
-        var products = await orderDao.FindBy(StatementParameters
-            .CreateWhere(parameters)).ToListAsync();
+        var products = await orderDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         products.Count.Should().NotBe(0);
         products.Count.Should().Be(1);
@@ -76,11 +74,10 @@ public class OrderDaoTest : BaseDaoTest {
         DateTimeOffset date = DateTimeOffset.Parse("2022-07-18 09:38:13+00");
 
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Order.OrderDate), date),
+            new(nameof(Order.OrderDate), date),
         };
 
-        var products = await orderDao.FindBy(StatementParameters
-            .CreateWhere(parameters)).ToListAsync();
+        var products = await orderDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         products.Count.Should().NotBe(0);
         products.Count.Should().Be(1);

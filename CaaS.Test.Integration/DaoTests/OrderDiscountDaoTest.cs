@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.OrderData;
 using Xunit.Abstractions;
@@ -39,12 +40,11 @@ public class OrderDiscountDaoTest : BaseDaoTest {
         var orderDiscountDao = GetOrderDiscountDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(OrderDiscountDataModel.Id), Guid.Parse("94c8b5ab-df5d-4aee-9391-d0189ef03fe4")),
-            QueryParameter.From(nameof(OrderDiscountDataModel.DiscountName), "Black Friday"),
+            new(nameof(OrderDiscountDataModel.Id), Guid.Parse("94c8b5ab-df5d-4aee-9391-d0189ef03fe4")),
+            new(nameof(OrderDiscountDataModel.DiscountName), "Black Friday"),
         };
 
-        var orderDiscounts = await orderDiscountDao.FindBy(StatementParameters
-                .CreateWhere(parameters)).ToListAsync();
+        var orderDiscounts = await orderDiscountDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         orderDiscounts.Count.Should().NotBe(0);
         orderDiscounts[0].Id.Should().Be("94c8b5ab-df5d-4aee-9391-d0189ef03fe4");

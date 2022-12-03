@@ -4,7 +4,7 @@ using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.OrderData;
@@ -95,7 +95,7 @@ internal class OrderItemRepository {
     }
 
     internal class OrderItemDomainModelConvert : IDomainReadModelConverter<ProductOrderDataModel, OrderItem> {
-        public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = OrderParameter.From(nameof(ProductOrderDataModel.CreationTime));
+        public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(ProductOrderDataModel.CreationTime));
 
         internal IProductRepository ProductRepository { get; }
         internal OrderItemDiscountRepository OrderItemDiscountRepository { get; }

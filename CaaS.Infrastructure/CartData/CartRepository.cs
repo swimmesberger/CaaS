@@ -5,10 +5,9 @@ using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.Ado.Model.Where;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Base.Repository;
-using CaaS.Infrastructure.CouponData;
 
 namespace CaaS.Infrastructure.CartData; 
 
@@ -35,10 +34,10 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
 
     public async Task<IReadOnlyList<Cart>> FindExpiredCarts(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Cart.LastAccess), Converter.TimeProvider.GetNow().Subtract(TimeSpan.FromMinutes(lifeTimeMinutes)), comparator: WhereComparator.Less),
+            new(nameof(Cart.LastAccess), WhereComparator.Less, Converter.TimeProvider.GetNow().Subtract(TimeSpan.FromMinutes(lifeTimeMinutes))),
         };
 
-        return await Converter.ConvertToDomain(Dao.FindBy(StatementParameters.CreateWhere(parameters), cancellationToken), cancellationToken);
+        return await Converter.ConvertToDomain(Dao.FindBy(new StatementParameters { Where = parameters }, cancellationToken), cancellationToken);
     }
 
     public async Task<Cart> AddAsync(Cart entity, CancellationToken cancellationToken = default) {

@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.ShopData;
 using Xunit.Abstractions;
@@ -37,12 +38,11 @@ public class ShopDaoTest : BaseDaoTest {
         var shopDao = GetShopDao();
 
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(Shop.CartLifetimeMinutes), 44415),
-            QueryParameter.From(nameof(Shop.Name), "Amazon"),
+            new(nameof(Shop.CartLifetimeMinutes), 44415),
+            new(nameof(Shop.Name), "Amazon"),
         };
 
-        var shops = await shopDao.FindBy(StatementParameters
-                .CreateWhere(parameters)).ToListAsync();
+        var shops = await shopDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
 
         shops.Count.Should().NotBe(0);
         shops[0].Name.Should().Be("Amazon");

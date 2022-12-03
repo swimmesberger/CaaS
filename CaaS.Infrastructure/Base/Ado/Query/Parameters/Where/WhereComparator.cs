@@ -1,4 +1,4 @@
-namespace CaaS.Infrastructure.Base.Ado.Model.Where; 
+namespace CaaS.Infrastructure.Base.Ado.Query.Parameters.Where; 
 
 public enum WhereComparator {
     Equal,

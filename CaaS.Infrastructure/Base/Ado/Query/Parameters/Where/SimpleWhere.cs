@@ -1,8 +1,12 @@
-﻿namespace CaaS.Infrastructure.Base.Ado.Model.Where;
+﻿using System.Collections.Immutable;
+
+namespace CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 
 // simple where: WHERE x > a
 public record SimpleWhere(IEnumerable<QueryParameter> Parameters) : IWhereStatement {
     public static readonly SimpleWhere Empty = new SimpleWhere(Enumerable.Empty<QueryParameter>());
+    
+    public SimpleWhere(QueryParameter parameter) : this(ImmutableArray.Create(parameter)) { }
 
     IWhereStatement IWhereStatement.Add(IWhereStatement where) => Add((SimpleWhere)where);
     IWhereStatement IWhereStatement.MapParameterNames(Func<string, string> selector) => MapParameterNames(selector);

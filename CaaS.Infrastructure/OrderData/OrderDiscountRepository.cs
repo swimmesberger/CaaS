@@ -2,7 +2,7 @@
 using CaaS.Core.Base;
 using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.OrderData; 

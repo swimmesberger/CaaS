@@ -1,23 +1,34 @@
 ﻿using System.Collections;
 using System.Text;
 using CaaS.Core.Base.Exceptions;
-using CaaS.Infrastructure.Base.Ado.Model;
-using CaaS.Infrastructure.Base.Ado.Model.Where;
+using CaaS.Infrastructure.Base.Ado.Query;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 
 namespace CaaS.Infrastructure.Base.Ado.Impl; 
 
-public class AdoStatementMaterializer : IStatementSqlGenerator {
-    private const string LimitParamName = "limitParamName";
+public class AdoStatementMaterializer : IStatementMaterializer {
+    private const string LimitParamName = "_Limit_0";
+
+    public MaterializedStatements MaterializeBatch(StatementBatch statement) {
+        return new MaterializedStatements(statement.Statements.Select(MaterializeStatement));
+    }
+
+    public MaterializedStatement<T> MaterializeStatement<T>(Statement<T> statement) {
+        var materializedStatement = MaterializeStatement((Statement)statement);
+        return new MaterializedStatement<T>(materializedStatement, statement.RowMapper);
+    }
     
-    public MaterializedStatements MaterializeStatement(Statement statement) {
+    private MaterializedStatement MaterializeStatement(Statement statement) {
+        if (statement == Statement.Empty) return MaterializedStatement.Empty;
         // map all parameters to column name schema
         statement = statement.MapToColumnNames();
         return statement.Type switch {
-            StatementType.Count => new MaterializedStatements(MaterializeCount(statement)),
-            StatementType.Create => new MaterializedStatements(MaterializeInsert(statement)),
+            StatementType.Count => MaterializeCount(statement),
+            StatementType.Create => MaterializeInsert(statement),
+            StatementType.Delete => MaterializeDelete(statement),
+            StatementType.Find => MaterializeFind(statement),
             StatementType.Update => MaterializeUpdate(statement),
-            StatementType.Delete => new MaterializedStatements(MaterializeDelete(statement)),
-            StatementType.Find => new MaterializedStatements(MaterializeFind(statement)),
             _ => throw new ArgumentException()
         };
     }
@@ -31,17 +42,13 @@ public class AdoStatementMaterializer : IStatementSqlGenerator {
             Parameters = parameters
         };
     }
-
-    private MaterializedStatements MaterializeUpdate(Statement statement) {
-        return new MaterializedStatements(statement.Parameters.Update.Values.Select(p => MaterializeUpdate(statement.GetTableName(), p)).ToList());
-    }
-
-    private MaterializedStatement MaterializeUpdate(string tableName, UpdateParameter updateParameter) {
+    
+    private MaterializedStatement MaterializeUpdate(Statement statement) {
         var sql = new StringBuilder("UPDATE");
-        sql.Append(' ').Append(tableName);
+        sql.Append(' ').Append(statement.GetTableName());
         sql.Append(" SET");
         var first = true;
-        foreach (var parameter in updateParameter.Values) {
+        foreach (var parameter in statement.Parameters.Update.Values) {
             if (first) {
                 first = false;
             } else {
@@ -50,9 +57,9 @@ public class AdoStatementMaterializer : IStatementSqlGenerator {
             sql.Append(' ').Append(parameter.Name).Append(" = ").Append('@').Append(parameter.ParameterName);
         }
         var parameters = new List<QueryParameter>();
-        var whereParams = CreateWhereClause(sql, updateParameter.Where);
-        parameters.AddRange(updateParameter.Values);
-        parameters.AddRange(whereParams);
+        parameters.AddRange(statement.Parameters.Update.Values);
+        var addWhereResult = AddWhereClause(sql, parameters, statement.Parameters.WhereParameters);
+        if (addWhereResult == AddStatementResult.EmptyResult) return MaterializedStatement.Empty;
         return new MaterializedStatement(sql.ToString()) {
             Parameters = parameters
         };
@@ -60,19 +67,23 @@ public class AdoStatementMaterializer : IStatementSqlGenerator {
 
     private MaterializedStatement MaterializeDelete(Statement statement) {
         var sql = new StringBuilder($"DELETE FROM {statement.GetTableName()}");
-        var whereParams = CreateWhereClause(sql, statement.Parameters.WhereParameters);
+        var parameters = new List<QueryParameter>();
+        var addWhereResult = AddWhereClause(sql, parameters, statement.Parameters.WhereParameters);
+        if (addWhereResult == AddStatementResult.EmptyResult) return MaterializedStatement.Empty;
         return new MaterializedStatement(sql.ToString()) {
-            Parameters = whereParams
+            Parameters = parameters
         };
     }
     
     private MaterializedStatement MaterializeFind(Statement statement) {
         var sql = new StringBuilder($"SELECT {statement.GetSelect()} FROM {statement.GetTableName()}");
-        var parameters = CreateWhereClause(sql, statement.Parameters.WhereParameters);
+        var parameters = new List<QueryParameter>();
+        var addWhereResult = AddWhereClause(sql, parameters, statement.Parameters.WhereParameters);
+        if (addWhereResult == AddStatementResult.EmptyResult) return MaterializedStatement.Empty;
         AddOrderByClause(sql, statement.Parameters.OrderBy);
         if (statement.Parameters.Limit != null) {
             sql.Append($" LIMIT @{LimitParamName}");
-            parameters.Add(QueryParameter.From(LimitParamName, statement.Parameters.Limit.Value));
+            parameters.Add(new QueryParameter(LimitParamName, statement.Parameters.Limit.Value));
         }
         return new MaterializedStatement(sql.ToString()) {
             Parameters = parameters
@@ -81,48 +92,42 @@ public class AdoStatementMaterializer : IStatementSqlGenerator {
 
     private MaterializedStatement MaterializeCount(Statement statement) {
         var sql = new StringBuilder($"SELECT COUNT(*) FROM {statement.GetTableName()}");
-        var parameters = CreateWhereClause(sql, statement.Parameters.WhereParameters);
+        var parameters = new List<QueryParameter>();
+        var addResult = AddWhereClause(sql, parameters, statement.Parameters.WhereParameters);
+        if (addResult == AddStatementResult.EmptyResult) return MaterializedStatement.Empty;
         return new MaterializedStatement(sql.ToString()) {
             Parameters = parameters
         };
     }
-    
-    private List<QueryParameter> CreateWhereClause(StringBuilder sql, WhereParameters multiWhere) {
-        return CreateWhereClause(sql, multiWhere.Statements);
-    }
 
-    private List<QueryParameter> CreateWhereClause(StringBuilder sql, IEnumerable<QueryParameter> whereStatements) {
-        return CreateWhereClause(sql, new[] { new SimpleWhere(whereStatements) });
-    }
+    private AddStatementResult AddWhereClause(StringBuilder sql, List<QueryParameter> newParams, WhereParameters whereParameters)
+        => AddWhereClause(sql, newParams, whereParameters.Statements);
 
-    private List<QueryParameter> CreateWhereClause(StringBuilder sql, IEnumerable<IWhereStatement> whereStatements) {
-        var newParams = new List<QueryParameter>();
-        AddWhereClause(sql, newParams, whereStatements);
-        return newParams;
-    }
-    
-    private void AddWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<IWhereStatement> whereStatements) {
+    private AddStatementResult AddWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<IWhereStatement> whereStatements) {
+        var addResult = AddStatementResult.Added;
         var first = true;
         foreach (var whereStatement in whereStatements) {
             switch (whereStatement) {
                 case SimpleWhere simpleWhere:
-                    AddSimpleWhereClause(sql, newParams, simpleWhere.Parameters, ref first);
+                    addResult = AddSimpleWhereClause(sql, newParams, simpleWhere.Parameters, ref first);
                     break;
                 case RowValueWhere rowValueWhere:
-                    AddRowValueWhereClause(sql, newParams, rowValueWhere, ref first);
+                    addResult = AddRowValueWhereClause(sql, newParams, rowValueWhere, ref first);
                     break;
                 case SearchWhere searchWhere:
-                    AddSearchWhereClause(sql, newParams, searchWhere, ref first);
+                    addResult = AddSearchWhereClause(sql, newParams, searchWhere, ref first);
                     break;
                 default:
                     throw new ArgumentException($"Unsupported where clause '{whereStatement.GetType()}'");
             }
+            if (addResult == AddStatementResult.EmptyResult) return AddStatementResult.EmptyResult;
         }
+        return addResult;
     }
     
-    private void AddRowValueWhereClause(StringBuilder sql, List<QueryParameter> newParams, RowValueWhere rowValueWhere, ref bool first) {
+    private AddStatementResult AddRowValueWhereClause(StringBuilder sql, List<QueryParameter> newParams, RowValueWhere rowValueWhere, ref bool first) {
         if (!rowValueWhere.Parameters.Any()) {
-            return;
+            return AddStatementResult.Added;
         }
         AddAndOrWhere(sql, ref first);
         sql.Append(" (");
@@ -133,15 +138,22 @@ public class AdoStatementMaterializer : IStatementSqlGenerator {
         sql.Append(string.Join(',', rowValueWhere.Parameters.Select(p => $"@{p.ParameterName}")));
         sql.Append(')');
         newParams.AddRange(rowValueWhere.Parameters);
+        return AddStatementResult.Added;
     }
 
-    private void AddSimpleWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<QueryParameter> parameters, ref bool first) {
+    private AddStatementResult AddSimpleWhereClause(StringBuilder sql, List<QueryParameter> newParams, IEnumerable<QueryParameter> parameters, ref bool first) {
         parameters = PreprocessParameters(parameters);
+        var addResult = AddStatementResult.Added;
         foreach (var queryParameter in parameters) {
-            if (!AddInClause(sql, newParams, queryParameter, ref first)) {
+            var result = TryAddInClause(sql, newParams, queryParameter, ref first);
+            if (result == AddStatementResult.EmptyResult) {
+                return AddStatementResult.EmptyResult;
+            }
+            if (result == AddStatementResult.Skipped) {
                 AddComparisonClause(sql, newParams, queryParameter, ref first);
             }
         }
+        return addResult;
     }
 
     private void AddAndOrWhere(StringBuilder sql, ref bool first) {
@@ -163,39 +175,37 @@ public class AdoStatementMaterializer : IStatementSqlGenerator {
         }
     }
 
-    private bool AddInClause(StringBuilder sql, List<QueryParameter> newParams, QueryParameter queryParameter, ref bool first) {
+    private AddStatementResult TryAddInClause(StringBuilder sql, List<QueryParameter> newParams, QueryParameter queryParameter, ref bool first) {
         if (queryParameter.Value is string)
-            return false;
+            return AddStatementResult.Skipped;
         if(queryParameter.Value is not IEnumerable enumerable)
-            return false;
+            return AddStatementResult.Skipped;
         var inParameters = CreateInParameters(queryParameter, enumerable).ToList();
         if (inParameters.Count <= 0) {
-            AddAndOrWhere(sql, ref first);
-            sql.Append(" 1 != 1");
-            return true;
+            return AddStatementResult.EmptyResult;
         }
 
         if (inParameters.Count == 1) {
             queryParameter = inParameters[0];
             AddComparisonClause(sql, newParams, queryParameter, ref first);
-            return true;
+            return AddStatementResult.Added;
         }
         AddAndOrWhere(sql, ref first);
         var inParamList = string.Join(',', inParameters.Select(p => $"@{p.ParameterName}"));
         sql.Append($" {queryParameter.Name} IN({inParamList})");
         newParams.AddRange(inParameters);
-        return true;
+        return AddStatementResult.Added;
     }
 
-    private void AddSearchWhereClause(StringBuilder sql, List<QueryParameter> newParams, SearchWhere searchWhere, ref bool first) {
+    private AddStatementResult AddSearchWhereClause(StringBuilder sql, List<QueryParameter> newParams, SearchWhere searchWhere, ref bool first) {
         var parameters = searchWhere.Parameters.ToList();
         if (!parameters.Any()) {
-            return;
+            return AddStatementResult.Added;
         }
         AddAndOrWhere(sql, ref first);
         if (parameters.Count == 1) {
             AddLikeClause(sql, newParams, parameters[0]);
-            return;
+            return AddStatementResult.Added;
         }
         sql.Append(' ').Append('(');
         var innerFirst = true;
@@ -211,6 +221,7 @@ public class AdoStatementMaterializer : IStatementSqlGenerator {
             AddLikeClause(sql, newParams, queryParameter);
         }
         sql.Append(')');
+        return AddStatementResult.Added;
     }
 
     private void AddLikeClause(StringBuilder sql, List<QueryParameter> newParams, QueryParameter queryParameter) {
@@ -271,6 +282,12 @@ public class AdoStatementMaterializer : IStatementSqlGenerator {
     private static IEnumerable<QueryParameter> PreprocessParameters(IEnumerable<QueryParameter> parameters) {
         return parameters.Select((queryParameter, parameterIdx) => 
             queryParameter with { ParameterName = $"{queryParameter.ParameterName}_{parameterIdx}" });
+    }
+
+    private enum AddStatementResult {
+        Added,
+        Skipped,
+        EmptyResult // when we detected that the sql would lead to a empty result
     }
 }
 

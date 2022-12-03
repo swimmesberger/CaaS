@@ -1,8 +1,13 @@
-﻿namespace CaaS.Infrastructure.Base.Ado.Model.Where;
+﻿using System.Collections.Immutable;
+
+namespace CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 
 // row value where: WHERE (x, y, ...) > (a, b, ...)
 public record RowValueWhere(IEnumerable<QueryParameter> Parameters, WhereComparator Comparator = WhereComparator.Equal) : IWhereStatement {
     public static readonly RowValueWhere Empty = new RowValueWhere(Enumerable.Empty<QueryParameter>());
+    
+    public RowValueWhere(QueryParameter parameter, WhereComparator comparator = WhereComparator.Equal) : 
+        this(ImmutableArray.Create(parameter), comparator) { }
     
     IWhereStatement IWhereStatement.MapParameterNames(Func<string, string> selector) => MapParameterNames(selector);
 

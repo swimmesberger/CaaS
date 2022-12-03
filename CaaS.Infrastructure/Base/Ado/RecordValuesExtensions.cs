@@ -1,6 +1,7 @@
-﻿using CaaS.Infrastructure.Base.Mapping;
+﻿using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Mapping;
 
-namespace CaaS.Infrastructure.Base.Ado.Model; 
+namespace CaaS.Infrastructure.Base.Ado; 
 
 public static class RecordValuesExtensions {
     public static TypedValue GetTypedValue(this IRecordValues recordValues, string key) {

@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.DiscountData;
 using CaaS.Infrastructure.Gen;
 using Xunit.Abstractions;
@@ -41,11 +42,10 @@ public class DiscountSettingDaoTest : BaseDaoTest {
         var discountSettingDao = GetDiscountSettingDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(DiscountSettingDataModel.Name), "Christmas2022")
+            new(nameof(DiscountSettingDataModel.Name), "Christmas2022")
         };
 
-        var discountSettings = await discountSettingDao.FindBy(StatementParameters
-                .CreateWhere(parameters)).ToListAsync();
+        var discountSettings = await discountSettingDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();
         
         discountSettings.Count.Should().NotBe(0);
         discountSettings[0].Id.Should().Be("7981f1dc-76d4-4d7b-b823-af2e841d8001");

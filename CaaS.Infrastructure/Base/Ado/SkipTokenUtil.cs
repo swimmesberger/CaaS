@@ -3,7 +3,7 @@ using System.Text.Json;
 using CaaS.Core.Base;
 using CaaS.Infrastructure.Base.Mapping;
 
-namespace CaaS.Infrastructure.Base.Ado.Model; 
+namespace CaaS.Infrastructure.Base.Ado; 
 
 public class SkipTokenUtil {
     public static SkipTokenValue? CreateFromRecord(IRecordValues? recordValues, IEnumerable<string> properties) {

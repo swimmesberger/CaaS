@@ -6,7 +6,8 @@ using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Core.OrderAggregate;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.OrderData; 
@@ -60,12 +61,12 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
     
     public async Task<IReadOnlyList<Order>> FindByDateRange(DateTimeOffset from, DateTimeOffset until, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
-            QueryParameter.From(nameof(OrderDataModel.CreationTime), from, ">="),
-            QueryParameter.From(nameof(OrderDataModel.CreationTime), until, "<="),
+            new (nameof(OrderDataModel.CreationTime), WhereComparator.GreaterOrEqual, from),
+            new (nameof(OrderDataModel.CreationTime), WhereComparator.LessOrEqual, until),
         };
         
         return (await Converter.ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(parameters), cancellationToken), cancellationToken))
+                .FindBy(new StatementParameters { Where = parameters }, cancellationToken), cancellationToken))
             .ToList();
     }
     

@@ -1,4 +1,4 @@
-﻿namespace CaaS.Infrastructure.Base.Ado.Model; 
+﻿namespace CaaS.Infrastructure.Base.Ado.Query.Parameters; 
 
 public class OrderParameterBuilder {
     private readonly List<OrderParameter> _columns = new();

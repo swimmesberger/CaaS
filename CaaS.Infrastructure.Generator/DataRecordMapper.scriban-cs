@@ -63,6 +63,7 @@ internal sealed class {{ Entity.EntityName }}PropertyRecordValues : IRecordValue
     private readonly {{ Entity.TypeName }} _record;
     private readonly IPropertyMapper _mapper;
     
+    public string TypeName => _mapper.TypeName;
     public string MappedTypeName => _mapper.MappedTypeName;
     public IEnumerable<string> Keys => _mapper.Keys;
         
@@ -105,7 +106,9 @@ internal sealed class {{ Entity.EntityName }}ColumnRecordValues : IRecordValues 
     private readonly IRecordValues _record;
     private readonly IPropertyMapper _mapper;
     
+    public string TypeName => _mapper.TypeName;
     public string MappedTypeName => _mapper.MappedTypeName;
+
     public IEnumerable<string> Keys => _mapper.Keys;
         
     public {{Entity.EntityName}}ColumnRecordValues(IRecordValues record, IPropertyMapper mapper) {
@@ -132,6 +135,7 @@ internal sealed class {{ Entity.EntityName }}ColumnRecordValues : IRecordValues 
 }
 
 internal sealed class {{ Entity.EntityName }}PropertyToColumnMapper : IPropertyMapper {
+    public string TypeName { get; } = "{{ Entity.EntityName }}";
     public string MappedTypeName { get; } = "{{ Entity.TableName }}";
     
     private string[] _propertyNames = new string[] {
@@ -153,6 +157,7 @@ internal sealed class {{ Entity.EntityName }}PropertyToColumnMapper : IPropertyM
 }
 
 internal sealed class {{ Entity.EntityName }}ColumnToPropertyMapper : IPropertyMapper {
+    public string TypeName { get; } = "{{ Entity.TableName }}";
     public string MappedTypeName { get; } = "{{ Entity.EntityName }}";
     
     private string[] _columnNames = new string[] {

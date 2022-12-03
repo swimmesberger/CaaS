@@ -86,7 +86,7 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddScoped<IUnitOfWorkManager>(sp => sp.GetRequiredService<AdoUnitOfWorkManager>());
         services.AddScoped<IHasConnectionProvider>(sp => sp.GetRequiredService<AdoUnitOfWorkManager>());
         services.AddScoped(typeof(IDao<>), typeof(GenericDao<>));
-        services.AddScoped<IStatementSqlGenerator, AdoStatementMaterializer>();
+        services.AddScoped<IStatementMaterializer, AdoStatementMaterializer>();
         services.AddScoped(typeof(IStatementGenerator<>), typeof(AdoStatementGenerator<>));
         services.AddScoped(typeof(IServiceProvider<>), typeof(DefaultTypedServiceProvider<>));
         services.AddDataRecordMapper();

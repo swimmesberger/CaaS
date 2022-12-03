@@ -1,4 +1,6 @@
 ﻿using CaaS.Infrastructure.Base.Ado.Model;
+using CaaS.Infrastructure.Base.Ado.Query;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 
 namespace CaaS.Infrastructure.Base.Ado; 
 
@@ -9,15 +11,15 @@ public interface IStatementGenerator<T> : IDataRecordProvider<T> {
     
     Statement<TResult> CreateFind<TResult>(StatementParameters statementParameters, RowMapper<TResult> mapper);
 
-    Statement<T> CreateInsert(T entity);
+    Statement CreateInsert(T entity);
     
-    Statement<T> CreateInsert(IEnumerable<T> entities);
+    Statement CreateInsert(IEnumerable<T> entities);
 
-    Statement<T> CreateUpdate(T entity, int origRowVersion);
+    Statement CreateUpdate(T entity, int origRowVersion);
     
-    Statement<T> CreateUpdate(IEnumerable<VersionedEntity<T>> entities);
+    StatementBatch CreateUpdate(IEnumerable<VersionedEntity<T>> entities);
 
-    Statement<T> CreateDelete(T entity);
+    Statement CreateDelete(T entity);
     
-    Statement<T> CreateDelete(IEnumerable<T> entities);
+    Statement CreateDelete(IEnumerable<T> entities);
 }
