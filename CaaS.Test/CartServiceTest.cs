@@ -109,8 +109,8 @@ public class CartServiceTest {
             new ProductCartDataModel() { Amount = 2, CartId = ExistingCartId, ProductId = ProductAId }
         });
         var couponDao = new MemoryDao<CouponDataModel>(new List<CouponDataModel>() {
-            new CouponDataModel { Id = CouponIdA, ShopId = TestShopId, Value = 4, OrderId = null, CartId = ExistingCartId, RedeemedBy = null},
-            new CouponDataModel { Id = CouponIdB, ShopId = TestShopId, Value = 2, OrderId = null, CartId = ExistingCartId, RedeemedBy = null}
+            new CouponDataModel { Id = CouponIdA, ShopId = TestShopId, Value = 4, OrderId = null, CartId = ExistingCartId, CustomerId = null},
+            new CouponDataModel { Id = CouponIdB, ShopId = TestShopId, Value = 2, OrderId = null, CartId = ExistingCartId, CustomerId = null}
         });
         var discountSettingsDao = new MemoryDao<DiscountSettingDataModel>(new List<DiscountSettingDataModel>());
         
@@ -125,6 +125,7 @@ public class CartServiceTest {
             new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()));
         var discountService = new CaasDiscountService(discountSettingsRepository, 
             new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!));
-        return new CartService(cartRepository,  shopRepository, discountService, tenantIdAccessor, DateTimeOffsetProvider.Instance, customerRepository, productRepository);
+        return new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
+            tenantIdAccessor, DateTimeOffsetProvider.Instance);
     }
 }

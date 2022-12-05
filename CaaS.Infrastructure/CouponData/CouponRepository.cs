@@ -6,13 +6,13 @@ using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.CouponData; 
 
-public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICouponRepository {
+public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICouponRepository {
     internal new CouponDomainModelConvert Converter => (CouponDomainModelConvert)base.Converter;
 
     public CouponRepository(IDao<CouponDataModel> dao): 
                             base(dao, new CouponDomainModelConvert()) { }
     
-    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIds(IEnumerable<Guid> orderIds,
+    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIds(IReadOnlyCollection<Guid> orderIds,
         CancellationToken cancellationToken = default) {
         
         return (await Converter
@@ -22,8 +22,12 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
             .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<Coupon>)grp.ToList());
     }
     
-    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByCartIds(IEnumerable<Guid> cartIds,
+    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByCartIds(IReadOnlyCollection<Guid> cartIds,
         CancellationToken cancellationToken = default) {
+
+        if (cartIds.Count.Equals(0)) {
+            return new Dictionary<Guid, IReadOnlyList<Coupon>>();
+        }
         
         return (await Converter
                 .ConvertToDomain(Dao
@@ -34,53 +38,42 @@ public class CouponRepository : CrudReadRepository<CouponDataModel, Coupon>, ICo
     
     public async Task<IReadOnlyList<Coupon>> FindByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(nameof(Coupon.CustomerId), customerId), cancellationToken), cancellationToken))
+                .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.CustomerId), customerId), cancellationToken), cancellationToken))
             .ToList();
     }
     public async Task<IReadOnlyList<Coupon>> FindByOrderId(Guid orderId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(nameof(Coupon.OrderId), orderId), cancellationToken), cancellationToken))
+                .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.OrderId), orderId), cancellationToken), cancellationToken))
             .ToList();
     }
     public async Task<IReadOnlyList<Coupon>> FindByCartId(Guid cartId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(nameof(Coupon.CartId), cartId), cancellationToken), cancellationToken))
+                .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.CartId), cartId), cancellationToken), cancellationToken))
             .ToList();
-    }
-    
-    public async Task<Coupon> AddAsync(Coupon entity, CancellationToken cancellationToken = default) {
-        var dataModel = Converter.ConvertFromDomain(entity);
-        await Dao.AddAsync(dataModel, cancellationToken);
-        entity = Converter.ApplyDataModel(entity, dataModel);
-        return entity;
     }
     
     public async Task AddAsync(IEnumerable<Coupon> entities, CancellationToken cancellationToken = default) {
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.AddAsync(dataModels, cancellationToken);
     }
-    
-    public async Task<Coupon> UpdateAsync(Coupon oldEntity, Coupon newEntity, CancellationToken cancellationToken = default) {
-        var dataModel = Converter.ConvertFromDomain(newEntity);
-        dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
-        newEntity = Converter.ApplyDataModel(newEntity, dataModel);
-        return newEntity;
-    }
-    
+
     public async Task UpdateAsync(IEnumerable<Coupon> oldDomainModels, IEnumerable<Coupon> newDomainModels, CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
         await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
     }
-
-    public async Task DeleteAsync(Coupon entity, CancellationToken cancellationToken = default) {
-        var dataModel = Converter.ConvertFromDomain(entity);
-        await Dao.DeleteAsync(dataModel, cancellationToken);
-    }
 }
 
-internal class CouponDomainModelConvert : IDomainReadModelConverter<CouponDataModel, Coupon> {
-    public IEnumerable<OrderParameter>? DefaultOrderParameters { get; } = null;
+internal class CouponDomainModelConvert : IDomainModelConverter<CouponDataModel, Coupon> {
+    public CouponDataModel ApplyDomainModel(CouponDataModel dataModel, Coupon domainModel) {
+        return dataModel with {
+            ShopId = domainModel.ShopId,
+            Value = domainModel.Value,
+            OrderId = domainModel.OrderId,
+            CartId = domainModel.CartId,
+            CustomerId = domainModel.CustomerId
+        };
+    }
     
     public Coupon ApplyDataModel(Coupon domainModel, CouponDataModel dataModel) {
         return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
@@ -96,7 +89,7 @@ internal class CouponDomainModelConvert : IDomainReadModelConverter<CouponDataMo
             Value = domainModel.Value,
             OrderId = domainModel.OrderId,
             CartId = domainModel.CartId,
-            RedeemedBy = domainModel.CustomerId,
+            CustomerId = domainModel.CustomerId,
             RowVersion = domainModel.GetRowVersion(),
         };
     }
@@ -116,7 +109,7 @@ internal class CouponDomainModelConvert : IDomainReadModelConverter<CouponDataMo
                 Value = dataModel.Value,
                 OrderId = dataModel.OrderId,
                 CartId = dataModel.CartId,
-                CustomerId = dataModel.RedeemedBy,
+                CustomerId = dataModel.CustomerId,
                 ConcurrencyToken = dataModel.GetConcurrencyToken()
             })
             .ToList();

@@ -10,5 +10,5 @@ public record CouponDataModel : DataModel {
     public decimal Value { get; init; }
     public Guid? OrderId { get; init; }
     public Guid? CartId { get; init; }
-    public Guid? RedeemedBy { get; init; }
+    public Guid? CustomerId { get; init; }
 }

@@ -24,7 +24,11 @@ internal class CartItemRepository : IRepository {
                 .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartId), cancellationToken), cancellationToken);
     }
 
-    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<CartItem>>> FindByCartIds(IEnumerable<Guid> cartIds, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<CartItem>>> FindByCartIds(IReadOnlyCollection<Guid> cartIds, CancellationToken cancellationToken = default) {
+        if (cartIds.Count.Equals(0)) {
+            return new Dictionary<Guid, IReadOnlyList<CartItem>>();
+        }
+        
         return (await Converter
                         .ConvertToDomain(Dao
                         .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartIds), cancellationToken), cancellationToken))

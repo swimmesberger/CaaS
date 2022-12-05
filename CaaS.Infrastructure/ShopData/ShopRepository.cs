@@ -39,7 +39,9 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
     
     public ShopDataModel ApplyDomainModel(ShopDataModel dataModel, Shop domainModel) {
         return dataModel with {
-            Name = domainModel.Name
+            Name = domainModel.Name,
+            CartLifetimeMinutes = domainModel.CartLifetimeMinutes,
+            AdminId = domainModel.ShopAdmin.Id
         };
     }
 

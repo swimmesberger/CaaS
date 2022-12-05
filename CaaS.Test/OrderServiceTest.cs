@@ -198,8 +198,8 @@ public class OrderServiceTest {
         });
 
         var couponDao = new MemoryDao<CouponDataModel>(new List<CouponDataModel>() {
-            new CouponDataModel { Id = Guid.NewGuid(), ShopId = TestShopId, Value = 4, OrderId = null, CartId = ExistingCartId1, RedeemedBy = CustomerIdA},
-            new CouponDataModel { Id = Guid.NewGuid(), ShopId = TestShopId, Value = 2, OrderId = null, CartId = ExistingCartId1, RedeemedBy = CustomerIdA}
+            new CouponDataModel { Id = Guid.NewGuid(), ShopId = TestShopId, Value = 4, OrderId = null, CartId = ExistingCartId1, CustomerId = CustomerIdA},
+            new CouponDataModel { Id = Guid.NewGuid(), ShopId = TestShopId, Value = 2, OrderId = null, CartId = ExistingCartId1, CustomerId = CustomerIdA}
         });
 
         var orderItemDiscountDao = new MemoryDao<ProductOrderDiscountDataModel>(new List<ProductOrderDiscountDataModel>() {
@@ -244,7 +244,8 @@ public class OrderServiceTest {
 
         var uowManager = new MockUnitOfWorkManager();
 
-        var cartService = new CartService(cartRepository, shopRepository, discountService, tenantIdAccessor, DateTimeOffsetProvider.Instance, customerRepository, productRepository);
+        CartService cartService = new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
+            tenantIdAccessor, DateTimeOffsetProvider.Instance);
         return new OrderService(orderRepository, customerRepository, cartService, couponRepository, tenantIdAccessor, uowManager, paymentService);
     }
     

@@ -77,7 +77,7 @@ public class OrderRepositoryTest  {
     }
     private ICouponRepository GetCouponRepository() {
         var couponDao = new MemoryDao<CouponDataModel>(new List<CouponDataModel>() {
-            new CouponDataModel { Id = CouponIdA, ShopId = TestShopId, Value = 4, OrderId = ExistingOrderId, CartId = null, RedeemedBy = CustomerIdA}
+            new CouponDataModel { Id = CouponIdA, ShopId = TestShopId, Value = 4, OrderId = ExistingOrderId, CartId = null, CustomerId = CustomerIdA}
         });
         var couponRepository = new CouponRepository(couponDao);
         return couponRepository;

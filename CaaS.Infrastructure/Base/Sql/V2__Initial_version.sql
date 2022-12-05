@@ -41,7 +41,7 @@ ALTER TABLE IF EXISTS discount_setting
     DROP CONSTRAINT "FK_discount_setting.shop_id";
 
 ALTER TABLE IF EXISTS coupon
-    DROP CONSTRAINT "FK_coupon.redeemed_by";
+    DROP CONSTRAINT "FK_coupon.customer_id";
 
 ALTER TABLE IF EXISTS coupon
     DROP CONSTRAINT "FK_coupon.cart_id";
@@ -235,9 +235,9 @@ CREATE TABLE "coupon" (
     "value" decimal NOT NULL,
     "order_id" uuid,
     "cart_id" uuid,
-    "redeemed_by" uuid,
-    CONSTRAINT "FK_coupon.redeemed_by"
-      FOREIGN KEY ("redeemed_by")
+    "customer_id" uuid,
+    CONSTRAINT "FK_coupon.customer_id"
+      FOREIGN KEY ("customer_id")
           REFERENCES "customer"("id") ON DELETE SET NULL,
     CONSTRAINT "FK_coupon.cart_id"
       FOREIGN KEY ("cart_id")

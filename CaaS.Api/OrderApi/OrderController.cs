@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using CaaS.Api.Base.Attributes;
-using CaaS.Api.CustomerApi.Models;
 using CaaS.Api.OrderApi.Models;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.OrderAggregate;

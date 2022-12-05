@@ -65,7 +65,7 @@ public class CouponDaoTest : BaseDaoTest {
                 Value = 10,
                 OrderId = null,
                 CartId = null,
-                RedeemedBy = null,
+                CustomerId = null,
                 
         };
         await couponDao.AddAsync(coupon);

@@ -28,7 +28,6 @@ public class ProductAdministrationController : ControllerBase {
         var product = _mapper.Map<Product>(productDto);
         await _productService.AddProduct(product, cancellationToken);
         
-        //201 to be documented
         return CreatedAtAction(
             actionName: nameof(AddProduct),
             routeValues: new { productId = product.Id },

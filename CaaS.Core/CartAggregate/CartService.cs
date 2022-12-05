@@ -1,6 +1,7 @@
 ﻿using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.ProductAggregate;
@@ -15,18 +16,21 @@ public class CartService : ICartService {
     private readonly IProductRepository _productRepository;
     private readonly IShopRepository _shopRepository;
     private readonly IDiscountService _discountService;
+    private readonly ICouponRepository _couponRepository;
     private readonly ITenantIdAccessor _tenantIdAccessor;
     private readonly IDateTimeOffsetProvider _timeProvider;
 
-    public CartService(ICartRepository cartRepository, IShopRepository shopRepository, IDiscountService discountService, 
-        ITenantIdAccessor tenantIdAccessor,  IDateTimeOffsetProvider timeProvider, ICustomerRepository customerRepository, IProductRepository productRepository) {
+    public CartService(ICartRepository cartRepository, ICustomerRepository customerRepository, IProductRepository productRepository, 
+        IShopRepository shopRepository, IDiscountService discountService, ICouponRepository couponRepository, 
+        ITenantIdAccessor tenantIdAccessor,  IDateTimeOffsetProvider timeProvider) {
         _cartRepository = cartRepository;
+        _customerRepository = customerRepository;
+        _productRepository = productRepository;
         _shopRepository = shopRepository;
+        _couponRepository = couponRepository;
         _discountService = discountService;
         _tenantIdAccessor = tenantIdAccessor;
         _timeProvider = timeProvider;
-        _customerRepository = customerRepository;
-        _productRepository = productRepository;
     }
 
     public async Task<Cart?> GetCartById(Guid cartId, CancellationToken cancellationToken = default) {
@@ -137,6 +141,29 @@ public class CartService : ICartService {
         updatedCart = await _cartRepository.UpdateAsync(cart, updatedCart, cancellationToken);
         updatedCart = await PostProcessCart(updatedCart);
         return updatedCart;
+    }
+    
+    public async Task<Cart> AddCouponToCart(Guid cartId, Guid couponId, CancellationToken cancellationToken = default) {
+        var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
+        if (cart == null) {
+            throw new CaasItemNotFoundException($"Cart {cartId} not found");
+        }
+        
+        var coupon = await _couponRepository.FindByIdAsync(couponId, cancellationToken);
+        if (coupon == null) {
+            throw new CaasItemNotFoundException($"Coupon {couponId} not found");
+        }
+        if (coupon.OrderId != null) {
+            throw new CaasValidationException($"Coupon '{couponId}' was already redeemed by order '{coupon.OrderId}'");
+        }
+
+        var updatedCoupon = coupon with {
+            CartId = cartId,
+            CustomerId = cart.Customer?.Id
+        };
+
+        await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
+        return (await _cartRepository.FindByIdAsync(cartId, cancellationToken))!;
     }
 
     private async Task<Cart> PostProcessCart(Cart cart) {
