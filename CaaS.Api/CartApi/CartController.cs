@@ -43,4 +43,10 @@ public class CartController : ControllerBase {
             CancellationToken cancellationToken = default) {
         return await _cartService.SetProductQuantityInCart(cartId, productId, productQuantity, cancellationToken);
     }
+    
+    [HttpPut("{cartId:guid}")]
+    public async Task<CartDto> AddCouponToCart(Guid cartId, [FromQuery] [Required] Guid couponId, CancellationToken cancellationToken = default) {
+        var result = await _cartService.AddCouponToCart(cartId, couponId, cancellationToken);
+        return _mapper.Map<CartDto>(result);
+    }
 }
