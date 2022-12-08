@@ -153,6 +153,11 @@ public class CartService : ICartService {
         if (coupon == null) {
             throw new CaasItemNotFoundException($"Coupon {couponId} not found");
         }
+
+        if (cart.TotalPrice - coupon.Value < 0) {
+            throw new CaasValidationException("Cannot add coupon because cart value would be negative");
+        }
+        
         if (coupon.OrderId != null) {
             throw new CaasValidationException($"Coupon '{couponId}' was already redeemed by order '{coupon.OrderId}'");
         }

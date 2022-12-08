@@ -240,7 +240,7 @@ public class OrderServiceTest {
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, 
             new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()));
         var discountService = new CaasDiscountService(discountSettingsRepository, 
-            new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!));
+            new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!), tenantIdAccessor);
 
         var uowManager = new MockUnitOfWorkManager();
 

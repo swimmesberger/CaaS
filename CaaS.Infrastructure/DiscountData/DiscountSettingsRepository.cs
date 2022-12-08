@@ -25,6 +25,8 @@ internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSetting
     public ValueTask<DiscountSetting> ConvertToDomain(DiscountSettingDataModel dataModel, CancellationToken cancellationToken) {
         return new ValueTask<DiscountSetting>(new DiscountSetting() {
             Id = dataModel.Id,
+            Name = dataModel.Name,
+            ShopId = dataModel.ShopId,
             Action = dataModel.DeserializeAction(_jsonOptions),
             Rule = dataModel.DeserializeRule(_jsonOptions),
         });
@@ -36,7 +38,9 @@ internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSetting
 
     public DiscountSettingDataModel ApplyDomainModel(DiscountSettingDataModel dataModel, DiscountSetting domainModel) {
         return dataModel with {
+            Id = domainModel.Id,
             Name = domainModel.Name,
+            ShopId = domainModel.ShopId,
             RuleId = domainModel.Rule.Id,
             ActionId = domainModel.Action.Id,
             RuleParameters = domainModel.SerializeRule(_jsonOptions),
@@ -51,7 +55,7 @@ internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSetting
     public DiscountSettingDataModel ConvertFromDomain(DiscountSetting domainModel) {
         return new DiscountSettingDataModel() {
             Id = domainModel.Id,
-            ShopId = domainModel.Shop.Id,
+            ShopId = domainModel.ShopId,
             Name = domainModel.Name,
             RuleId = domainModel.Rule.Id,
             ActionId = domainModel.Action.Id,

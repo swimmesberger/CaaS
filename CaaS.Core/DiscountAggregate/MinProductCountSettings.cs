@@ -1,4 +1,5 @@
-﻿using CaaS.Core.DiscountAggregate.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using CaaS.Core.DiscountAggregate.Models;
 
 namespace CaaS.Core.DiscountAggregate;
 
@@ -6,5 +7,7 @@ namespace CaaS.Core.DiscountAggregate;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 public record MinProductCountSettings : DiscountParameters {
     public Guid ProductId { get; init; }
-    public int NumberOfItems { get; init; }
+    
+    [Required]
+    public int? NumberOfItems { get; init; }
 }

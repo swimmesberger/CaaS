@@ -16,7 +16,7 @@ public class FixedValueDiscountAction : IDiscountAction {
     
     public Task<Cart> ApplyDiscountAsync(Cart cart, RuleResult triggeredRule, CancellationToken cancellationToken = default) {
         return Task.FromResult(cart.ApplyDiscounts(triggeredRule, data => {
-            var discountValue = data.TotalPrice - _settings.Value;
+            var discountValue = data.TotalPrice - _settings.Value!.Value;
             if (discountValue < 0) {
                 discountValue -= Math.Abs(discountValue);
             }

@@ -17,7 +17,7 @@ public class PercentageDiscountAction : IDiscountAction {
     public Task<Cart> ApplyDiscountAsync(Cart cart, RuleResult triggeredRule, CancellationToken cancellationToken = default) {
         return Task.FromResult(cart.ApplyDiscounts(triggeredRule, data => new Discount() {
             DiscountName = _settings.Name, 
-            DiscountValue = Math.Round(data.TotalPrice * _settings.Percentage, 2, MidpointRounding.ToEven), 
+            DiscountValue = Math.Round(data.TotalPrice * _settings.Percentage!.Value, 2, MidpointRounding.ToEven), 
             ParentId = cart.Id, 
             ShopId = cart.ShopId
         }));

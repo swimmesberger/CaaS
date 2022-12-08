@@ -123,8 +123,10 @@ public class CartServiceTest {
         var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository,  couponRepository, DateTimeOffsetProvider.Instance);
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, 
             new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()));
+        
         var discountService = new CaasDiscountService(discountSettingsRepository, 
-            new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!));
+            new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!), tenantIdAccessor);
+
         return new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
             tenantIdAccessor, DateTimeOffsetProvider.Instance);
     }
