@@ -29,6 +29,7 @@ internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSetting
             ShopId = dataModel.ShopId,
             Action = dataModel.DeserializeAction(_jsonOptions),
             Rule = dataModel.DeserializeRule(_jsonOptions),
+            ConcurrencyToken = dataModel.GetConcurrencyToken()
         });
     }
     

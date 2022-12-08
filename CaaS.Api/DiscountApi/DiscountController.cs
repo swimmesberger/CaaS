@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection.Metadata.Ecma335;
+using System.Text.Json;
 using AutoMapper;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.DiscountApi.Models;
@@ -39,40 +40,28 @@ public class DiscountController : ControllerBase {
         return ToViewModel(_discountService.GetDiscountMetadata());
     }
 
+    [HttpGet()]
+    public async Task<IEnumerable<DiscountSettingDto>> GetAll(CancellationToken cancellationToken = default) {
+        var result = await _discountService.GetAllDiscountSettingsAsync(cancellationToken);
+        //TODO: mapping of parameters
+        return new List<DiscountSettingDto>();
+    }
+    
     [HttpPost()]
-    public async Task<CreatedAtActionResult> AddDiscountSetting(DiscountSettingForCreationDto forCreationDto,
+    public async Task<CreatedAtActionResult> AddDiscountSetting(DiscountSettingForCreationOrUpdateDto forCreationOrUpdateDto,
         CancellationToken cancellationToken = default) {
         
-        var ruleMetadata = _discountComponentProvider.GetDiscountMetadataById(forCreationDto.Rule.Id);
-        if (ruleMetadata == null) {
-            throw new CaasValidationException($"ruleId '{forCreationDto.Action.Id}' invalid");
-        }
-        
-        var actionMetadata = _discountComponentProvider.GetDiscountMetadataById(forCreationDto.Action.Id);
-        if (actionMetadata == null) {
-            throw new CaasValidationException($"actionId '{forCreationDto.Action.Id}' invalid");
-        }
-
-        var rule = (DiscountParameters) JsonSerializer.Deserialize(forCreationDto.Rule.Parameters, ruleMetadata.SettingsType, _jsonOptions.JsonSerializerOptions)!;
-        var action = (DiscountParameters) JsonSerializer.Deserialize(forCreationDto.Action.Parameters, actionMetadata.SettingsType, _jsonOptions.JsonSerializerOptions)!;
-
-        if(!TryValidateModel(rule)){
-            throw new CaasValidationException("rule not valid");
-        }
-
-        if (!TryValidateModel(action)) {
-            throw new CaasValidationException("action not valid");
-        }
+        ValidateDiscountSetting(forCreationOrUpdateDto, out var rule, out var action);
 
         var discountSetting = new DiscountSetting {
-            Id = forCreationDto.Id,
-            Name = forCreationDto.Name,
+            Id = forCreationOrUpdateDto.Id,
+            Name = forCreationOrUpdateDto.Name,
             Rule = new DiscountSettingMetadata {
-                Id = forCreationDto.Rule.Id,
+                Id = forCreationOrUpdateDto.Rule.Id,
                 Parameters = rule
             },
             Action = new DiscountSettingMetadata {
-                Id = forCreationDto.Action.Id,
+                Id = forCreationOrUpdateDto.Action.Id,
                 Parameters = action
             }
         };
@@ -82,7 +71,59 @@ public class DiscountController : ControllerBase {
         return CreatedAtAction(
             actionName: nameof(AddDiscountSetting),
             routeValues: new { discountSettingId = result.Id },
-            value: new DiscountSettingDto(result.Id, result.Name, forCreationDto.Rule, forCreationDto.Action, result.ShopId, result.ConcurrencyToken));
+            value: new DiscountSettingDto(result.Id, result.Name, forCreationOrUpdateDto.Rule, forCreationOrUpdateDto.Action, result.ShopId, result.ConcurrencyToken));
+    }
+
+    [HttpPut("{discountSettingId:guid}")]
+    public async Task<DiscountSettingDto> UpdateDiscountSetting(Guid discountSettingId, DiscountSettingForCreationOrUpdateDto forCreationOrUpdateDto,
+        CancellationToken cancellationToken = default) {
+        
+        ValidateDiscountSetting(forCreationOrUpdateDto, out var rule, out var action);
+        
+        var discountSetting = new DiscountSetting {
+            Id = forCreationOrUpdateDto.Id,
+            Name = forCreationOrUpdateDto.Name,
+            Rule = new DiscountSettingMetadata {
+                Id = forCreationOrUpdateDto.Rule.Id,
+                Parameters = rule
+            },
+            Action = new DiscountSettingMetadata {
+                Id = forCreationOrUpdateDto.Action.Id,
+                Parameters = action
+            }
+        };
+        
+        var result = await _discountService.UpdateDiscountSettingAsync(discountSettingId, discountSetting, cancellationToken);
+        return new DiscountSettingDto(result.Id, result.Name, forCreationOrUpdateDto.Rule, forCreationOrUpdateDto.Action, result.ShopId, result.ConcurrencyToken);
+    }
+
+    [HttpDelete("{discountSettingId:guid}")]
+    public async Task<ActionResult> DeleteDiscountSetting(Guid discountSettingId, CancellationToken cancellationToken = default) {
+        await _discountService.DeleteDiscountSettingAsync(discountSettingId, cancellationToken);
+        return NoContent();
+    }
+
+    private void ValidateDiscountSetting(DiscountSettingForCreationOrUpdateDto forCreationOrUpdateDto, out DiscountParameters rule, out DiscountParameters action) {
+        var ruleMetadata = _discountComponentProvider.GetDiscountMetadataById(forCreationOrUpdateDto.Rule.Id);
+        if (ruleMetadata == null) {
+            throw new CaasValidationException($"ruleId '{forCreationOrUpdateDto.Action.Id}' invalid");
+        }
+        
+        var actionMetadata = _discountComponentProvider.GetDiscountMetadataById(forCreationOrUpdateDto.Action.Id);
+        if (actionMetadata == null) {
+            throw new CaasValidationException($"actionId '{forCreationOrUpdateDto.Action.Id}' invalid");
+        }
+
+        rule = (DiscountParameters) JsonSerializer.Deserialize(forCreationOrUpdateDto.Rule.Parameters, ruleMetadata.SettingsType, _jsonOptions.JsonSerializerOptions)!;
+        action = (DiscountParameters) JsonSerializer.Deserialize(forCreationOrUpdateDto.Action.Parameters, actionMetadata.SettingsType, _jsonOptions.JsonSerializerOptions)!;
+
+        if(!TryValidateModel(rule)){
+            throw new CaasValidationException("rule not valid");
+        }
+
+        if (!TryValidateModel(action)) {
+            throw new CaasValidationException("action not valid");
+        }
     }
     
     private DiscountComponentsDto ToViewModel(IEnumerable<DiscountComponentMetadata> discountComponents) {

@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.CartAggregate;
@@ -33,7 +33,7 @@ public class CaasDiscountService : IDiscountService {
         
         return await _discountSettingRepository.AddAsync(discountSetting, cancellationToken);
     }
-
+    
     public async Task<DiscountSetting> UpdateDiscountSettingAsync(Guid discountSettingId, DiscountSetting updatedDiscountSetting,
         CancellationToken cancellationToken = default) {
         var oldDiscountSetting = await _discountSettingRepository.FindByIdAsync(discountSettingId, cancellationToken);
@@ -47,7 +47,10 @@ public class CaasDiscountService : IDiscountService {
 
         return await _discountSettingRepository.UpdateAsync(oldDiscountSetting, updatedDiscountSetting, cancellationToken);
     }
-    
+    public async Task<IEnumerable<DiscountSetting>> GetAllDiscountSettingsAsync(CancellationToken cancellationToken = default) {
+        return await _discountSettingRepository.FindAllAsync(cancellationToken);
+    }
+
     public async Task DeleteDiscountSettingAsync(Guid discountSettingId, CancellationToken cancellationToken = default) {
         var discountSetting = await _discountSettingRepository.FindByIdAsync(discountSettingId, cancellationToken);
         if (discountSetting == null) {
