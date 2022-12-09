@@ -1,5 +1,6 @@
 ﻿using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using AutoMapper;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.DiscountApi.Models;
@@ -43,8 +44,23 @@ public class DiscountController : ControllerBase {
     [HttpGet()]
     public async Task<IEnumerable<DiscountSettingDto>> GetAll(CancellationToken cancellationToken = default) {
         var result = await _discountService.GetAllDiscountSettingsAsync(cancellationToken);
-        //TODO: mapping of parameters
-        return new List<DiscountSettingDto>();
+        var discountSettingDtos = new List<DiscountSettingDto>();
+        
+        foreach (var discountSetting in result) {
+            var ruleMetadata = _discountComponentProvider.GetDiscountMetadataById(discountSetting.Rule.Id);
+            var actionMetadata = _discountComponentProvider.GetDiscountMetadataById(discountSetting.Action.Id);
+
+            var ruleJson = JsonSerializer.SerializeToNode(discountSetting.Rule.Parameters, ruleMetadata.SettingsType, _jsonOptions.JsonSerializerOptions);
+            var actionJson = JsonSerializer.SerializeToNode(discountSetting.Action.Parameters, actionMetadata.SettingsType, _jsonOptions.JsonSerializerOptions);
+
+            var ruleDiscountMetadataSetting = new DiscountMetadataSettingDto(discountSetting.Rule.Id, (JsonObject)ruleJson);
+            var actionDiscountMetadataSetting = new DiscountMetadataSettingDto(discountSetting.Action.Id, (JsonObject)actionJson);
+            
+            discountSettingDtos.Add(new DiscountSettingDto(discountSetting.Id, discountSetting.Name,
+                ruleDiscountMetadataSetting, actionDiscountMetadataSetting, discountSetting.ShopId, discountSetting.ConcurrencyToken));
+        }
+        
+        return discountSettingDtos;
     }
     
     [HttpPost()]
