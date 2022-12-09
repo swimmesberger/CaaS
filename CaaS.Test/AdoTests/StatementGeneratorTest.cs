@@ -1,6 +1,5 @@
 ﻿using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Impl;
-using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.CartData;

@@ -7,7 +7,6 @@ using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Impl;
-using CaaS.Core.Base.Tenant;
 using CaaS.Core.OrderAggregate;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
