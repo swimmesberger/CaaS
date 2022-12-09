@@ -1,5 +1,4 @@
-﻿using CaaS.Core.Base;
-using CaaS.Core.Base.Exceptions;
+﻿using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.DiscountAggregate.Base;
@@ -23,7 +22,7 @@ public class CaasDiscountService : IDiscountService {
     public async Task<Cart> ApplyDiscountAsync(Cart cart, CancellationToken cancellationToken = default) {
         var discountComponents = (await _discountSettingRepository.FindAllAsync(cancellationToken))
             .Select(_discountComponentFactory.CreateComponent).ToList();
-        return await RuleCheckDiscountAction.ForAll(discountComponents).ApplyDiscountAsync(cart, cancellationToken);
+        return await new CompositeDiscountApplier(discountComponents).ApplyDiscountAsync(cart, cancellationToken);
     }
 
     public async Task<DiscountSetting> AddDiscountSettingAsync(DiscountSetting discountSetting, CancellationToken cancellationToken = default) {
@@ -58,27 +57,5 @@ public class CaasDiscountService : IDiscountService {
         }
         
         await _discountSettingRepository.DeleteAsync(discountSetting, cancellationToken);
-    }
-    
-    private class RuleCheckDiscountAction {
-        private readonly DiscountComponent _discountComponent;
-
-        public RuleCheckDiscountAction(DiscountComponent discountComponent) {
-            _discountComponent = discountComponent;
-        }
-
-        public async Task<Cart> ApplyDiscountAsync(Cart cart, CancellationToken cancellationToken = default) {
-            var ruleResult = await _discountComponent.Rule.Evaluate(cart, cancellationToken);
-            if (ruleResult.Type == RuleResultType.None) 
-                return cart;
-            cart = await _discountComponent.Action.ApplyDiscountAsync(cart, ruleResult, cancellationToken);
-            return cart;
-        }
-
-        public static RuleCheckDiscountAction ForAll(IReadOnlyCollection<DiscountComponent> discountComponents) {
-            var rule = new CompositeDiscountRule(discountComponents.Select(c => c.Rule), DiscountCombinationType.Or);
-            var action = new AndDiscountAction(discountComponents.Select(c => c.Action));
-            return new RuleCheckDiscountAction(new DiscountComponent(rule, action));
-        }
     }
 }
