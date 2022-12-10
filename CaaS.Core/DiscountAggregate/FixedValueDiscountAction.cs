@@ -16,13 +16,24 @@ public class FixedValueDiscountAction : IDiscountAction {
     
     public Task<Cart> ApplyDiscountAsync(Cart cart, RuleResult triggeredRule, CancellationToken cancellationToken = default) {
         return Task.FromResult(cart.ApplyDiscounts(triggeredRule, data => {
-            var discountValue = data.TotalPrice - _settings.Value!.Value;
-            if (discountValue < 0) {
-                discountValue -= Math.Abs(discountValue);
+            var cartValue = data.TotalPrice - _settings.Value!.Value;
+            
+            if (cart.TotalPrice == 0) {     //if cart is already 0 do not apply discounts
+                return null;
             }
-            return new Discount() {
+            
+            if (cartValue < 0) {            //if discount value is greater cart value: only apply remaining cart-value
+                return new Discount() {
+                    DiscountName = _settings.Name,
+                    DiscountValue = cart.TotalPrice,
+                    ParentId = cart.Id,
+                    ShopId = cart.ShopId
+                };
+            }
+            
+            return new Discount() {        //standard case: apply discount fully
                 DiscountName = _settings.Name,
-                DiscountValue = discountValue,
+                DiscountValue = _settings.Value!.Value,
                 ParentId = cart.Id,
                 ShopId = cart.ShopId
             };

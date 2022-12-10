@@ -11,6 +11,9 @@ public static class CartExtensions {
             return cart with {
                 Items = cart.Items.Select(item => {
                     if (!triggeredRule.AffectedItemIds.Contains(item.Id)) return item;
+                    
+                    //Todo: Invoke rausziehen
+                   
                     return item with {
                         CartItemDiscounts = item.CartItemDiscounts.Add(discount.Invoke(new CartDiscountData(item.TotalPrice)))
                     };
