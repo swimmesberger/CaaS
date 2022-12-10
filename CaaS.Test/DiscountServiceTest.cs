@@ -2,6 +2,7 @@
 using CaaS.Core;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.Base.Validation;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
@@ -85,6 +86,7 @@ public class DiscountServiceTest {
         serviceCollection.AddSingleton<IDateTimeOffsetProvider>(new StaticDateTimeOffsetProvider(currentTime));
         serviceCollection.AddSingleton<IDao<DiscountSettingDataModel>>(sp
             => new MemoryDao<DiscountSettingDataModel>(discountSettings.Invoke(sp.GetRequiredService<IOptions<DiscountJsonOptions>>())));
+        serviceCollection.AddSingleton<IValidator, MockValidator>();
 
         return serviceCollection.BuildServiceProvider();
     }
@@ -98,11 +100,11 @@ public class DiscountServiceTest {
                 RuleParameters = new TimeWindowDiscountSettings() {
                     FromTime = AsUtc(new DateTime(2022, 11, 25, 0, 0, 0, DateTimeKind.Local)),
                     ToTime = AsUtc(new DateTime(2022, 11, 26, 0, 0, 0, DateTimeKind.Local))
-                }.Serialize(jsonOptions.Value.JsonSerializerOptions),
+                }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions),
                 ActionId = PercentageDiscountAction.Id,
                 ActionParameters = new PercentageDiscountSettings() {
                     Percentage = 0.25m
-                }.Serialize(jsonOptions.Value.JsonSerializerOptions)
+                }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions)
             }
         };
     }
@@ -131,11 +133,11 @@ public class DiscountServiceTest {
                         }
                     },
                     CombinationType = DiscountCombinationType.And
-                }.Serialize(jsonOptions.Value.JsonSerializerOptions),
+                }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions),
                 ActionId = PercentageDiscountAction.Id,
                 ActionParameters = new PercentageDiscountSettings() {
                     Percentage = 0.10m
-                }.Serialize(jsonOptions.Value.JsonSerializerOptions)
+                }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions)
             }
         };
     }

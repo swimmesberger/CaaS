@@ -1,12 +1,12 @@
 ﻿using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.Base.Validation;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
-using FluentValidation.Results;
 
 namespace CaaS.Core.CartAggregate; 
 

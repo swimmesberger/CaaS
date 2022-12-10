@@ -6,10 +6,9 @@ using CaaS.Api.DiscountApi.Swagger;
 using CaaS.Core;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.Base.Validation;
 using CaaS.Infrastructure.Base;
 using CaaS.Infrastructure.Base.Ado.Model;
-using FluentValidation;
-using FluentValidation.Results;
 using Hellang.Middleware.ProblemDetails;
 using Hellang.Middleware.ProblemDetails.Mvc;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +46,7 @@ public static class CaasApiServiceCollectionExtensions {
             options.DocumentFilter<DiscountSettingsOpenApiDocumentFilter>();
         });
         services.AddHostedService<CartCleanupService>();
+        services.AddScoped<IValidator, WebValidator>();
 
         services.AddCaasInfrastructure();
         services.AddCaasCore();
@@ -63,8 +63,7 @@ public static class CaasApiServiceCollectionExtensions {
         options.MapToStatusCode<CaasItemNotFoundException>(StatusCodes.Status404NotFound);
         options.MapToStatusCode<CaasNoTenantException>(StatusCodes.Status400BadRequest);
     
-        // Custom mapping function for FluentValidation's ValidationException.
-        options.Map<ValidationException>((ctx, ex) => HandleValidationErrors(ctx, ex.Errors));
+        // Custom mapping function for ValidationException.
         options.Map<CaasValidationException>((ctx, ex) => HandleValidationErrors(ctx, ex.Errors));
 
         // Because exceptions are handled polymorphically, this will act as a "catch all" mapping, which is why it's added last.
@@ -78,7 +77,7 @@ public static class CaasApiServiceCollectionExtensions {
             .GroupBy(x => x.PropertyName)
             .ToDictionary(
                 x => x.Key,
-                x => x.Select(x => x.ErrorMessage).ToArray());
+                x => x.Select(failure => failure.ErrorMessage).ToArray());
 
         return factory.CreateValidationProblemDetails(ctx, errorsDict);
     }

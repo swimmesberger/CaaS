@@ -1,8 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Runtime.Serialization;
-using FluentValidation;
-using FluentValidation.Results;
-
+using CaaS.Core.Base.Validation;
 namespace CaaS.Core.Base.Exceptions; 
 
 public class CaasValidationException : CaasException {
@@ -23,9 +21,5 @@ public class CaasValidationException : CaasException {
     
     public CaasValidationException(string message, IEnumerable<ValidationFailure> errors) : base(message) {
         Errors = errors;
-    }
-    
-    public CaasValidationException(ValidationException validationException) : base(validationException.Message) {
-        Errors = validationException.Errors;
     }
 }
