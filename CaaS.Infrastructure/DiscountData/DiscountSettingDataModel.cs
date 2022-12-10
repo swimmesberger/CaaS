@@ -16,8 +16,8 @@ public record DiscountSettingDataModel : DataModel {
     public Guid ActionId { get; init; }
     
     [JsonColumn]
-    public JsonElement RuleParameters { get; init; } = JsonElementConstants.Empty;
+    public JsonElement RuleParameters { get; init; } = JsonConstants.EmptyElement;
     
     [JsonColumn]
-    public JsonElement ActionParameters { get; init; } = JsonElementConstants.Empty;
+    public JsonElement ActionParameters { get; init; } = JsonConstants.EmptyElement;
 }

@@ -35,24 +35,6 @@ public class DiscountSettingsJsonConverter : JsonConverter<DiscountSettingMetada
         writer.WriteEndObject();
     }
     
-    public DiscountSettingMetadata GetAction(DiscountSettingDataModel model, JsonSerializerOptions options) {
-        var componentId = model.ActionId;
-        var discountComponentMetadata = _componentMetadata.FirstOrDefault(c => c.Id == componentId);
-        if (discountComponentMetadata == null) throw new ArgumentException($"Can't find action with id '{componentId}'");
-        var parameters = (DiscountParameters?)model.ActionParameters.Deserialize(discountComponentMetadata.SettingsType, options);
-        if (parameters == null) throw new JsonException();
-        return new DiscountSettingMetadata { Id = componentId, Parameters = parameters };
-    }
-    
-    public DiscountSettingMetadata GetRule(DiscountSettingDataModel model, JsonSerializerOptions options) {
-        var componentId = model.RuleId;
-        var discountComponentMetadata = _componentMetadata.FirstOrDefault(c => c.Id == componentId);
-        if (discountComponentMetadata == null) throw new ArgumentException($"Can't find rule with id '{componentId}'");
-        var parameters = (DiscountParameters?)model.RuleParameters.Deserialize(discountComponentMetadata.SettingsType, options);
-        if (parameters == null) throw new JsonException();
-        return new DiscountSettingMetadata { Id = componentId, Parameters = parameters };
-    }
-
     private Guid GetComponentId(ref Utf8JsonReader reader) {
         MoveToProperty(ref reader, nameof(DiscountSettingMetadata.Id));
         if (!reader.Read() || reader.TokenType != JsonTokenType.String) {
@@ -72,7 +54,7 @@ public class DiscountSettingsJsonConverter : JsonConverter<DiscountSettingMetada
         return parameters;
     }
 
-    private void MoveToProperty(ref Utf8JsonReader reader, string propertyName) {
+    private static void MoveToProperty(ref Utf8JsonReader reader, string propertyName) {
         while (reader.Read()) {
             if (reader.TokenType != JsonTokenType.PropertyName) {
                 throw new JsonException();

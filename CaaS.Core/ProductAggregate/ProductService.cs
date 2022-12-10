@@ -1,8 +1,8 @@
 ﻿using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.Base.Validation;
 using CaaS.Core.ShopAggregate;
-using FluentValidation.Results;
 
 namespace CaaS.Core.ProductAggregate; 
 
