@@ -1,4 +1,5 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿using System.Data;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AutoMapper;
@@ -48,19 +49,26 @@ public class DiscountController : ControllerBase {
         
         foreach (var discountSetting in result) {
             var ruleMetadata = _discountComponentProvider.GetDiscountMetadataById(discountSetting.Rule.Id);
-            var actionMetadata = _discountComponentProvider.GetDiscountMetadataById(discountSetting.Action.Id);
-
-            var ruleJson = JsonSerializer.SerializeToNode(discountSetting.Rule.Parameters, ruleMetadata.SettingsType, _jsonOptions.JsonSerializerOptions);
-            var actionJson = JsonSerializer.SerializeToNode(discountSetting.Action.Parameters, actionMetadata.SettingsType, _jsonOptions.JsonSerializerOptions);
-
-            var ruleDiscountMetadataSetting = new DiscountMetadataSettingDto(discountSetting.Rule.Id, (JsonObject)ruleJson);
-            var actionDiscountMetadataSetting = new DiscountMetadataSettingDto(discountSetting.Action.Id, (JsonObject)actionJson);
+            if (ruleMetadata == null) {
+                throw new CaasValidationException($"RuleId '{discountSetting.Rule.Id}' not found");
+            }
             
+            var actionMetadata = _discountComponentProvider.GetDiscountMetadataById(discountSetting.Action.Id);
+            if (actionMetadata == null) {
+                throw new CaasValidationException($"ActionId '{discountSetting.Action.Id}' not found");
+            }
+
             discountSettingDtos.Add(new DiscountSettingDto(discountSetting.Id, discountSetting.Name,
-                ruleDiscountMetadataSetting, actionDiscountMetadataSetting, discountSetting.ShopId, discountSetting.ConcurrencyToken));
+                ToMetadataSettingDto(discountSetting.Rule,ruleMetadata), ToMetadataSettingDto(discountSetting.Action, actionMetadata), discountSetting.ShopId, discountSetting.ConcurrencyToken));
         }
         
         return discountSettingDtos;
+    }
+
+    private DiscountMetadataSettingDto ToMetadataSettingDto(DiscountSettingMetadata discountSettingMetadata, DiscountComponentMetadata discountComponentMetadata) {
+        var json = JsonSerializer.SerializeToNode(discountSettingMetadata.Parameters, discountComponentMetadata.SettingsType, _jsonOptions.JsonSerializerOptions);
+        var discountMetadataSetting = new DiscountMetadataSettingDto(discountSettingMetadata.Id, (JsonObject)json);
+        return discountMetadataSetting;
     }
     
     [HttpPost()]

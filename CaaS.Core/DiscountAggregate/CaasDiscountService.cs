@@ -18,7 +18,7 @@ public class CaasDiscountService : IDiscountService {
     }
     
     public IEnumerable<DiscountComponentMetadata> GetDiscountMetadata() => _discountComponentFactory.GetDiscountMetadata();
-
+    
     public async Task<Cart> ApplyDiscountAsync(Cart cart, CancellationToken cancellationToken = default) {
         var discountComponents = (await _discountSettingRepository.FindAllAsync(cancellationToken))
             .Select(_discountComponentFactory.CreateComponent).ToList();
