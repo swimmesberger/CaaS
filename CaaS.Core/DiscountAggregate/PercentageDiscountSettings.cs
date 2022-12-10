@@ -7,5 +7,6 @@ namespace CaaS.Core.DiscountAggregate;
 public record PercentageDiscountSettings() : DiscountParameters(version: 1) {
     
     [Required]
+    [Range(0.0, 1.0)]
     public decimal? Percentage { get; init; }
 }
