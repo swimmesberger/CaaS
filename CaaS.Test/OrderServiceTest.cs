@@ -7,7 +7,6 @@ using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Impl;
-using CaaS.Core.Base.Tenant;
 using CaaS.Core.OrderAggregate;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
@@ -237,14 +236,15 @@ public class OrderServiceTest {
                                                     productRepository, customerRepository, couponRepository);
         
         var discountSettingsDao = new MemoryDao<DiscountSettingDataModel>(new List<DiscountSettingDataModel>());
-        var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, 
-            new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()));
-        var discountService = new CaasDiscountService(discountSettingsRepository, 
-            new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!));
+        var componentFactory = new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!);
+        var jsonConverter = new DiscountSettingRawConverter(new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()), componentFactory.GetDiscountMetadata());
+        var validator = new MockValidator();
+        var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, jsonConverter);
+        var discountService = new CaasDiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
 
         var uowManager = new MockUnitOfWorkManager();
 
-        CartService cartService = new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
+        var cartService = new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
             tenantIdAccessor, DateTimeOffsetProvider.Instance);
         return new OrderService(orderRepository, customerRepository, cartService, couponRepository, tenantIdAccessor, uowManager, paymentService);
     }

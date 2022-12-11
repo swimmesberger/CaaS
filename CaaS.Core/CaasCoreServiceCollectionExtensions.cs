@@ -18,7 +18,7 @@ public static class CaasCoreServiceCollectionExtensions {
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IShopService, ShopService>();
         services.AddScoped<IOrderService, OrderService>();
-        services.AddScoped<IDateTimeOffsetProvider, DefaultDateTimeOffsetProvider>();
+        services.AddSingleton<IDateTimeOffsetProvider, DefaultDateTimeOffsetProvider>();
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<ICouponService, CouponService>();

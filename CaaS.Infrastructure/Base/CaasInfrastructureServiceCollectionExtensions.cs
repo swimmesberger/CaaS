@@ -45,6 +45,7 @@ public static class CaasInfrastructureServiceCollectionExtensions {
     public static IServiceCollection AddCaasDiscountInfrastructure(this IServiceCollection services) {
         services.AddOptions<DiscountJsonOptions>().Configure<IEnumerable<DiscountComponentMetadata>>((options, metadatas) 
             => options.JsonSerializerOptions.Converters.Add(new DiscountSettingsJsonConverter(metadatas)));
+        services.AddScoped<IDiscountSettingRawConverter, DiscountSettingRawConverter>();
         return services;
     }
     

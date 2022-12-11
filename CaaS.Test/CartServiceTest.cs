@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base;
-using CaaS.Core.Base.Tenant;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
@@ -121,10 +120,12 @@ public class CartServiceTest {
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
         var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository,  couponRepository, DateTimeOffsetProvider.Instance);
-        var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, 
-            new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()));
-        var discountService = new CaasDiscountService(discountSettingsRepository, 
-            new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!));
+        var componentFactory = new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!);
+        var jsonConverter = new DiscountSettingRawConverter(new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()), componentFactory.GetDiscountMetadata());
+        var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, jsonConverter);
+        var validator = new MockValidator();
+        var discountService = new CaasDiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
+
         return new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
             tenantIdAccessor, DateTimeOffsetProvider.Instance);
     }

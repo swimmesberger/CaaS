@@ -79,8 +79,6 @@ public class OrderService : IOrderService {
         return await CreateOrderFromCartImpl(cart, customer, billingAddress, cancellationToken);
     }
     
-    
-    
     private async Task<Order> CreateOrderFromCartImpl(Cart cart, Customer customer, Address billingAddress, CancellationToken cancellationToken = default) {
         Order order;
         var chargeId = Guid.Empty;

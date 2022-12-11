@@ -1,33 +1,34 @@
-﻿using System.Text.Json;
-using CaaS.Core.DiscountAggregate.Base;
+﻿using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Models;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Repository;
-using Microsoft.Extensions.Options;
 
 namespace CaaS.Infrastructure.DiscountData; 
 
 public class DiscountSettingsRepository : CrudRepository<DiscountSettingDataModel, DiscountSetting>, IDiscountSettingRepository {
-    public DiscountSettingsRepository(IDao<DiscountSettingDataModel> dao, IOptions<DiscountJsonOptions> jsonOptions) : 
-        base(dao, new DiscountSettingsConverter(jsonOptions)) { }
+    public DiscountSettingsRepository(IDao<DiscountSettingDataModel> dao, IDiscountSettingRawConverter rawConverter) : 
+        base(dao, new DiscountSettingsConverter(rawConverter)) { }
 }
 
 internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSettingDataModel, DiscountSetting> {
     public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(DiscountSettingDataModel.Name));
     
-    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly IDiscountSettingRawConverter _rawConverter;
 
-    public DiscountSettingsConverter(IOptions<DiscountJsonOptions> jsonOptions) {
-        _jsonOptions = jsonOptions.Value.JsonSerializerOptions;
+    public DiscountSettingsConverter(IDiscountSettingRawConverter rawConverter) {
+        _rawConverter = rawConverter;
     }
 
     public ValueTask<DiscountSetting> ConvertToDomain(DiscountSettingDataModel dataModel, CancellationToken cancellationToken) {
-        return new ValueTask<DiscountSetting>(new DiscountSetting() {
+        return new ValueTask<DiscountSetting>(_rawConverter.DeserializeSetting(new DiscountSettingRaw() {
             Id = dataModel.Id,
-            Action = dataModel.DeserializeAction(_jsonOptions),
-            Rule = dataModel.DeserializeRule(_jsonOptions),
-        });
+            Name = dataModel.Name,
+            ShopId = dataModel.ShopId,
+            Action = new DiscountMetadataSettingRaw(dataModel.ActionId, dataModel.ActionParameters),
+            Rule = new DiscountMetadataSettingRaw(dataModel.RuleId, dataModel.RuleParameters),
+            ConcurrencyToken = dataModel.GetConcurrencyToken()
+        }));
     }
     
     public async Task<IReadOnlyList<DiscountSetting>> ConvertToDomain(IAsyncEnumerable<DiscountSettingDataModel> dataModels, CancellationToken cancellationToken = default) {
@@ -35,12 +36,16 @@ internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSetting
     }
 
     public DiscountSettingDataModel ApplyDomainModel(DiscountSettingDataModel dataModel, DiscountSetting domainModel) {
+        var rule = _rawConverter.SerializeSetting(domainModel.Rule);
+        var action = _rawConverter.SerializeSetting(domainModel.Action);
         return dataModel with {
+            Id = domainModel.Id,
             Name = domainModel.Name,
+            ShopId = domainModel.ShopId,
             RuleId = domainModel.Rule.Id,
             ActionId = domainModel.Action.Id,
-            RuleParameters = domainModel.SerializeRule(_jsonOptions),
-            ActionParameters = domainModel.SerializeAction(_jsonOptions)
+            RuleParameters = rule.Parameters,
+            ActionParameters = action.Parameters
         };
     }
 
@@ -49,14 +54,16 @@ internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSetting
     }
 
     public DiscountSettingDataModel ConvertFromDomain(DiscountSetting domainModel) {
+        var rule = _rawConverter.SerializeSetting(domainModel.Rule);
+        var action = _rawConverter.SerializeSetting(domainModel.Action);
         return new DiscountSettingDataModel() {
             Id = domainModel.Id,
-            ShopId = domainModel.Shop.Id,
+            ShopId = domainModel.ShopId,
             Name = domainModel.Name,
             RuleId = domainModel.Rule.Id,
             ActionId = domainModel.Action.Id,
-            RuleParameters = domainModel.SerializeRule(_jsonOptions),
-            ActionParameters = domainModel.SerializeAction(_jsonOptions)
+            RuleParameters = rule.Parameters,
+            ActionParameters = action.Parameters
         };
     }
 }

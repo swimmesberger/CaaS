@@ -1,4 +1,7 @@
-﻿using CaaS.Core.CartAggregate;
+﻿using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Tenant;
+using CaaS.Core.Base.Validation;
+using CaaS.Core.CartAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Models;
 
@@ -7,39 +10,73 @@ namespace CaaS.Core.DiscountAggregate;
 public class CaasDiscountService : IDiscountService {
     private readonly IDiscountSettingRepository _discountSettingRepository;
     private readonly IDiscountComponentFactory _discountComponentFactory;
+    private readonly ITenantIdAccessor _tenantIdAccessor;
+    private readonly IDiscountSettingRawConverter _settingRawConverter;
+    private readonly IValidator _modelValidator;
 
-    public CaasDiscountService(IDiscountSettingRepository discountSettingRepository, IDiscountComponentFactory discountComponentFactory) {
+    public CaasDiscountService(IDiscountSettingRepository discountSettingRepository, IDiscountComponentFactory discountComponentFactory, 
+        ITenantIdAccessor tenantIdAccessor, IDiscountSettingRawConverter settingRawConverter, IValidator modelValidator) {
         _discountSettingRepository = discountSettingRepository;
         _discountComponentFactory = discountComponentFactory;
+        _tenantIdAccessor = tenantIdAccessor;
+        _settingRawConverter = settingRawConverter;
+        _modelValidator = modelValidator;
     }
     
     public IEnumerable<DiscountComponentMetadata> GetDiscountMetadata() => _discountComponentFactory.GetDiscountMetadata();
-
+    
     public async Task<Cart> ApplyDiscountAsync(Cart cart, CancellationToken cancellationToken = default) {
         var discountComponents = (await _discountSettingRepository.FindAllAsync(cancellationToken))
             .Select(_discountComponentFactory.CreateComponent).ToList();
-        return await RuleCheckDiscountAction.ForAll(discountComponents).ApplyDiscountAsync(cart, cancellationToken);
+        return await new CompositeDiscountApplier(discountComponents).ApplyDiscountAsync(cart, cancellationToken);
+    }
+
+    public async Task<DiscountSettingRaw> AddDiscountSettingAsync(DiscountSettingRaw discountSetting, CancellationToken cancellationToken = default) {
+        discountSetting = discountSetting with {
+            ShopId = _tenantIdAccessor.GetTenantGuid()
+        };
+        var domainModel = DeserializeSetting(discountSetting);
+        domainModel = await _discountSettingRepository.AddAsync(domainModel, cancellationToken);
+        return _settingRawConverter.SerializeSetting(domainModel);
+    }
+
+    public async Task<DiscountSettingRaw> UpdateDiscountSettingAsync(DiscountSettingRaw updatedDiscountSetting, CancellationToken cancellationToken = default) {
+        var oldDiscountSetting = await _discountSettingRepository.FindByIdAsync(updatedDiscountSetting.Id, cancellationToken);
+        if (oldDiscountSetting == null) {
+            throw new CaasItemNotFoundException($"discountSettingId '{oldDiscountSetting}' not found");
+        }
+        
+        updatedDiscountSetting = updatedDiscountSetting with {
+            ShopId = _tenantIdAccessor.GetTenantGuid()
+        };
+        var domainModel = DeserializeSetting(updatedDiscountSetting);
+        domainModel = await _discountSettingRepository.UpdateAsync(oldDiscountSetting, domainModel, cancellationToken);
+        return _settingRawConverter.SerializeSetting(domainModel);
     }
     
-    private class RuleCheckDiscountAction {
-        private readonly DiscountComponent _discountComponent;
+    public async Task<IEnumerable<DiscountSettingRaw>> GetAllDiscountSettingsAsync(CancellationToken cancellationToken = default) {
+        var result = await _discountSettingRepository.FindAllAsync(cancellationToken);
+        return result.Select(discountSetting => _settingRawConverter.SerializeSetting(discountSetting)).ToList();
+    }
 
-        public RuleCheckDiscountAction(DiscountComponent discountComponent) {
-            _discountComponent = discountComponent;
+    public async Task DeleteDiscountSettingAsync(Guid discountSettingId, CancellationToken cancellationToken = default) {
+        var discountSetting = await _discountSettingRepository.FindByIdAsync(discountSettingId, cancellationToken);
+        if (discountSetting == null) {
+            throw new CaasItemNotFoundException($"discountSettingId '{discountSetting}' not found");
+        }
+        
+        await _discountSettingRepository.DeleteAsync(discountSetting, cancellationToken);
+    }
+    
+    private DiscountSetting DeserializeSetting(DiscountSettingRaw rawSetting) {
+        var discountSetting = _settingRawConverter.DeserializeSetting(rawSetting);
+        if (!_modelValidator.TryValidateModel(discountSetting.Rule)){
+            throw new CaasValidationException("rule not valid");
         }
 
-        public async Task<Cart> ApplyDiscountAsync(Cart cart, CancellationToken cancellationToken = default) {
-            var ruleResult = await _discountComponent.Rule.Evaluate(cart, cancellationToken);
-            if (ruleResult.Type == RuleResultType.None) 
-                return cart;
-            cart = await _discountComponent.Action.ApplyDiscountAsync(cart, ruleResult, cancellationToken);
-            return cart;
+        if (!_modelValidator.TryValidateModel(discountSetting.Action)) {
+            throw new CaasValidationException("action not valid");
         }
-
-        public static RuleCheckDiscountAction ForAll(IReadOnlyCollection<DiscountComponent> discountComponents) {
-            var rule = new CompositeDiscountRule(discountComponents.Select(c => c.Rule));
-            var action = new AndDiscountAction(discountComponents.Select(c => c.Action));
-            return new RuleCheckDiscountAction(new DiscountComponent(rule, action));
-        }
+        return discountSetting;
     }
 }

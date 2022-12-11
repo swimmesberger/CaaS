@@ -6,5 +6,9 @@ namespace CaaS.Api.DiscountApi.Models;
 public class DiscountProfile : Profile {
     public DiscountProfile() {
         CreateMap<Discount, DiscountDto>();
+        
+        CreateMap<DiscountSetting, DiscountSettingRaw>();
+
+        CreateMap<DiscountSettingForCreationOrUpdateDto, DiscountSettingRaw>();
     }
 }
