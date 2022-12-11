@@ -75,6 +75,17 @@ public class DiscountServiceTest {
         cart.CartDiscounts.Should().HaveCount(0);
     }
 
+    [Fact]
+    public async Task TestAndDiscountAction() {
+        var currentTime = AsUtc(new DateTime(2022, 12, 10, 0, 0, 0, DateTimeKind.Local));
+        await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateChristmasSpecial);
+        var discountService = serviceProvider.GetRequiredService<IDiscountService>();
+        var cart = CreateTestCart();
+        cart = await discountService.ApplyDiscountAsync(cart);
+        cart.Items[0].CartItemDiscounts.Should().HaveCount(1);
+        cart.CartDiscounts.Should().HaveCount(1);
+    }
+
     private ServiceProvider SetupDiscountServiceProvider(DateTimeOffset currentTime,
         Func<IOptions<DiscountJsonOptions>, List<DiscountSettingDataModel>> discountSettings) {
         var serviceCollection = new ServiceCollection();
@@ -137,6 +148,52 @@ public class DiscountServiceTest {
                 ActionId = PercentageDiscountAction.Id,
                 ActionParameters = new PercentageDiscountSettings() {
                     Percentage = 0.10m
+                }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions)
+            }
+        };
+    }
+    
+    private List<DiscountSettingDataModel> CreateChristmasSpecial(IOptions<DiscountJsonOptions> jsonOptions) {
+        return new List<DiscountSettingDataModel>() {
+            new DiscountSettingDataModel() {
+                ShopId = TestShopId,
+                Name = "Christmas Special",
+                RuleId = CompositeDiscountRule.Id,
+                RuleParameters = new CompositeDiscountRuleSettings() {
+                    DiscountSettings = new DiscountSettingMetadata[] {
+                        new() {
+                            Id = TimeWindowDiscountRule.Id,
+                            Parameters = new TimeWindowDiscountSettings() {
+                                FromTime = AsUtc(new DateTime(2022, 12, 20, 0, 0, 0, DateTimeKind.Local)),
+                                ToTime = AsUtc(new DateTime(2022, 12, 30, 0, 0, 0, DateTimeKind.Local))
+                            }
+                        },
+                        new() {
+                            Id = MinProductCountDiscountRule.Id,
+                            Parameters = new MinProductCountSettings() {
+                                ProductId = UsbCableProductId,
+                                NumberOfItems = 1
+                            }
+                        }
+                    },
+                    CombinationType = DiscountCombinationType.Or
+                }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions),
+                ActionId = AndDiscountAction.Id,
+                ActionParameters = new AndDiscountActionSettings() {
+                    DiscountSettings = new DiscountSettingMetadata[] {
+                        new () {
+                            Id = FixedValueDiscountAction.Id,
+                            Parameters = new FixedValueDiscountSettings() {
+                                Value = 2
+                            }                        
+                        },
+                        new() {
+                            Id = PercentageDiscountAction.Id,
+                            Parameters = new PercentageDiscountSettings() {
+                                Percentage = 0.05m
+                            }
+                        }
+                    }
                 }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions)
             }
         };
