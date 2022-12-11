@@ -12,8 +12,8 @@ public class AndDiscountAction : IDiscountAction {
     
     private readonly IEnumerable<IDiscountAction>? _discountActions;
 
-    public AndDiscountAction(AndDiscountActionSettings settings, IDiscountComponentFactory discountComponentFactory) {
-        _settings = settings;
+    public AndDiscountAction(IDiscountOptions<AndDiscountActionSettings> settings, IDiscountComponentFactory discountComponentFactory) {
+        _settings = settings.Value;
         _discountComponentFactory = discountComponentFactory;
     }
     

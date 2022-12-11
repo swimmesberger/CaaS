@@ -82,8 +82,19 @@ public class DiscountServiceTest {
         var discountService = serviceProvider.GetRequiredService<IDiscountService>();
         var cart = CreateTestCart();
         cart = await discountService.ApplyDiscountAsync(cart);
-        cart.Items[0].CartItemDiscounts.Should().HaveCount(1);
-        cart.CartDiscounts.Should().HaveCount(1);
+        cart.Items[0].CartItemDiscounts.Should().HaveCount(2);
+        cart.CartDiscounts.Should().HaveCount(0);
+    }
+    
+    [Fact]
+    public async Task CartWithPriceAlreadyZero() {
+        var currentTime = AsUtc(new DateTime(2022, 12, 10, 0, 0, 0, DateTimeKind.Local));
+        await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateFixedValueSetting);
+        var discountService = serviceProvider.GetRequiredService<IDiscountService>();
+        var cart = CreateZeroCart();
+        cart = await discountService.ApplyDiscountAsync(cart);
+        cart.Items[0].CartItemDiscounts.Should().HaveCount(0);
+        cart.CartDiscounts.Should().HaveCount(0);
     }
 
     private ServiceProvider SetupDiscountServiceProvider(DateTimeOffset currentTime,
@@ -120,6 +131,25 @@ public class DiscountServiceTest {
         };
     }
 
+    
+    private List<DiscountSettingDataModel> CreateFixedValueSetting(IOptions<DiscountJsonOptions> jsonOptions) {
+        return new List<DiscountSettingDataModel>() {
+            new DiscountSettingDataModel() {
+                ShopId = TestShopId,
+                Name = "Some fixed value setting",
+                RuleId = TimeWindowDiscountRule.Id,
+                RuleParameters = new TimeWindowDiscountSettings() {
+                    FromTime = AsUtc(new DateTime(2022, 01, 01, 0, 0, 0, DateTimeKind.Local)),
+                    ToTime = AsUtc(new DateTime(2022, 12, 31, 0, 0, 0, DateTimeKind.Local))
+                }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions),
+                ActionId = FixedValueDiscountAction.Id,
+                ActionParameters = new FixedValueDiscountSettings() {
+                    Value = 100
+                }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions)
+            }
+        };
+    }
+    
     private List<DiscountSettingDataModel> CreateValentinesSpecialSettings(IOptions<DiscountJsonOptions> jsonOptions) {
         return new List<DiscountSettingDataModel>() {
             new DiscountSettingDataModel() {
@@ -217,6 +247,22 @@ public class DiscountServiceTest {
             Items = new[] {
                 new CartItem() { Product = productA, Amount = 3 },
                 new CartItem() { Product = productB, Amount = 7 }
+            }.ToImmutableArray()
+        };
+        return cart;
+    }
+    
+    private Cart CreateZeroCart() {
+        var productA = new Product() {
+            Id = UsbCableProductId,
+            Name = "USB cable",
+            Price = 0m
+        };
+        
+        var cart = new Cart() {
+            ShopId = TestShopId,
+            Items = new[] {
+                new CartItem() { Product = productA, Amount = 1 },
             }.ToImmutableArray()
         };
         return cart;
