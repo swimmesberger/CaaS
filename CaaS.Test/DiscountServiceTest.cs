@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using CaaS.Core;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Tenant;
@@ -15,6 +17,9 @@ using CaaS.Infrastructure.DiscountData;
 using CaaS.Test.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace CaaS.Test;
 
@@ -22,7 +27,10 @@ public class DiscountServiceTest {
     private static readonly Guid TestShopId = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");
     private static readonly Guid UsbCableProductId = new Guid("3BC89C18-279B-4F91-BEE1-BDA6F0C0DC13");
     private static readonly Guid HdmiCableProductId = new Guid("2F850498-45E8-4802-9B3E-30517EBD2911");
-
+    private static readonly Guid DiscountSettingId = new Guid("C954E923-19B5-4E77-840B-15B6CCF10927");
+    private static readonly Guid DiscountSettingMetadataId1 = new Guid("3CCB8ED5-E41E-486A-A8F7-D9BBC3F2D219");
+    private static readonly Guid DiscountSettingMetadataId2 = new Guid("8CCDA3DD-0AE4-45D3-BB82-D44CF85B547F");
+    
     [Fact]
     public async Task ApplyDiscountTimeOutOfRange() {
         // out of range date
@@ -95,6 +103,58 @@ public class DiscountServiceTest {
         cart = await discountService.ApplyDiscountAsync(cart);
         cart.Items[0].CartItemDiscounts.Should().HaveCount(0);
         cart.CartDiscounts.Should().HaveCount(0);
+    }
+
+    [Fact]
+    public async Task AddDiscountSettingOptimistic() {
+        var currentTime = AsUtc(new DateTime(2022, 12, 10, 0, 0, 0, DateTimeKind.Local));
+        await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateFixedValueSetting);
+        var discountService = serviceProvider.GetRequiredService<IDiscountService>();
+
+        var allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        allDiscountSettings.Should().HaveCount(1);
+        
+        var ruleParams = new MinProductCountSettings {
+            Version = 0,
+            Name = "test",
+            ProductId = Guid.NewGuid(),
+            NumberOfItems = 2
+        };
+
+        var actionParams = new FixedValueDiscountSettings {
+            Version = 0,
+            Name = "test action name",
+            Value = 3
+        };
+        
+        var discountSetting = new DiscountSettingRaw {
+            Id = DiscountSettingId,
+            Name = "Test discount setting",
+            Rule = new DiscountMetadataSettingRaw {
+                Id = Guid.Parse("24EEFF2C-65C6-4482-B1AC-C6CB5F2D6B84"),
+                Parameters = JsonSerializer.SerializeToElement(ruleParams)
+            },
+            Action = new DiscountMetadataSettingRaw {
+                Id = Guid.Parse("29AD1EEA-1CFB-4473-8556-65F86FCA0471"),
+                Parameters = JsonSerializer.SerializeToElement(actionParams)
+            },
+            ShopId = TestShopId
+        };
+
+        var addedDiscountSetting = await discountService.AddDiscountSettingAsync(discountSetting);
+        allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+
+        var discountSettingRaws = allDiscountSettings as DiscountSettingRaw[] ?? allDiscountSettings.ToArray();
+        discountSettingRaws.Should().HaveCount(2);
+        discountSettingRaws[1].Id.Should().Be(DiscountSettingId);
+    }
+    
+    private static JsonElement CreateParameters(string key, object value) {
+        var json = new JsonObject {
+            ["version"] = JsonSerializer.SerializeToNode(value),
+            [key] = JsonSerializer.SerializeToNode(value)
+        };
+        return JsonSerializer.SerializeToElement(json);
     }
 
     private ServiceProvider SetupDiscountServiceProvider(DateTimeOffset currentTime,
