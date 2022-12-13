@@ -58,6 +58,14 @@ public class CaasDiscountService : IDiscountService {
         var result = await _discountSettingRepository.FindAllAsync(cancellationToken);
         return result.Select(discountSetting => _settingRawConverter.SerializeSetting(discountSetting)).ToList();
     }
+    
+    public async Task<DiscountSettingRaw> GetDiscountSettingByIdAsync(Guid id, CancellationToken cancellationToken = default) {
+        var result = await _discountSettingRepository.FindByIdAsync(id, cancellationToken);
+        if (result == null) {
+            throw new CaasItemNotFoundException($"DiscountSetting {id} not found");
+        }
+        return _settingRawConverter.SerializeSetting(result);
+    }
 
     public async Task DeleteDiscountSettingAsync(Guid discountSettingId, CancellationToken cancellationToken = default) {
         var discountSetting = await _discountSettingRepository.FindByIdAsync(discountSettingId, cancellationToken);

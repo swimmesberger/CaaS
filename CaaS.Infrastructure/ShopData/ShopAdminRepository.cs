@@ -5,7 +5,7 @@ using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.ShopData; 
 
-internal class ShopAdminRepository : IShopAdminRepository {
+public class ShopAdminRepository : IShopAdminRepository {
     private IDao<ShopAdminDataModel> Dao { get; }
     private ShopAdminDomainModelConverter Converter { get; }
 

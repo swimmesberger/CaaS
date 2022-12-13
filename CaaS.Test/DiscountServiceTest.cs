@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using CaaS.Core;
 using CaaS.Core.Base;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.Base.Validation;
 using CaaS.Core.CartAggregate;
@@ -114,49 +115,60 @@ public class DiscountServiceTest {
         var allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
         allDiscountSettings.Should().HaveCount(1);
         
-        var ruleParams = new MinProductCountSettings {
-            Version = 0,
-            Name = "test",
-            ProductId = Guid.NewGuid(),
-            NumberOfItems = 2
-        };
-
-        var actionParams = new FixedValueDiscountSettings {
-            Version = 0,
-            Name = "test action name",
-            Value = 3
-        };
-        
-        var discountSetting = new DiscountSettingRaw {
-            Id = DiscountSettingId,
-            Name = "Test discount setting",
-            Rule = new DiscountMetadataSettingRaw {
-                Id = Guid.Parse("24EEFF2C-65C6-4482-B1AC-C6CB5F2D6B84"),
-                Parameters = JsonSerializer.SerializeToElement(ruleParams)
-            },
-            Action = new DiscountMetadataSettingRaw {
-                Id = Guid.Parse("29AD1EEA-1CFB-4473-8556-65F86FCA0471"),
-                Parameters = JsonSerializer.SerializeToElement(actionParams)
-            },
-            ShopId = TestShopId
-        };
-
-        var addedDiscountSetting = await discountService.AddDiscountSettingAsync(discountSetting);
+        await discountService.AddDiscountSettingAsync(CreateNewDiscountSettingRaw());
         allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
 
         var discountSettingRaws = allDiscountSettings as DiscountSettingRaw[] ?? allDiscountSettings.ToArray();
         discountSettingRaws.Should().HaveCount(2);
         discountSettingRaws[1].Id.Should().Be(DiscountSettingId);
     }
-    
-    private static JsonElement CreateParameters(string key, object value) {
-        var json = new JsonObject {
-            ["version"] = JsonSerializer.SerializeToNode(value),
-            [key] = JsonSerializer.SerializeToNode(value)
+
+    [Fact]
+    public async Task UpdateDiscountSettingOptimistic() {
+        var currentTime = AsUtc(new DateTime(2022, 12, 10, 0, 0, 0, DateTimeKind.Local));
+        await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateFixedValueSetting);
+        var discountService = serviceProvider.GetRequiredService<IDiscountService>();
+        
+        var addedDiscountSetting = await discountService.AddDiscountSettingAsync(CreateNewDiscountSettingRaw());
+
+        var updatedActionParam = new FixedValueDiscountSettings() {
+            Version = 0,
+            Name = "test action name",
+            Value = 10      //updated from 3 to 10
         };
-        return JsonSerializer.SerializeToElement(json);
+
+        addedDiscountSetting = addedDiscountSetting with {
+            Name = "updated name of setting",
+            Action = new DiscountMetadataSettingRaw() {
+                Id = Guid.Parse("68A4020D-A8AC-4A74-8A04-24E449786898"),
+                Parameters = JsonSerializer.SerializeToElement(updatedActionParam)
+            }
+        };
+
+        var updatedDiscountSetting = await discountService.UpdateDiscountSettingAsync(addedDiscountSetting);
+        var actionParameters = (FixedValueDiscountSettings?)updatedDiscountSetting.Action.Parameters.Deserialize(typeof(FixedValueDiscountSettings), 
+            new DiscountJsonOptions().JsonSerializerOptions);
+
+        actionParameters!.Value.Should().Be(10);
+        updatedDiscountSetting.Name.Should().Be("updated name of setting");
     }
 
+    [Fact]
+    public async Task DeleteDiscountSettingOptimistic() {
+        var currentTime = AsUtc(new DateTime(2022, 12, 10, 0, 0, 0, DateTimeKind.Local));
+        await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateFixedValueSetting);
+        var discountService = serviceProvider.GetRequiredService<IDiscountService>();
+        var allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        allDiscountSettings.Should().HaveCount(1);
+
+        await discountService.AddDiscountSettingAsync(CreateNewDiscountSettingRaw());
+        allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        allDiscountSettings.Should().HaveCount(2);
+        await discountService.DeleteDiscountSettingAsync(DiscountSettingId);
+        allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        allDiscountSettings.Should().HaveCount(1);
+    }
+    
     private ServiceProvider SetupDiscountServiceProvider(DateTimeOffset currentTime,
         Func<IOptions<DiscountJsonOptions>, List<DiscountSettingDataModel>> discountSettings) {
         var serviceCollection = new ServiceCollection();
@@ -287,6 +299,37 @@ public class DiscountServiceTest {
                 }.SerializeToElement(jsonOptions.Value.JsonSerializerOptions)
             }
         };
+    }
+    
+    private DiscountSettingRaw CreateNewDiscountSettingRaw() {
+        var ruleParams = new MinProductCountSettings {
+            Version = 0,
+            Name = "test",
+            ProductId = Guid.NewGuid(),
+            NumberOfItems = 2
+        };
+
+        var actionParams = new FixedValueDiscountSettings {
+            Version = 0,
+            Name = "test action name",
+            Value = 3
+        };
+        
+        var discountSetting = new DiscountSettingRaw {
+            Id = DiscountSettingId,
+            Name = "Test discount setting",
+            Rule = new DiscountMetadataSettingRaw {
+                Id = Guid.Parse("24EEFF2C-65C6-4482-B1AC-C6CB5F2D6B84"),
+                Parameters = JsonSerializer.SerializeToElement(ruleParams)
+            },
+            Action = new DiscountMetadataSettingRaw {
+                Id = Guid.Parse("68A4020D-A8AC-4A74-8A04-24E449786898"),
+                Parameters = JsonSerializer.SerializeToElement(actionParams)
+            },
+            ShopId = TestShopId
+        };
+
+        return discountSetting;
     }
 
     private Cart CreateTestCart() {

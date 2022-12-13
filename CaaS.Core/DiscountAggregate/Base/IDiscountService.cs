@@ -11,6 +11,8 @@ public interface IDiscountService {
     
     Task<IEnumerable<DiscountSettingRaw>> GetAllDiscountSettingsAsync(CancellationToken cancellationToken = default);
 
+    Task<DiscountSettingRaw> GetDiscountSettingByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task DeleteDiscountSettingAsync(Guid discountSettingId, CancellationToken cancellationToken = default);
     
     Task<Cart> ApplyDiscountAsync(Cart cart, CancellationToken cancellationToken = default);
