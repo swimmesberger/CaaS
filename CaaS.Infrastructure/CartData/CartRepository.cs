@@ -15,7 +15,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     private new CartDomainModelConvert Converter => (CartDomainModelConvert)base.Converter;
     
     public CartRepository(IDao<CartDataModel> dao, IDao<ProductCartDataModel> cartItemDao, 
-            IProductRepository productRepository, ICustomerRepository customerRepository, ICouponRepository couponRepository, IDateTimeOffsetProvider timeProvider) : 
+            IProductRepository productRepository, ICustomerRepository customerRepository, ICouponRepository couponRepository, ISystemClock timeProvider) : 
             base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository, timeProvider, couponRepository)) {
     }
 
@@ -34,7 +34,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
 
     public async Task<IReadOnlyList<Cart>> FindExpiredCarts(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
-            new(nameof(Cart.LastAccess), WhereComparator.Less, Converter.TimeProvider.GetNow().Subtract(TimeSpan.FromMinutes(lifeTimeMinutes))),
+            new(nameof(Cart.LastAccess), WhereComparator.Less, Converter.TimeProvider.UtcNow.Subtract(TimeSpan.FromMinutes(lifeTimeMinutes))),
         };
 
         return await Converter.ConvertToDomain(Dao.FindBy(new StatementParameters { Where = parameters }, cancellationToken), cancellationToken);
@@ -70,10 +70,10 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
         internal CartItemRepository CartItemRepository { get; }
         internal ICouponRepository CouponRepository { get; }
         private ICustomerRepository CustomerRepository { get; }
-        internal IDateTimeOffsetProvider TimeProvider { get; }
+        internal ISystemClock TimeProvider { get; }
 
         public CartDomainModelConvert(IDao<ProductCartDataModel> cartItemDao, IProductRepository productRepository, 
-            ICustomerRepository customerRepository, IDateTimeOffsetProvider timeProvider, ICouponRepository couponRepository) {
+            ICustomerRepository customerRepository, ISystemClock timeProvider, ICouponRepository couponRepository) {
             CartItemRepository = new CartItemRepository(cartItemDao, productRepository);
             CustomerRepository = customerRepository;
             TimeProvider = timeProvider;
@@ -94,8 +94,8 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
                 ShopId = domainModel.ShopId,
                 LastAccess = domainModel.LastAccess,
                 RowVersion = domainModel.GetRowVersion(),
-                CreationTime = TimeProvider.GetNow(),
-                LastModificationTime = TimeProvider.GetNow()
+                CreationTime = TimeProvider.UtcNow,
+                LastModificationTime = TimeProvider.UtcNow
             };
         }
 

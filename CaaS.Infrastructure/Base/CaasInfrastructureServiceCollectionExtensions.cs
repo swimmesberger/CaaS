@@ -39,6 +39,7 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddScoped<StaticTenantIdAccessor>();
         services.AddScoped<ITenantIdAccessor>(sp => sp.GetRequiredService<StaticTenantIdAccessor>());
         services.AddComposite<ITenantIdAccessor, CompositeTenantIdAccessor>();
+        services.AddScoped<IAppKeyValidator, ShopAppKeyValidator>();
         return services;
     }
 

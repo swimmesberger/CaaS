@@ -7,7 +7,7 @@ public record DiscountMetadataSettingRaw {
     public static readonly DiscountMetadataSettingRaw Empty = new DiscountMetadataSettingRaw();
     
     public Guid Id { get; init; }
-    public JsonElement Parameters { get; init; } = JsonConstants.EmptyObject;
+    public JsonElement Parameters { get; init; }
 
     public DiscountMetadataSettingRaw() { }
     

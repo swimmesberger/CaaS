@@ -293,8 +293,13 @@ public class AdoStatementMaterializer : IStatementMaterializer {
 
 internal static class StatementExtensions {
     public static string GetTableName(this Statement statement) => $"\"{statement.From}\"" ;
-    
-    public static string GetSelect(this Statement statement) => GetColumnNamesString(statement.Parameters.SelectParameters.Properties);
+
+    public static string GetSelect(this Statement statement) {
+        if (statement.Parameters.SelectParameters.IsEmpty) {
+            return "1"; // SELECT 1 WHEN EMPTY
+        }
+        return GetColumnNamesString(statement.Parameters.SelectParameters.Properties);
+    }
 
     public static string GetInsertColumns(this Statement statement) => GetColumnNamesString(statement.Parameters.InsertParameters.ColumnNames);
     

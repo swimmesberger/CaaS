@@ -8,4 +8,5 @@ public record ShopDataModel : DataModel {
     public string Name { get; init; } = string.Empty;
     public int CartLifetimeMinutes { get; init; } = Core.ShopAggregate.Shop.DefaultCartLifetimeMinutes;
     public Guid AdminId { get; init; }
+    public string AppKey { get; init; } = string.Empty;
 }

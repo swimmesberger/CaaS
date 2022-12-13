@@ -47,7 +47,7 @@ public class OrderService : IOrderService {
         var order = new Order() {
             ShopId = _tenantIdAccessor.GetTenantGuid(),
             Customer = customer,
-            OrderDate = DateTimeOffsetProvider.GetNow()
+            OrderDate = SystemClock.GetNow()
         };
         return await _orderRepository.AddAsync(order, billingAddress, cancellationToken);
     }
@@ -122,7 +122,7 @@ public class OrderService : IOrderService {
                 Items = orderItems.ToImmutableArray(),
                 Address = billingAddress,
                 OrderDiscounts = cart.CartDiscounts.Select(d => d with { ParentId = orderId }).ToImmutableArray(),
-                OrderDate = DateTimeOffsetProvider.GetNow()
+                OrderDate = SystemClock.GetNow()
             };
 
             await _cartService.DeleteCart(cart.Id, cancellationToken);

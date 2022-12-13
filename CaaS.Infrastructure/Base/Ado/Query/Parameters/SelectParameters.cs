@@ -4,6 +4,7 @@ namespace CaaS.Infrastructure.Base.Ado.Query.Parameters;
 
 public record SelectParameters(IReadOnlyList<string> Properties, bool IsAll = false) {
     public static readonly SelectParameters All = new SelectParameters(ImmutableArray<string>.Empty, true);
+    public static readonly SelectParameters Empty = new SelectParameters(ImmutableArray<string>.Empty, false);
 
     public bool IsEmpty => Properties.Count <= 0;
 

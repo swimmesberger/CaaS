@@ -102,8 +102,8 @@ public class OrderRepositoryTest  {
     private IOrderRepository GetOrderRepository() {
        
         var orderDao = new MemoryDao<OrderDataModel>(new List<OrderDataModel>() {
-            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = DateTimeOffsetProvider.GetNow() },
-            new OrderDataModel { Id = ExistingOrder2Id, ShopId = TestShopId, OrderNumber = 5, CustomerId = CustomerIdA, OrderDate = DateTimeOffsetProvider.GetNow() }
+            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = SystemClock.GetNow() },
+            new OrderDataModel { Id = ExistingOrder2Id, ShopId = TestShopId, OrderNumber = 5, CustomerId = CustomerIdA, OrderDate = SystemClock.GetNow() }
         });
 
         var productRepository = GetProductRepository();

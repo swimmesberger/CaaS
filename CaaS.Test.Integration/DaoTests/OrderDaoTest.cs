@@ -98,7 +98,7 @@ public class OrderDaoTest : BaseDaoTest {
                 ShopId = Guid.Parse(ShopTenantId),
                 OrderNumber = 49538,
                 CustomerId = Guid.Parse("9234a988-0abd-4b44-808a-9e7a8852e19c"),
-                OrderDate = DateTimeOffsetProvider.GetNow()
+                OrderDate = SystemClock.GetNow()
         };
         await orderDao.AddAsync(order);
         
@@ -185,14 +185,14 @@ public class OrderDaoTest : BaseDaoTest {
             ShopId = Guid.Parse(ShopTenantId),
             OrderNumber = 49538,
             CustomerId = id2,
-            OrderDate = DateTimeOffsetProvider.GetNow()
+            OrderDate = SystemClock.GetNow()
         };
         var order2 = new OrderDataModel() {
             Id = id2,
             ShopId = Guid.Parse(ShopTenantId),
             OrderNumber = 102,
             CustomerId = id2,
-            OrderDate = DateTimeOffsetProvider.GetNow()
+            OrderDate = SystemClock.GetNow()
         };
         var entities = new List<OrderDataModel> { order1, order2 };
         await orderDao.AddAsync(entities);

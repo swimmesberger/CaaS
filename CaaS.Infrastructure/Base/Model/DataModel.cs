@@ -10,7 +10,7 @@ public abstract record DataModel : IDataModelBase {
     public DateTimeOffset LastModificationTime { get; init; }
 
     protected DataModel() {
-        CreationTime = DateTimeOffsetProvider.GetNow();
+        CreationTime = SystemClock.GetNow();
         LastModificationTime = CreationTime;
     }
 

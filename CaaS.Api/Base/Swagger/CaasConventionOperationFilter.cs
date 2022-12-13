@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -10,17 +12,29 @@ namespace CaaS.Api.Base.Swagger;
 
 public class CaasConventionOperationFilter : IOperationFilter {
     private static readonly IReadOnlyCollection<KeyValuePair<string, string>> ResponseDescriptionMap = new[] {
+        new KeyValuePair<string, string>("1\\d{2}", "Information"),
+
         new KeyValuePair<string, string>("201", "Created"),
         new KeyValuePair<string, string>("202", "Accepted"),
         new KeyValuePair<string, string>("204", "No Content"),
         new KeyValuePair<string, string>("2\\d{2}", "Success"),
 
+        new KeyValuePair<string, string>("304", "Not Modified"),
+        new KeyValuePair<string, string>("3\\d{2}", "Redirect"),
+
         new KeyValuePair<string, string>("400", "Bad Request"),
+        new KeyValuePair<string, string>("401", "Unauthorized"),
+        new KeyValuePair<string, string>("403", "Forbidden"),
         new KeyValuePair<string, string>("404", "Not Found"),
+        new KeyValuePair<string, string>("405", "Method Not Allowed"),
+        new KeyValuePair<string, string>("406", "Not Acceptable"),
+        new KeyValuePair<string, string>("408", "Request Timeout"),
         new KeyValuePair<string, string>("409", "Conflict"),
+        new KeyValuePair<string, string>("429", "Too Many Requests"),
         new KeyValuePair<string, string>("4\\d{2}", "Client Error"),
 
         new KeyValuePair<string, string>("5\\d{2}", "Server Error"),
+        new KeyValuePair<string, string>("default", "Error")
     };
 
     private const string MediaTypeProblemJson = "application/problem+json";
@@ -32,6 +46,11 @@ public class CaasConventionOperationFilter : IOperationFilter {
     }
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+        var attribute = context.MethodInfo.GetAttribute<AuthorizeAttribute>();
+        if (attribute != null) {
+            AddProblemDetailsByStatusCode(StatusCodes.Status401Unauthorized, operation, context);
+            AddAppKeySecurity(operation);
+        }
         if (ApplyReadFor(operation, context)) return;
         if (ApplyWriteFor(operation, context)) return;
 
@@ -112,6 +131,25 @@ public class CaasConventionOperationFilter : IOperationFilter {
         operation.Responses[StatusCodes.Status201Created.ToString()] = okSchema;
     }
 
+    private void AddAppKeySecurity(OpenApiOperation operation) {
+        operation.Security = new List<OpenApiSecurityRequirement>() {
+            new() {
+                {
+                    new OpenApiSecurityScheme {
+                        Reference = new OpenApiReference {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = AppKeyAuthenticationDefaults.AuthenticationScheme
+                        },
+                        Scheme = AppKeyAuthenticationDefaults.AuthenticationScheme,
+                        Name = AppKeyAuthenticationDefaults.AuthenticationScheme,
+                        In = ParameterLocation.Header,
+                    },
+                    new List<string>()
+                }
+            }
+        };
+    }
+    
     internal static void AddProblemDetailsByStatusCode(int statusCode, OpenApiOperation operation, OperationFilterContext context) {
         var statusCodeString = statusCode.ToString();
         var problemDetailsSchema = context.SchemaGenerator.GenerateSchema(typeof(ProblemDetails), context.SchemaRepository);

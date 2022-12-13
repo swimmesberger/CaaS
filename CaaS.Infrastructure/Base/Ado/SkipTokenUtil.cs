@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
-using CaaS.Core.Base;
+using CaaS.Core.Base.Pagination;
 using CaaS.Infrastructure.Base.Mapping;
 
 namespace CaaS.Infrastructure.Base.Ado; 

@@ -1,4 +1,4 @@
-﻿namespace CaaS.Core.Base;
+﻿namespace CaaS.Core.Base.Pagination;
 
 public record ParsedPaginationToken(KeysetPaginationDirection Direction = KeysetPaginationDirection.Forward, SkipTokenValue? Reference = null) {
     public const long DefaultPageSize = 20;

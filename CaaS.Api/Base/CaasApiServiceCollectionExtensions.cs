@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using CaaS.Api.BackgroundServices;
+using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.Base.Swagger;
 using CaaS.Api.DiscountApi.Swagger;
@@ -11,9 +12,11 @@ using CaaS.Infrastructure.Base;
 using CaaS.Infrastructure.Base.Ado.Model;
 using Hellang.Middleware.ProblemDetails;
 using Hellang.Middleware.ProblemDetails.Mvc;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 
 namespace CaaS.Api.Base; 
 
@@ -32,6 +35,16 @@ public static class CaasApiServiceCollectionExtensions {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.Converters.Add(new OpenApiReferenceJsonConverter());
         });
+        // OpenId Azure AD Auth
+        // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        //         .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
+        services.AddAuthentication().AddAppKey();
+        services.AddAuthorization(options => {
+            options.AddPolicy(AppKeyAuthenticationDefaults.AuthorizationPolicy, policy => {
+                policy.AuthenticationSchemes.Add(AppKeyAuthenticationDefaults.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
+            });
+        });
         services.AddEndpointsApiExplorer();
         services.AddHttpContextAccessor();
         services.AddScoped<ITenantIdAccessor, HttpTenantIdAccessor>();
@@ -44,6 +57,15 @@ public static class CaasApiServiceCollectionExtensions {
             options.OperationFilter<RequireTenantOperationFilter>();
             options.OperationFilter<CaasConventionOperationFilter>();
             options.DocumentFilter<DiscountSettingsOpenApiDocumentFilter>();
+            options.AddSecurityDefinition(AppKeyAuthenticationDefaults.AuthenticationScheme, new OpenApiSecurityScheme {
+                Description = @$"AppKey Authorization header using the AppKey scheme. <br /><br />
+                      Enter '{HeaderConstants.AppKey}' [space] and then your token in the text input below.
+                      <br /><br />Example: '{HeaderConstants.AppKey} 362a9325-ffb8-432b-bfd3-91c191fd5d69'",
+                Name = HeaderConstants.AppKey,
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = AppKeyAuthenticationDefaults.AuthenticationScheme
+            });
         });
         services.AddHostedService<CartCleanupService>();
         services.AddScoped<IValidator, WebValidator>();
@@ -51,6 +73,12 @@ public static class CaasApiServiceCollectionExtensions {
         services.AddCaasInfrastructure();
         services.AddCaasCore();
         return services;
+    }
+
+    // ReSharper disable once UnusedMethodReturnValue.Local
+    private static AuthenticationBuilder AddAppKey(this AuthenticationBuilder builder) {
+        builder.Services.AddOptions<AppKeyAuthenticationOptions>(AppKeyAuthenticationDefaults.AuthenticationScheme);
+        return builder.AddScheme<AppKeyAuthenticationOptions, AppKeyAuthenticationHandler>(AppKeyAuthenticationDefaults.AuthenticationScheme, null, null!);
     }
     
     private static void ConfigureProblemDetails(ProblemDetailsOptions options) {

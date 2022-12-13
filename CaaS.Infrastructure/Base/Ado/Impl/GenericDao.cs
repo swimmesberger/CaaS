@@ -16,7 +16,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
     private readonly IStatementExecutor _statementExecutor;
     private readonly IStatementMaterializer _statementMaterializer;
     private readonly IStatementGenerator<T> _statementGenerator;
-    private readonly IDateTimeOffsetProvider _timeProvider;
+    private readonly ISystemClock _timeProvider;
     private readonly ITenantIdAccessor? _tenantService;
     private readonly ITenantIdProvider<T>? _tenantIdProvider;
     
@@ -25,7 +25,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
     public GenericDao(IStatementExecutor statementExecutor,
             IStatementMaterializer statementMaterializer,
             IStatementGenerator<T> statementGenerator,
-            IDateTimeOffsetProvider timeProvider,
+            ISystemClock timeProvider,
             IServiceProvider<ITenantIdAccessor>? tenantService = null) {
         tenantService ??= IServiceProvider<ITenantIdAccessor>.Empty;
         _statementExecutor = statementExecutor;
@@ -84,7 +84,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
         var origRowVersion = entity.RowVersion;
         entity = entity with {
             RowVersion = origRowVersion+1,
-            LastModificationTime = _timeProvider.GetNow()
+            LastModificationTime = _timeProvider.UtcNow
         };
         var statement = _statementGenerator.CreateUpdate(entity, origRowVersion);
         var changedCount = await ExecuteAsync(statement, cancellationToken);
@@ -100,7 +100,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
             var origRowVersion = e.RowVersion;
             return new VersionedEntity<T>(e with {
                 RowVersion = origRowVersion + 1,
-                LastModificationTime = _timeProvider.GetNow()
+                LastModificationTime = _timeProvider.UtcNow
             }, origRowVersion);
         }).ToList();
         var statement = _statementGenerator.CreateUpdate(versionedEntities);

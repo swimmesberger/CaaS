@@ -64,7 +64,7 @@ public class BaseDaoTest : IAsyncLifetime {
         if (tenantId != null) {
             spTenantService = new StaticTenantIdAccessor(tenantId).AsTypedService();
         }
-        return new GenericDao<T>(statementExecutor, sqlGenerator, statementGenerator, DateTimeOffsetProvider.Instance, spTenantService);
+        return new GenericDao<T>(statementExecutor, sqlGenerator, statementGenerator, SystemClock.Instance, spTenantService);
     }
 
     private AdoUnitOfWorkManager GetAdoUnitOfWorkManager() {
