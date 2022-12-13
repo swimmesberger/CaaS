@@ -7,4 +7,5 @@ public record CouponDto {
     public Guid? OrderId { get; init; }
     public Guid? CartId { get; init; }
     public Guid? CustomerId { get; init; }
+    public string ConcurrencyToken { get; init; } = string.Empty;
 }

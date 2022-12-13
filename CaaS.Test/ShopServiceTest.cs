@@ -12,10 +12,10 @@ public class ShopServiceTest {
 
     private IShopService CreateShopService() {
         var shopDao = new MemoryDao<ShopDataModel>(new List<ShopDataModel>() {
-            new ShopDataModel() { Id = TestShopId, Name = TestShopName, AdminId = TestShopAdminId }
+            new ShopDataModel() { Id = TestShopId, Name = TestShopName, AdminId = TestShopAdminId, AppKey = "testKey"}
         });
         var shopAdminDao = new MemoryDao<ShopAdminDataModel>(new List<ShopAdminDataModel>() {
-            new ShopAdminDataModel() { Id = TestShopAdminId, ShopId = TestShopId }
+            new ShopAdminDataModel() { Id = TestShopAdminId, ShopId = TestShopId}
         });
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);

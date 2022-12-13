@@ -7,4 +7,5 @@ public record CustomerDto {
     public string Name { get; init; } = string.Empty;
     public Guid ShopId { get; init; }
     public string EMail { get; init; } = string.Empty;
+    public string ConcurrencyToken { get; init; } = string.Empty;
 }

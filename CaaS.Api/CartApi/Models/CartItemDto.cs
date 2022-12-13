@@ -12,4 +12,5 @@ public record CartItemDto {
     public Guid CartId { get; init; } 
     public int Amount { get; init; } 
     public IReadOnlyList<DiscountDto> CartItemDiscounts { get; init; } = ImmutableArray<DiscountDto>.Empty;
+    public string ConcurrencyToken { get; init; } = String.Empty;
 }

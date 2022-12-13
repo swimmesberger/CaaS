@@ -14,4 +14,5 @@ public record OrderItemDto {
     
     public IReadOnlyList<DiscountDto> OrderItemDiscounts { get; init; } = ImmutableArray<DiscountDto>.Empty;
     public decimal PricePerPiece { get; init; }
+    public string ConcurrencyToken { get; init; } = string.Empty;
 }

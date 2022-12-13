@@ -10,4 +10,5 @@ public record ProductDto {
     public string DownloadLink { get; init; } = string.Empty;
     public decimal Price { get; init; }
     public bool Deleted { get; init; } = false;
+    public string ConcurrencyToken { get; init; } = string.Empty;
 }

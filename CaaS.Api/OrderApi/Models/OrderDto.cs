@@ -16,6 +16,6 @@ public record OrderDto {
     public IReadOnlyList<DiscountDto> OrderDiscounts { get; init; } = ImmutableArray<DiscountDto>.Empty;
     
     public Address BillingAddress { get; init; } = Address.Empty;
-
     public DateTimeOffset OrderDate { get; init; }
+    public string ConcurrencyToken { get; init; } = string.Empty;
 }
