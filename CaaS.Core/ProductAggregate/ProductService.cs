@@ -1,5 +1,6 @@
 ﻿using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Pagination;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.Base.Validation;
 using CaaS.Core.ShopAggregate;

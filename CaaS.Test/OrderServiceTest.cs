@@ -184,7 +184,7 @@ public class OrderServiceTest {
         });
         
         var orderDao = new MemoryDao<OrderDataModel>(new List<OrderDataModel>() {
-            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = DateTimeOffsetProvider.GetNow() }
+            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = SystemClock.GetNow() }
         });
         
         var orderItemDao = new MemoryDao<ProductOrderDataModel>(new List<ProductOrderDataModel>() {
@@ -229,7 +229,7 @@ public class OrderServiceTest {
         var couponRepository = new CouponRepository(couponDao);
         
         var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository, 
-            couponRepository, DateTimeOffsetProvider.Instance);
+            couponRepository, SystemClock.Instance);
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
         var orderRepository = new OrderRepository(orderDao, orderItemDao, orderItemDiscountDao, orderDiscountDao, 
@@ -245,7 +245,7 @@ public class OrderServiceTest {
         var uowManager = new MockUnitOfWorkManager();
 
         var cartService = new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
-            tenantIdAccessor, DateTimeOffsetProvider.Instance);
+            tenantIdAccessor, SystemClock.Instance);
         return new OrderService(orderRepository, customerRepository, cartService, couponRepository, tenantIdAccessor, uowManager, paymentService);
     }
     

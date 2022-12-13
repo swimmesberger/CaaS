@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using CaaS.Core.Base;
 using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
 
@@ -16,8 +15,8 @@ public record DiscountSettingDataModel : DataModel {
     public Guid ActionId { get; init; }
     
     [JsonColumn]
-    public JsonElement RuleParameters { get; init; } = JsonConstants.EmptyElement;
+    public JsonElement RuleParameters { get; init; }
     
     [JsonColumn]
-    public JsonElement ActionParameters { get; init; } = JsonConstants.EmptyElement;
+    public JsonElement ActionParameters { get; init; }
 }

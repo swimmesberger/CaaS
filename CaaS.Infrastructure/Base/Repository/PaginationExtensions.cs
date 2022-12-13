@@ -1,4 +1,4 @@
-﻿using CaaS.Core.Base;
+﻿using CaaS.Core.Base.Pagination;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;

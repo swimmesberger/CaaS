@@ -1,5 +1,5 @@
-﻿using CaaS.Core.Base;
-using CaaS.Core.Base.Exceptions;
+﻿using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Pagination;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;

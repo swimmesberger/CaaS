@@ -30,7 +30,7 @@ public class CartServiceTest {
         var cartService = CreateCartService();
 
         var newCartId = new Guid("397CB87F-9694-4EAD-A549-E3089D61B131");
-        var curTime = DateTimeOffsetProvider.GetNow();
+        var curTime = SystemClock.GetNow();
         var createdCart = await cartService.AddProductToCart(newCartId, ProductAId, 1);
         createdCart.Should().NotBeNull();
         createdCart.ShopId.Should().Be(TestShopId);
@@ -45,7 +45,7 @@ public class CartServiceTest {
     public async Task AddProductToCartWhenProductExistsOptimistic() {
         var cartService = CreateCartService();
 
-        var curTime = DateTimeOffsetProvider.GetNow();
+        var curTime = SystemClock.GetNow();
         var updatedCart = await cartService.AddProductToCart(ExistingCartId, ProductAId, 2);
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
@@ -60,7 +60,7 @@ public class CartServiceTest {
     public async Task AddProductToCartWhenProductNotExistingOptimistic() {
         var cartService = CreateCartService();
 
-        var curTime = DateTimeOffsetProvider.GetNow();
+        var curTime = SystemClock.GetNow();
         var updatedCart = await cartService.AddProductToCart(ExistingCartId, ProductBId, 2);
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
@@ -78,7 +78,7 @@ public class CartServiceTest {
     public async Task RemoveProductFromCartExistingOptimistic() {
         var cartService = CreateCartService();
 
-        var curTime = DateTimeOffsetProvider.GetNow();
+        var curTime = SystemClock.GetNow();
         var updatedCart = await cartService.RemoveProductFromCart(ExistingCartId, ProductAId);
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
@@ -119,7 +119,7 @@ public class CartServiceTest {
         var couponRepository = new CouponRepository(couponDao);
 
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
-        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository,  couponRepository, DateTimeOffsetProvider.Instance);
+        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository,  couponRepository, SystemClock.Instance);
         var componentFactory = new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!);
         var jsonConverter = new DiscountSettingRawConverter(new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()), componentFactory.GetDiscountMetadata());
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, jsonConverter);
@@ -127,6 +127,6 @@ public class CartServiceTest {
         var discountService = new CaasDiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
 
         return new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
-            tenantIdAccessor, DateTimeOffsetProvider.Instance);
+            tenantIdAccessor, SystemClock.Instance);
     }
 }

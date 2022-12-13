@@ -16,7 +16,7 @@ public record Order : IEntityBase {
     public IImmutableList<Coupon> Coupons { get; init; } = ImmutableArray<Coupon>.Empty;
     public IImmutableList<Discount> OrderDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
     public Address Address { get; init; } = Address.Empty;
-    public DateTimeOffset OrderDate { get; init; } = DateTimeOffsetProvider.GetNow();
+    public DateTimeOffset OrderDate { get; init; } = SystemClock.GetNow();
     
     public string ConcurrencyToken { get; init; } = string.Empty;
 

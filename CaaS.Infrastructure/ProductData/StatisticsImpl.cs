@@ -38,11 +38,13 @@ public class StatisticsImpl : IStatisticsService {
             }
         };
 
-        return await _statementExecutor.StreamAsync(statement,
+        var result = await _statementExecutor.StreamAsync(statement,
             async (record, token) => new MostSoldProductResult(
                 await record.GetFieldValueAsync<Guid>("product_id", token),
                 await record.GetFieldValueAsync<long>("sum", token)
-            ), cancellationToken).FirstAsync(cancellationToken);
+            ), cancellationToken).FirstOrDefaultAsync(cancellationToken);
+        result ??= new MostSoldProductResult(Guid.Empty, 0);
+        return result;
     }
 
     public async Task<decimal> AverageDiscountedValueOfOrdersInTimePeriod(DateTimeOffset from, DateTimeOffset until,

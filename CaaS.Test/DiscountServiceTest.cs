@@ -83,7 +83,7 @@ public class DiscountServiceTest {
         serviceCollection.AddCaasDiscountInfrastructure();
         serviceCollection.AddSingleton<ITenantIdAccessor>(new StaticTenantIdAccessor(TestShopId.ToString()));
 
-        serviceCollection.AddSingleton<IDateTimeOffsetProvider>(new StaticDateTimeOffsetProvider(currentTime));
+        serviceCollection.AddSingleton<ISystemClock>(new StaticSystemClock(currentTime));
         serviceCollection.AddSingleton<IDao<DiscountSettingDataModel>>(sp
             => new MemoryDao<DiscountSettingDataModel>(discountSettings.Invoke(sp.GetRequiredService<IOptions<DiscountJsonOptions>>())));
         serviceCollection.AddSingleton<IValidator, MockValidator>();

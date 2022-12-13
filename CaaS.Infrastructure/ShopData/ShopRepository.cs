@@ -26,6 +26,17 @@ public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopReposito
         };
         return await Dao.FindScalarBy<int>(parameters, cancellationToken).FirstOrDefaultAsync(cancellationToken);
     }
+
+    public Task<bool> VerifyAppKeyAsync(Guid id, string appKey, CancellationToken cancellationToken = default) {
+        var parameters = new StatementParameters {
+            SelectParameters = SelectParameters.Empty,
+            WhereParameters = new WhereParameters(new QueryParameter[] {
+                new(nameof(ShopDataModel.Id), id),
+                new(nameof(ShopDataModel.AppKey), appKey)
+            })
+        };
+        return Dao.FindScalarBy<int>(parameters, cancellationToken).AnyAsync(cancellationToken).AsTask();
+    }
 }
 
 internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, Shop> {
@@ -41,7 +52,8 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
         return dataModel with {
             Name = domainModel.Name,
             CartLifetimeMinutes = domainModel.CartLifetimeMinutes,
-            AdminId = domainModel.ShopAdmin.Id
+            AdminId = domainModel.ShopAdmin.Id,
+            AppKey = domainModel.AppKey
         };
     }
 
@@ -55,6 +67,7 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
             Name = domainModel.Name,
             CartLifetimeMinutes = domainModel.CartLifetimeMinutes,
             AdminId = domainModel.ShopAdmin.Id,
+            AppKey = domainModel.AppKey,
             RowVersion = domainModel.GetRowVersion()
         };
     }
@@ -86,6 +99,7 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
             Name = dataModel.Name,
             CartLifetimeMinutes = dataModel.CartLifetimeMinutes,
             ShopAdmin = shopAdmin,
+            AppKey = dataModel.AppKey,
             ConcurrencyToken = dataModel.RowVersion.ToString()
         };
     }

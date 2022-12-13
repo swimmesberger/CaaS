@@ -1,13 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 using AutoMapper;
+using CaaS.Api.Base;
+using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.ProductApi.Models;
 using CaaS.Core.Base;
 using CaaS.Core.ProductAggregate;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CaaS.Api.ProductApi; 
 
+[Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
 [ApiController]
 [Route("[controller]")]
 [RequireTenant]
@@ -48,7 +52,13 @@ public class ProductAdministrationController : ControllerBase {
     }
     
     [HttpGet("/MostSoldProducts")]
-    public async Task<MostSoldProductResult> GetMostSoldProduct([FromQuery] DateTimeOffset from, [FromQuery] DateTimeOffset until, CancellationToken cancellationToken = default) {
+    public async Task<MostSoldProductResult> GetMostSoldProduct([FromQuery][Required] DateTimeOffset from, [FromQuery][Required] DateTimeOffset until, CancellationToken cancellationToken = default) {
+        if (from.Offset != TimeSpan.Zero) {
+            from = from.ToOffset(TimeSpan.Zero); // TODO: verify or throw exception when client does not specify in UTC
+        }
+        if (until.Offset != TimeSpan.Zero) {
+            until = until.ToOffset(TimeSpan.Zero); // TODO: verify or throw exception when client does not specify in UTC
+        }
         return await _statisticsService.GetMostSoldProduct(from, until, cancellationToken: cancellationToken);
     }
 }

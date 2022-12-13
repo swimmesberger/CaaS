@@ -2,7 +2,7 @@
 using System.Net;
 using System.Text;
 
-namespace CaaS.Core.Base;
+namespace CaaS.Core.Base.Pagination;
 
 public class SkipTokenValue {
     public const char CommaDelimiter = ',';

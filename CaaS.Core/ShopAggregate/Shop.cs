@@ -10,5 +10,6 @@ public record Shop : IEntityBase {
     public string Name { get; init; } = string.Empty;
     public int CartLifetimeMinutes { get; init; } = DefaultCartLifetimeMinutes;
     public ShopAdmin ShopAdmin { get; init; } = null!;
+    public string AppKey { get; init; } = Guid.NewGuid().ToString();
     public string ConcurrencyToken { get; init; } = string.Empty;
 }

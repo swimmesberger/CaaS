@@ -1,4 +1,5 @@
 ﻿using CaaS.Core.Base;
+using CaaS.Core.Base.Pagination;
 
 namespace CaaS.Core.ProductAggregate; 
 

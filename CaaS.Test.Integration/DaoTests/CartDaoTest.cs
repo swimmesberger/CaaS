@@ -64,7 +64,7 @@ public class CartDaoTest : BaseDaoTest {
             Id = Guid.Parse("b52d92f6-f453-4e6b-be9d-a159a427108d"),
             ShopId = Guid.Parse(ShopTenantId),
             CustomerId = Guid.Parse("9234a988-0abd-4b44-808a-9e7a8852e19c"),
-            LastAccess = DateTimeOffsetProvider.GetNow()
+            LastAccess = SystemClock.GetNow()
         };
         await cartDao.AddAsync(cart);
 
@@ -152,13 +152,13 @@ public class CartDaoTest : BaseDaoTest {
             Id = id1,
             ShopId = Guid.Parse(ShopTenantId),
             CustomerId = Guid.Parse("9234a988-0abd-4b44-808a-9e7a8852e19c"),
-            LastAccess = DateTimeOffsetProvider.GetNow()
+            LastAccess = SystemClock.GetNow()
         };
         var cart2 = new CartDataModel() {
             Id = id2,
             ShopId = Guid.Parse(ShopTenantId),
             CustomerId = Guid.Parse("9234a988-0abd-4b44-808a-9e7a8852e19c"),
-            LastAccess = DateTimeOffsetProvider.GetNow()
+            LastAccess = SystemClock.GetNow()
         };
         var entities = new List<CartDataModel> { cart1, cart2 };
         await cartDao.AddAsync(entities);

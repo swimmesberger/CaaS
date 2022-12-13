@@ -29,9 +29,6 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T> where T: IDataMod
         if (statementParameters.SelectParameters.IsAll) {
             statementParameters = statementParameters.WithSelect(DataRecordMapper.ByPropertyName().Keys);
         }
-        if (statementParameters.SelectParameters.IsEmpty) {
-            throw new ArgumentException("Empty select statement");
-        }
         return new(StatementType.Find, DataRecordMapper.ByPropertyName(), mapper) {
             Parameters = statementParameters
         };

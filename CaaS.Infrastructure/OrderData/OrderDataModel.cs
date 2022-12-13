@@ -15,5 +15,5 @@ public record OrderDataModel : DataModel {
     public string AddressState { get; init; } = string.Empty;
     public string AddressCountry { get; init; } = string.Empty;
     public string AddressZipCode { get; init; } = string.Empty;
-    public DateTimeOffset OrderDate { get; init; } = DateTimeOffsetProvider.GetNow();
+    public DateTimeOffset OrderDate { get; init; } = SystemClock.GetNow();
 }

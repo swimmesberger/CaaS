@@ -1,6 +1,6 @@
 ﻿// ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace CaaS.Core.Base;
+namespace CaaS.Core.Base.Pagination;
 
 public record PagedResult<T> : CountedResult<T> {
     public long TotalPages { get; init; }

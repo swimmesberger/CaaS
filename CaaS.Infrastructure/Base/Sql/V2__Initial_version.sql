@@ -94,6 +94,7 @@ CREATE TABLE shop (
     "name" varchar(255) NOT NULL,
     "cart_lifetime_minutes" int default 120 NOT NULL,
     "admin_id" uuid,
+    "app_key" varchar(36) NOT NULL,
     CONSTRAINT "FK_shop.admin_id"
         FOREIGN KEY ("admin_id")
             REFERENCES "shop_admin"("id") ON DELETE SET NULL

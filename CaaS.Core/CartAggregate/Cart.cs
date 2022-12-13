@@ -13,7 +13,7 @@ public record Cart : IEntityBase {
     public IImmutableList<CartItem> Items { get; init; } = ImmutableArray<CartItem>.Empty;
     public IImmutableList<Coupon> Coupons { get; init; } = ImmutableArray<Coupon>.Empty;
     public IImmutableList<Discount> CartDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
-    public DateTimeOffset LastAccess { get; init; } = DateTimeOffsetProvider.GetNow();
+    public DateTimeOffset LastAccess { get; init; } = SystemClock.GetNow();
     public string ConcurrencyToken { get; init; } = string.Empty;
 
     public decimal TotalPrice {

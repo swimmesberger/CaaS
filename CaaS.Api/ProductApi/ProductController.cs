@@ -1,6 +1,7 @@
 ﻿using CaaS.Api.Base;
 using CaaS.Api.Base.Attributes;
 using CaaS.Core.Base;
+using CaaS.Core.Base.Pagination;
 using CaaS.Core.ProductAggregate;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
