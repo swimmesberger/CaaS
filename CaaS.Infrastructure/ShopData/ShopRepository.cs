@@ -24,18 +24,23 @@ public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopReposito
             SelectParameters = new SelectParameters(nameof(ShopDataModel.CartLifetimeMinutes)),
             WhereParameters = new WhereParameters(nameof(ShopDataModel.Id), id)
         };
-        return await Dao.FindScalarBy<int>(parameters, cancellationToken).FirstOrDefaultAsync(cancellationToken);
+        var result = await Dao.FindScalarBy<int>(parameters, cancellationToken).ToListAsync(cancellationToken);
+        if (result.Count == 0) {
+            return null;
+        }
+
+        return result[0];
     }
 
     public Task<bool> VerifyAppKeyAsync(Guid id, string appKey, CancellationToken cancellationToken = default) {
         var parameters = new StatementParameters {
-            SelectParameters = SelectParameters.Empty,
+            SelectParameters = new SelectParameters( nameof(ShopDataModel.AppKey)),
             WhereParameters = new WhereParameters(new QueryParameter[] {
                 new(nameof(ShopDataModel.Id), id),
                 new(nameof(ShopDataModel.AppKey), appKey)
             })
         };
-        return Dao.FindScalarBy<int>(parameters, cancellationToken).AnyAsync(cancellationToken).AsTask();
+        return Dao.FindScalarBy<string>(parameters, cancellationToken).AnyAsync(cancellationToken).AsTask();
     }
 }
 

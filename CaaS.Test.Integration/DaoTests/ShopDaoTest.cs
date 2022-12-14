@@ -2,6 +2,7 @@
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.ShopData;
 using Xunit.Abstractions;
@@ -34,12 +35,28 @@ public class ShopDaoTest : BaseDaoTest {
     }
 
     [Fact]
+    public async Task FindByScalar() {
+        var shopDao = GetShopDao();
+
+        var parameters = new StatementParameters {
+            SelectParameters = new SelectParameters( nameof(ShopDataModel.AppKey)),
+            WhereParameters = new WhereParameters(new QueryParameter[] {
+                new(nameof(ShopDataModel.Id), Guid.Parse("a468d796-db09-496d-9794-f6b42f8c7c0b")),
+                new(nameof(ShopDataModel.AppKey), "362a9325-ffb8-432b-bfd3-91c191fd5d69")
+            })
+        };
+
+        var result = await shopDao.FindScalarBy<string>(parameters).ToListAsync();
+        result[0].Should().Be("362a9325-ffb8-432b-bfd3-91c191fd5d69");
+    }
+
+    [Fact]
     public async Task FindByCartLifetimeMinutesAndNameReturnsEntities() {
         var shopDao = GetShopDao();
 
         var parameters = new List<QueryParameter> {
-            new(nameof(Shop.CartLifetimeMinutes), 44415),
-            new(nameof(Shop.Name), "Amazon"),
+            new(nameof(ShopDataModel.CartLifetimeMinutes), 44415),
+            new(nameof(ShopDataModel.Name), "Amazon"),
         };
 
         var shops = await shopDao.FindBy(new StatementParameters { Where = parameters }).ToListAsync();

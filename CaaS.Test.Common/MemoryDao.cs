@@ -23,7 +23,7 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
 
     public IAsyncEnumerable<TValue> FindScalarBy<TValue>(StatementParameters parameters, CancellationToken cancellationToken = default) {
         return FindBy(parameters, cancellationToken).Select(model => {
-            var propName = parameters.SelectParameters.Properties![0];
+            var propName = parameters.SelectParameters.Properties[0];
             return (TValue)_properties[propName].GetValue(model)!;
         });
     }

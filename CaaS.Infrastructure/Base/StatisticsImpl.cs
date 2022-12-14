@@ -5,7 +5,7 @@ using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Query;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 
-namespace CaaS.Infrastructure.ProductData;
+namespace CaaS.Infrastructure.Base;
 
 public class StatisticsImpl : IStatisticsService {
     private readonly ITenantIdAccessor _tenantIdAccessor;
