@@ -1,7 +1,10 @@
-﻿using CaaS.Core.ProductAggregate;
+﻿using CaaS.Core.Base.Pagination;
+using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
+using CaaS.Infrastructure.Base.Repository;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.ProductData;
 using Xunit.Abstractions;
@@ -19,6 +22,23 @@ public class ProductDaoTest : BaseDaoTest {
         var products = await productDao.FindAllAsync().ToListAsync();
         products[0].Name.Should().Be("USB cable");
         products[1].Name.Should().Be("HDMI cable");
+    }
+
+    [Fact]
+    public async Task FindAllWithPagination() {
+        var productDao = GetProductDao(ShopTenantId);
+
+        var statementParams = new StatementParameters() {
+            OrderParameters = new OrderParameters("Name")
+        };
+
+        var paginationToken = new PaginationToken(KeysetPaginationDirection.Forward);
+        var pages = await productDao.FindByPagedAsync(statementParams, 2, paginationToken);
+
+        pages.TotalPages.Should().Be(2);
+        pages.TotalCount.Should().Be(3);
+        pages.NextPage!.Reference!.PropertyValues["Name"].Should().Be("LAN cable");
+        pages.PreviousPage!.Reference!.PropertyValues["Name"].Should().Be("HDMI cable");
     }
     
     [Fact]

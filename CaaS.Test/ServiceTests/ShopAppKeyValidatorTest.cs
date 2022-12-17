@@ -1,10 +1,9 @@
-using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
 
-namespace CaaS.Test; 
+namespace CaaS.Test.ServiceTests; 
 
 public class ShopAppKeyValidatorTest {
     private static readonly Guid TestShopId1 = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");

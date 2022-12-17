@@ -24,7 +24,7 @@ using SwKo.Pay.Api;
 using SwKo.Pay.Api.Exceptions;
 using Customer = CaaS.Core.CustomerAggregate.Customer;
 
-namespace CaaS.Test; 
+namespace CaaS.Test.ServiceTests; 
 
 public class OrderServiceTest {
     private static readonly Guid TestShopId = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");

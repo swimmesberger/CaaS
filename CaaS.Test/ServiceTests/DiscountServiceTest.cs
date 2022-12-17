@@ -1,9 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using CaaS.Core;
 using CaaS.Core.Base;
-using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.Base.Validation;
 using CaaS.Core.CartAggregate;
@@ -18,11 +16,9 @@ using CaaS.Infrastructure.DiscountData;
 using CaaS.Test.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace CaaS.Test;
+namespace CaaS.Test.ServiceTests;
 
 public class DiscountServiceTest {
     private static readonly Guid TestShopId = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");

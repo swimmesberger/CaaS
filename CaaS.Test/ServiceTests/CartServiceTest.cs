@@ -14,7 +14,7 @@ using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
 using Microsoft.Extensions.Options;
 
-namespace CaaS.Test; 
+namespace CaaS.Test.ServiceTests; 
 
 public class CartServiceTest {
     private static readonly Guid TestShopId = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");

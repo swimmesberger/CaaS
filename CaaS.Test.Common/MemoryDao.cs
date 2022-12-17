@@ -4,17 +4,21 @@ using System.Reflection;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Mapping;
 using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Test.Common; 
 
-public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
+public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBase {
+    public IRecordMetadataProvider MetadataProvider { get; }
+    
     private readonly List<T> _data;
     private readonly Dictionary<string, PropertyInfo> _properties;
-
+    
     public MemoryDao(List<T> data) {
         _data = data;
         _properties = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p);
+        MetadataProvider = new MemoryDaoRecordMetadataProvider(_properties);
     }
     
     public IAsyncEnumerable<T> FindAllAsync(CancellationToken cancellationToken = default) {
@@ -112,5 +116,23 @@ public class MemoryDao<T> : IDao<T> where T: IDataModelBase {
             propertyValuePairs[property] = _properties[property].GetValue(model);
         }
         return propertyValuePairs;
+    }
+
+
+    private class MemoryDaoRecordMetadataProvider: IRecordMetadataProvider {
+
+        private Dictionary<string, PropertyInfo> PropertyInfos;
+
+        public MemoryDaoRecordMetadataProvider(Dictionary<string, PropertyInfo> properties) {
+            PropertyInfos = properties;
+        }
+        
+        public int? GetObjectType(string key) {
+            return null;
+        }
+        public Type GetPropertyType(string key) {
+            var info = PropertyInfos[key];
+            return info.PropertyType;
+        }
     }
 }
