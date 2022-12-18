@@ -19,24 +19,6 @@ internal class OrderItemRepository {
         Converter = new OrderItemDomainModelConvert(productRepository, orderItemDiscountDao);
     }
 
-    public async Task<OrderItem?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
-        var dataModel = await Dao.FindByIdAsync(id, cancellationToken);
-        if (dataModel == null) return null;
-        return await Converter.ConvertToDomain(dataModel, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<OrderItem>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
-        var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
-        return await Converter.ConvertToDomain(dataModel, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<OrderItem>> FindByOrderId(Guid orderId, CancellationToken cancellationToken = default) {
-        return (await Converter
-                .ConvertToDomain(Dao
-                    .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDataModel.OrderId), orderId), cancellationToken), cancellationToken))
-            .ToList();
-    }
-    
     public async Task<Dictionary<Guid, IReadOnlyList<OrderItem>>> FindByOrderIds(IEnumerable<Guid> orderIds,
         CancellationToken cancellationToken = default) {
         return (await Converter
@@ -44,12 +26,6 @@ internal class OrderItemRepository {
                     .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDataModel.OrderId), orderIds), cancellationToken), cancellationToken))
             .GroupBy(i => i.OrderId)
             .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<OrderItem>)grp.ToImmutableArray());
-    }
-    
-    public async Task AddAsync(OrderItem entity, CancellationToken cancellationToken = default) {
-        var dataModel = Converter.ConvertFromDomain(entity);
-        await Dao.AddAsync(dataModel, cancellationToken);
-        await Converter.OrderItemDiscountRepository.AddAsync(entity.OrderItemDiscounts, cancellationToken);
     }
     
     public async Task AddAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {
@@ -61,22 +37,6 @@ internal class OrderItemRepository {
         
     }
     
-    public async Task UpdateAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {
-        var domainModels = entities.ToList();
-        var orderItemDiscounts = domainModels.SelectMany(e => e.OrderItemDiscounts);
-        await Converter.OrderItemDiscountRepository.UpdateAsync(orderItemDiscounts, cancellationToken);
-        
-        var dataModels = Converter.ConvertFromDomain(domainModels);
-        await Dao.UpdateAsync(dataModels, cancellationToken);
-    }
-    
-    private async Task<OrderItem> UpdateImplAsync(OrderItem entity, CancellationToken cancellationToken = default) {
-        var dataModel = Converter.ConvertFromDomain(entity);
-        dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
-        entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
-        return entity;
-    }
-
     public async Task UpdateOrderItemsAsync(IReadOnlyCollection<OrderItem> oldDomainModels, IReadOnlyCollection<OrderItem> newDomainModels,
         CancellationToken cancellationToken = default) {
         
@@ -88,12 +48,7 @@ internal class OrderItemRepository {
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
         await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
     }
-
-    public async Task DeleteAsync(IEnumerable<OrderItem> entities, CancellationToken cancellationToken = default) {
-        var dataModels = Converter.ConvertFromDomain(entities);
-        await Dao.DeleteAsync(dataModels, cancellationToken);
-    }
-
+    
     internal class OrderItemDomainModelConvert : IDomainReadModelConverter<ProductOrderDataModel, OrderItem> {
         public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(ProductOrderDataModel.CreationTime));
 

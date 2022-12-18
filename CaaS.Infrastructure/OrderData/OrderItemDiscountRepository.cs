@@ -29,11 +29,6 @@ internal class OrderItemDiscountRepository {
         await Dao.AddAsync(dataModels, cancellationToken);
     }
     
-    public async Task UpdateAsync(IEnumerable<Discount> entities, CancellationToken cancellationToken = default) {
-        var dataModels = Converter.ConvertFromDomain(entities);
-        await Dao.UpdateAsync(dataModels, cancellationToken);
-    }
-    
     public async Task UpdateDiscountsAsync(IEnumerable<Discount> oldDomainModels, IEnumerable<Discount> newDomainModels,
         CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
