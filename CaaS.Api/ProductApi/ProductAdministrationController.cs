@@ -30,12 +30,12 @@ public class ProductAdministrationController : ControllerBase {
     [HttpPost]
     public async Task<ActionResult> AddProduct(ProductForCreationDto productDto, CancellationToken cancellationToken = default) {
         var product = _mapper.Map<Product>(productDto);
-        await _productService.AddProduct(product, cancellationToken);
+        var result = await _productService.AddProduct(product, cancellationToken);
         
         return CreatedAtAction(
             actionName: nameof(AddProduct),
             routeValues: new { productId = product.Id },
-            value: null);
+            value: _mapper.Map<ProductDto>(result));
     }
     
     [HttpPut("{productId:guid}")]
