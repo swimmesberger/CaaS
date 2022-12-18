@@ -104,8 +104,8 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
         }
         return propertyValuePairs;
     }
-
-        private bool Filter(T item, WhereParameters where) {
+    
+    private bool Filter(T item, WhereParameters where) {
         foreach (var whereStatement in where.Statements) {
             switch (whereStatement) {
                 case SimpleWhere simpleWhere:
