@@ -10,7 +10,7 @@ public interface IProductRepository : IRepository {
     
     Task<long> CountAsync(CancellationToken cancellationToken = default);
     Task<Product> AddAsync(Product entity, CancellationToken cancellationToken = default);
-    Task<Product> UpdateAsync(Product entity, CancellationToken cancellationToken = default);
+    Task<Product> UpdateAsync(Product oldEntity, Product newEntity, CancellationToken cancellationToken = default);
 
     Task<PagedResult<Product>> FindByTextSearchAsync(string text, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default);
 }

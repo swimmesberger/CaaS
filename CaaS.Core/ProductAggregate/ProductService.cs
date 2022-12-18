@@ -1,4 +1,5 @@
-﻿using CaaS.Core.Base;
+﻿using System.ComponentModel.DataAnnotations;
+using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Pagination;
 using CaaS.Core.Base.Tenant;
@@ -17,6 +18,14 @@ public class ProductService : IProductService {
         _shopRepository = shopRepository;
         _tenantIdAccessor = tenantIdAccessor;
     }
+
+    public async Task<Product?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
+        var product = await _productRepository.FindByIdAsync(id, cancellationToken);
+        if (product == null) {
+            throw new CaasItemNotFoundException($"Product '{id}' not found");
+        }
+        return product;
+    }
     
     public async Task<PagedResult<Product>> GetByTextSearch(string text, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
         return await _productRepository.FindByTextSearchAsync(text, paginationToken, cancellationToken);
@@ -31,6 +40,22 @@ public class ProductService : IProductService {
 
         return await _productRepository.AddAsync(product, cancellationToken);
     }
+    public async Task<Product> UpdateProduct(Guid productId, Product updatedProduct, CancellationToken cancellationToken = default) {
+        var oldProduct = await _productRepository.FindByIdAsync(productId, cancellationToken);
+        if (oldProduct == null) {
+            throw new CaasItemNotFoundException($"Product '{productId}' not found");
+        }
+
+        if (updatedProduct.Shop.Id != _tenantIdAccessor.GetTenantGuid()) {
+            throw new ValidationException("Cannot update product of foreign shop tenant");
+        }
+
+        updatedProduct = updatedProduct with {
+            Id = productId
+        };
+
+        return await _productRepository.UpdateAsync(oldProduct, updatedProduct, cancellationToken);
+    }
     public async Task<Product> SetPriceOfProduct(Guid productId, decimal price, CancellationToken cancellationToken = default) {
         if (price <= 0) {
             throw new CaasValidationException(new ValidationFailure(nameof(price), "Invalid price"));
@@ -39,21 +64,22 @@ public class ProductService : IProductService {
         if (product == null) {
             throw new CaasItemNotFoundException();
         }
-        product = product with {
+        
+        var updatedProduct = product with {
             Price = price
         };
-        return await _productRepository.UpdateAsync(product, cancellationToken);
+        return await _productRepository.UpdateAsync(product, updatedProduct, cancellationToken);
     }
     public async Task DeleteProduct(Guid productId, CancellationToken cancellationToken = default) {
         var product = await _productRepository.FindByIdAsync(productId, cancellationToken);
         if (product == null) {
             throw new CaasItemNotFoundException();
         }
-        product = product with {
+        var updatedProduct = product with {
             Deleted = true
         };
         
-        await _productRepository.UpdateAsync(product, cancellationToken);
+        await _productRepository.UpdateAsync(product, updatedProduct, cancellationToken);
     }
 
     public async Task<long> Count(CancellationToken cancellationToken = default) {
