@@ -15,24 +15,6 @@ internal class OrderItemDiscountRepository {
         Converter = new OrderDiscountConvert();
     }
     
-    public async Task<Discount?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
-        var dataModel = await Dao.FindByIdAsync(id, cancellationToken);
-        if (dataModel == null) return null;
-        return await Converter.ConvertToDomain(dataModel, cancellationToken);
-    }
-    
-    public async Task<IReadOnlyList<Discount>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
-        var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
-        return await Converter.ConvertToDomain(dataModel, cancellationToken);
-    }
-    
-    public async Task<IReadOnlyList<Discount>> FindByOrderItemId(Guid orderItemId, CancellationToken cancellationToken = default) {
-        return (await Converter
-                .ConvertToDomain(Dao
-                    .FindBy(StatementParameters.CreateWhere(nameof(ProductOrderDiscountDataModel.ProductOrderId), orderItemId), cancellationToken), cancellationToken))
-                .ToList();
-    }
-    
     public async Task<Dictionary<Guid, IReadOnlyList<Discount>>> FindByOrderItemIds(IEnumerable<Guid> orderItemIds,
         CancellationToken cancellationToken = default) {
         return (await Converter
@@ -57,11 +39,6 @@ internal class OrderItemDiscountRepository {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
         var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
         await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
-    }
-    
-    public async Task DeleteAsync(IEnumerable<Discount> entities, CancellationToken cancellationToken = default) {
-        var dataModels = Converter.ConvertFromDomain(entities);
-        await Dao.DeleteAsync(dataModels, cancellationToken);
     }
     
     private class OrderDiscountConvert : IDomainModelConverter<ProductOrderDiscountDataModel, Discount> {

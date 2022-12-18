@@ -102,8 +102,8 @@ public class OrderRepositoryTest  {
     private IOrderRepository GetOrderRepository() {
        
         var orderDao = new MemoryDao<OrderDataModel>(new List<OrderDataModel>() {
-            new OrderDataModel { Id = ExistingOrderId, ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA, OrderDate = SystemClock.GetNow() },
-            new OrderDataModel { Id = ExistingOrder2Id, ShopId = TestShopId, OrderNumber = 5, CustomerId = CustomerIdA, OrderDate = SystemClock.GetNow() }
+            new OrderDataModel { Id = ExistingOrderId, CreationTime =  DateTimeOffset.Parse("2022-05-01"), ShopId = TestShopId, OrderNumber = 54212, CustomerId = CustomerIdA },
+            new OrderDataModel { Id = ExistingOrder2Id, CreationTime = DateTimeOffset.Parse("2021-04-05"), ShopId = TestShopId, OrderNumber = 5, CustomerId = CustomerIdA }
         });
 
         var productRepository = GetProductRepository();
@@ -460,5 +460,24 @@ public class OrderRepositoryTest  {
         returnedOrder.Items[1].OrderItemDiscounts.Count.Should().Be(1);
         returnedOrder.Items[0].OrderItemDiscounts[0].DiscountName.Should().Be("updated discount");
         returnedOrder.Items[1].OrderItemDiscounts[0].DiscountName.Should().Be("additional order item discount");
+    }
+
+    [Fact]
+    public async Task FindByDateRangOptimistic() {
+        var orderRepository = GetOrderRepository();
+        var result = await orderRepository.FindByDateRange(DateTimeOffset.Parse("2022-01-01"),
+            DateTimeOffset.Parse("2023-01-01"));
+        result.Count().Should().Be(1);
+        result[0].Id.Should().Be(ExistingOrderId);
+    }
+
+    [Fact]
+    public async Task Delete() {
+        var orderRepository = GetOrderRepository();
+        var order = await orderRepository.FindByIdAsync(ExistingOrderId);
+        order!.Id.Should().Be(ExistingOrderId);
+        await orderRepository.DeleteAsync(order);
+        order = await orderRepository.FindByIdAsync(ExistingOrderId);
+        order.Should().BeNull();
     }
 }

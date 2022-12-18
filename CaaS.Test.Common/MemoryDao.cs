@@ -128,6 +128,28 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
     }
 
     private bool FilterSimple(T item, IWhereStatement where) {
+
+        //Date range filter
+        if (where.Parameters.Count().Equals(2) 
+            && where.Parameters.ElementAt(0).Value is DateTimeOffset
+            && where.Parameters.ElementAt(1).Value is DateTimeOffset) {
+            var fromDate = (DateTimeOffset)where.Parameters.ElementAt(0).Value;
+            var untilDate = (DateTimeOffset)where.Parameters.ElementAt(1).Value;
+            return  item.CreationTime >= fromDate && item.CreationTime <= untilDate;
+        }
+        
+        //Date filter
+        if (where.Parameters.Count().Equals(1)
+            && where.Parameters.ElementAt(0).Value is DateTimeOffset
+            && where.Parameters.ElementAt(0).Comparator.Equals(WhereComparator.Less)
+           ) {
+            var prop = _properties[where.Parameters.ElementAt(0).Name];
+            var propValue = (DateTimeOffset)prop.GetValue(item);
+            var paramValue = (DateTimeOffset)where.Parameters.ElementAt(0).Value;
+            var result = propValue < paramValue;
+            return result;
+        }
+        
         foreach (var param in where.Parameters) {
             var prop = _properties[param.Name];
             if (param.Value is IEnumerable enumerable and not string) {
@@ -135,6 +157,9 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
                 if (!lookup.Contains(prop.GetValue(item)))
                     return false;
             } else {
+                if (prop.GetValue(item) == null) {
+                    return false;
+                }
                 if (!prop.GetValue(item)!.Equals(param.Value))
                     return false;
             }
@@ -148,26 +173,26 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
             var propValueString = prop.GetValue(item)?.ToString();
             var paramValueString = param.Value?.ToString();
             if (propValueString == null || paramValueString == null) continue;
-            if (!paramValueString.Contains(propValueString, StringComparison.CurrentCultureIgnoreCase))
-                return false;
+            if (propValueString.Contains(paramValueString, StringComparison.CurrentCultureIgnoreCase))
+                return true;
         }
-        return true;
+        return false;
     }
 
 
     private class MemoryDaoRecordMetadataProvider: IRecordMetadataProvider {
 
-        private Dictionary<string, PropertyInfo> PropertyInfos;
+        private readonly Dictionary<string, PropertyInfo> _propertyInfos;
 
         public MemoryDaoRecordMetadataProvider(Dictionary<string, PropertyInfo> properties) {
-            PropertyInfos = properties;
+            _propertyInfos = properties;
         }
         
         public int? GetObjectType(string key) {
             return null;
         }
         public Type GetPropertyType(string key) {
-            var info = PropertyInfos[key];
+            var info = _propertyInfos[key];
             return info.PropertyType;
         }
     }

@@ -17,13 +17,7 @@ internal class CartItemRepository : IRepository {
         Dao = dao;
         Converter = new CartItemDomainModelConvert(productRepository);
     }
-
-    public async Task<IReadOnlyList<CartItem>> FindByCartId(Guid cartId, CancellationToken cancellationToken = default) {
-        return await Converter
-            .ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartId), cancellationToken), cancellationToken);
-    }
-
+    
     public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<CartItem>>> FindByCartIds(IReadOnlyCollection<Guid> cartIds, CancellationToken cancellationToken = default) {
         if (cartIds.Count.Equals(0)) {
             return new Dictionary<Guid, IReadOnlyList<CartItem>>();
@@ -40,17 +34,7 @@ internal class CartItemRepository : IRepository {
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.AddAsync(dataModels, cancellationToken);
     }
-
-    public async Task UpdateAsync(IEnumerable<CartItem> entities, CancellationToken cancellationToken = default) {
-        var dataModels = Converter.ConvertFromDomain(entities);
-        await Dao.UpdateAsync(dataModels, cancellationToken);
-    }
     
-    public async Task DeleteAsync(IEnumerable<CartItem> entities, CancellationToken cancellationToken = default) {
-        var dataModels = Converter.ConvertFromDomain(entities);
-        await Dao.DeleteAsync(dataModels, cancellationToken);
-    }
-
     public async Task UpdateProductsAsync(IEnumerable<CartItem> oldDomainModels, IEnumerable<CartItem> newDomainModels,
         CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);

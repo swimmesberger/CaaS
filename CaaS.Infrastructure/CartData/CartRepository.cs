@@ -18,20 +18,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
             IProductRepository productRepository, ICustomerRepository customerRepository, ICouponRepository couponRepository, ISystemClock timeProvider) : 
             base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository, timeProvider, couponRepository)) {
     }
-
-    public async Task<Cart?> FindCartByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
-        var dataModel = await Dao.FindBy(StatementParameters.CreateWhere(nameof(CartDataModel.CustomerId), customerId), cancellationToken)
-                .FirstOrDefaultAsync(cancellationToken);
-        if (dataModel == null) return null;
-        return await Converter.ConvertToDomain(dataModel, cancellationToken);
-    }
     
-    public async Task<IReadOnlyList<Cart>> FindCartsByShopId(Guid shopId, CancellationToken cancellationToken = default) {
-        return await Converter
-            .ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(nameof(Cart.ShopId), shopId), cancellationToken), cancellationToken);
-    }
-
     public async Task<IReadOnlyList<Cart>> FindExpiredCarts(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
             new(nameof(Cart.LastAccess), WhereComparator.Less, Converter.TimeProvider.UtcNow.Subtract(TimeSpan.FromMinutes(lifeTimeMinutes))),

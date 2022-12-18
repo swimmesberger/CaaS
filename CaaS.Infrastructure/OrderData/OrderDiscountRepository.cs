@@ -16,54 +16,15 @@ internal class OrderDiscountRepository : IRepository {
        Converter = new OrderDiscountDomainModelConvert();
    }
    
-   public async Task<IReadOnlyList<Discount>> FindByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default) {
-       var dataModel = Dao.FindByIdsAsync(ids, cancellationToken);
-       return await Converter.ConvertToDomain(dataModel, cancellationToken);
-   }
-   
-   public async Task<IReadOnlyList<Discount>> FindByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default) {
-       return (await Converter.ConvertToDomain(Dao
-               .FindBy(StatementParameters.CreateWhere(nameof(OrderDiscountDataModel.OrderId), orderId), cancellationToken), cancellationToken))
-           .ToList();
-   }
-   
-   public async Task<Discount> AddAsync(Discount entity, CancellationToken cancellationToken = default) {
-       var dataModel = Converter.ConvertFromDomain(entity); 
-       dataModel = await Dao.AddAsync(dataModel, cancellationToken);
-       entity = await Converter.ConvertToDomain(dataModel, cancellationToken);
-       return entity;
-   }
-   
-   public async Task<Discount> UpdateAsync(Discount oldEntity, Discount newEntity, CancellationToken cancellationToken = default) {
-       var dataModel = Converter.ConvertFromDomain(newEntity);
-       dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
-       newEntity = Converter.ApplyDataModel(newEntity, dataModel);
-       return newEntity;
-   }
-   
    public async Task UpdateAsync(IEnumerable<Discount> oldDomainModels, IEnumerable<Discount> newDomainModels, CancellationToken cancellationToken = default) {
        var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);
        var newDataModels = newDomainModels.Select(Converter.ConvertFromDomain);
        await Dao.ApplyAsync(oldDataModels, newDataModels.ToList(), cancellationToken);
    }
    
-   public async Task DeleteAsync(Discount entity, CancellationToken cancellationToken = default) {
-       await Dao.DeleteAsync(Converter.ConvertFromDomain(entity), cancellationToken);
-   }
-   
    public async Task AddAsync(IEnumerable<Discount> entities, CancellationToken cancellationToken = default) {
        var dataModels = Converter.ConvertFromDomain(entities);
        await Dao.AddAsync(dataModels, cancellationToken);
-   }
-
-   public async Task UpdateAsync(IEnumerable<Discount> entities, CancellationToken cancellationToken = default) {
-       var dataModels = Converter.ConvertFromDomain(entities);
-       await Dao.UpdateAsync(dataModels, cancellationToken);
-   }
-
-   public async Task DeleteAsync(IEnumerable<Discount> entities, CancellationToken cancellationToken = default) {
-       var dataModels = Converter.ConvertFromDomain(entities);
-       await Dao.DeleteAsync(dataModels, cancellationToken);
    }
    
    public async Task<Dictionary<Guid, IReadOnlyList<Discount>>> FindByOrderIdsAsync(IEnumerable<Guid> orderIds,

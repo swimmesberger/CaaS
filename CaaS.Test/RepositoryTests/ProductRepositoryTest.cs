@@ -20,9 +20,13 @@ public class ProductRepositoryTest {
     public async Task FindByTextSearchOptimistic() {
         var productRepository = GetProductRepository();
 
-        var result = await productRepository.FindByTextSearchAsync("HDMI cable", null);
+        var result = await productRepository.FindByTextSearchAsync("cable", null);
         result.TotalCount.Should().Be(3);
         result.TotalPages.Should().Be(1);
+        var items = result.ToArray();
+        items[0].Name.Should().Be("HDMI cable");
+        items[1].Name.Should().Be("USB cable");
+        items[2].Name.Should().Be("VGA cable");
     }
 
     [Fact]

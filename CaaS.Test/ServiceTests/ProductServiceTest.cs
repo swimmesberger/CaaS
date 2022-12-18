@@ -25,6 +25,10 @@ public class ProductServiceTest {
         var result = await productService.GetByTextSearch("nice");
         result.TotalCount.Should().Be(3);
         result.TotalPages.Should().Be(1);
+        var items = result.ToArray();
+        items[0].Name.Should().Be("ProductA");
+        items[1].Name.Should().Be("ProductB");
+        items[2].Name.Should().Be("ProductC");
     }
 
     [Fact]
@@ -64,6 +68,51 @@ public class ProductServiceTest {
         result = await productService.FindByIdAsync(ProductAId);
         result!.Name.Should().Be("Super duper product");
     }
+
+    [Fact]
+    public async Task SetPriceOptimistic() {
+        var productService = CreateProductService();
+        var product = await productService.FindByIdAsync(ProductAId);
+        product!.Price.Should().Be(10);
+
+        product = await productService.SetPriceOfProduct(ProductAId, 99);
+        product!.Price.Should().Be(99);
+    }
+    
+    [Fact]
+    public async Task SetPriceInvalidPrice() {
+        var productService = CreateProductService();
+        var product = await productService.FindByIdAsync(ProductAId);
+        product!.Price.Should().Be(10);
+        
+        Func<Task> act = async () => { await productService.SetPriceOfProduct(ProductAId, -1); };
+        await act.Should().ThrowAsync<CaasValidationException>();
+    }
+    
+    [Fact]
+    public async Task SetPriceInvalidProduct() {
+        var productService = CreateProductService();
+        Func<Task> act = async () => { await productService.SetPriceOfProduct(Guid.Parse("BE16A432-EDD8-4DDB-8D06-7F53C3DBA7B1"), 100); };
+        await act.Should().ThrowAsync<CaasItemNotFoundException>();
+    }
+
+    [Fact]
+    public async Task DeleteProductOptimistic() {
+        var productService = CreateProductService();
+        var product = await productService.FindByIdAsync(ProductAId);
+        product!.Deleted.Should().Be(false);
+        await productService.DeleteProduct(ProductAId);
+        product = await productService.FindByIdAsync(ProductAId);
+        product!.Deleted.Should().Be(true);
+    }
+    
+    [Fact]
+    public async Task DeleteProductPessimistic() {
+        var productService = CreateProductService();
+        Func<Task> act = async () => { await productService.DeleteProduct(Guid.Parse("BE16A432-EDD8-4DDB-8D06-7F53C3DBA7B1")); };
+        await act.Should().ThrowAsync<CaasItemNotFoundException>();
+    }
+    
 
     private IProductService CreateProductService() {
         var shopDao = new MemoryDao<ShopDataModel>(new List<ShopDataModel>() {

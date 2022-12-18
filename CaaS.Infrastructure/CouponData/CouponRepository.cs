@@ -51,11 +51,6 @@ public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICoupon
                 .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.CartId), cartId), cancellationToken), cancellationToken))
             .ToList();
     }
-    
-    public async Task AddAsync(IEnumerable<Coupon> entities, CancellationToken cancellationToken = default) {
-        var dataModels = Converter.ConvertFromDomain(entities);
-        await Dao.AddAsync(dataModels, cancellationToken);
-    }
 
     public async Task UpdateAsync(IEnumerable<Coupon> oldDomainModels, IEnumerable<Coupon> newDomainModels, CancellationToken cancellationToken = default) {
         var oldDataModels = oldDomainModels.Select(Converter.ConvertFromDomain);

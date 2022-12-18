@@ -53,8 +53,7 @@ public class CouponService : ICouponService {
     
     public async Task<Coupon> AddCoupon(Coupon coupon, CancellationToken cancellationToken = default) {
         if (coupon.OrderId != null || coupon.CartId != null || coupon.CustomerId != null) {
-            throw new CaasValidationException("When creating a coupon orderId, cartId and customerId must be null. " +
-                                              "Use the methods 'AllocateCouponToOrder' or 'AllocateCouponToCart' to set orderId, cartId and customerId");
+            throw new CaasValidationException("When creating a coupon orderId, cartId and customerId must be null.");
         }
 
         coupon = coupon with {
