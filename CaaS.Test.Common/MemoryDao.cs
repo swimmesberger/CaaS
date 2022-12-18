@@ -2,9 +2,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Mapping;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Base.Model;
 
 namespace CaaS.Test.Common; 
@@ -34,20 +34,7 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public IAsyncEnumerable<T> FindBy(StatementParameters parameters, CancellationToken cancellationToken = default) {
-        var enumerable = _data.Where(d => {
-            foreach (var param in parameters.WhereParameters.Parameters) {
-                var prop = _properties[param.Name];
-                if (param.Value is IEnumerable enumerable and not string) {
-                    var lookup = enumerable.Cast<object?>().ToHashSet();
-                    if (!lookup.Contains(prop.GetValue(d)))
-                        return false;
-                } else {
-                    if (!prop.GetValue(d)!.Equals(param.Value))
-                        return false;
-                }
-            }
-            return true;
-        });
+        var enumerable = _data.Where(item => Filter(item, parameters.WhereParameters));
         
         IOrderedEnumerable<T>? orderedEnumerable = null;
         foreach (var orderParameter in parameters.OrderBy) {
@@ -116,6 +103,55 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
             propertyValuePairs[property] = _properties[property].GetValue(model);
         }
         return propertyValuePairs;
+    }
+
+        private bool Filter(T item, WhereParameters where) {
+        foreach (var whereStatement in where.Statements) {
+            switch (whereStatement) {
+                case SimpleWhere simpleWhere:
+                    if (!FilterSimple(item, simpleWhere)) 
+                        return false;
+                    break;
+                case RowValueWhere rowValueWhere:
+                    if (!FilterSimple(item, rowValueWhere)) 
+                        return false;
+                    break;
+                case SearchWhere searchWhere:
+                    if (!FilterSearch(item, searchWhere)) 
+                        return false;
+                    break;
+                default:
+                    throw new ArgumentException($"Unsupported where clause '{whereStatement.GetType()}'");
+            }
+        }
+        return true;
+    }
+
+    private bool FilterSimple(T item, IWhereStatement where) {
+        foreach (var param in where.Parameters) {
+            var prop = _properties[param.Name];
+            if (param.Value is IEnumerable enumerable and not string) {
+                var lookup = enumerable.Cast<object?>().ToHashSet();
+                if (!lookup.Contains(prop.GetValue(item)))
+                    return false;
+            } else {
+                if (!prop.GetValue(item)!.Equals(param.Value))
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+    private bool FilterSearch(T item, SearchWhere where) {
+        foreach (var param in where.Parameters) {
+            var prop = _properties[param.Name];
+            var propValueString = prop.GetValue(item)?.ToString();
+            var paramValueString = param.Value?.ToString();
+            if (propValueString == null || paramValueString == null) continue;
+            if (!paramValueString.Contains(propValueString, StringComparison.CurrentCultureIgnoreCase))
+                return false;
+        }
+        return true;
     }
 
 
