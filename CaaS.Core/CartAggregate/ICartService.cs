@@ -14,4 +14,6 @@ public interface ICartService {
     Task<Cart> AddCouponToCart(Guid cartId, Guid couponId, CancellationToken cancellationToken = default);
     
     Task DeleteCart(Guid cartId, CancellationToken cancellationToken = default);
+
+    Task<long> Count(CancellationToken cancellationToken = default);
 }

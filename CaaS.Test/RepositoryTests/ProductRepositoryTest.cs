@@ -1,6 +1,4 @@
-using CaaS.Core.Base.Pagination;
 using CaaS.Core.ProductAggregate;
-using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.ProductData;
 using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;

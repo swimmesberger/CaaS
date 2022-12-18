@@ -126,7 +126,7 @@ public class CartService : ICartService {
         if (cart == null) {
             throw new CaasItemNotFoundException();
         }
-        var productItemIdx = cart.Items.FindIndex(p => p.Id == productId);
+        var productItemIdx = cart.Items.FindIndex(p => p.Product.Id == productId);
         if (productItemIdx == -1) {
             throw new CaasItemNotFoundException();
         } 
@@ -182,5 +182,7 @@ public class CartService : ICartService {
         }
         await _cartRepository.DeleteAsync(cart, cancellationToken);
     }
-    
+    public Task<long> Count(CancellationToken cancellationToken = default) {
+        return _cartRepository.CountAsync(cancellationToken);
+    }
 }

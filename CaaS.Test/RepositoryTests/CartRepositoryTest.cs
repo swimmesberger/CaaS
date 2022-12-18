@@ -1,6 +1,4 @@
-using CaaS.Core.Base;
 using CaaS.Core.CartAggregate;
-using CaaS.Core.CustomerAggregate;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.CustomerData;
@@ -76,6 +74,14 @@ public class CartRepositoryTest {
         cart2 = await cartRepository.FindByIdAsync(ExistingCart2Id);
         cart1.Should().BeNull();
         cart2.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Count() {
+        var currentTime = AsUtc(new DateTime(2022, 12, 18, 16, 30, 0, DateTimeKind.Local));
+        var cartRepository = CreateCartRepository(currentTime);
+        var count = await cartRepository.CountAsync();
+        count.Should().Be(2);
     }
     
     private ICartRepository CreateCartRepository(DateTimeOffset currentDate) {

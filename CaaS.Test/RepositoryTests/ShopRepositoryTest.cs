@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using CaaS.Core.ShopAggregate;
+﻿using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
 

@@ -1,6 +1,5 @@
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.CouponAggregate;
-using CaaS.Core.OrderAggregate;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
@@ -14,7 +13,7 @@ namespace CaaS.Test.ServiceTests;
 
 public class CouponServiceTest {
     private static readonly Guid TestShopId = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");
-    private const string TestShopName = "TestShop";
+    private static readonly string TestShopName = "TestShop";
     private static readonly Guid TestShopAdminId = new Guid("B0077779-E33B-4DFF-938B-47BA4A10854B");
     private static readonly Guid ExistingOrderId = new Guid("0EE2F24E-E2DF-4A0E-B055-C804A6672D44");
     private static readonly Guid ExistingOrder2Id = new Guid("AAABBB4E-E2DF-4A0E-B055-C804A6672555");

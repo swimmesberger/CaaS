@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using CaaS.Core.Base;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate.Models;
