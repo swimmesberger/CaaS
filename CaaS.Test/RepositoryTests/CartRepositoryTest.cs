@@ -5,6 +5,7 @@ using CaaS.Infrastructure.CustomerData;
 using CaaS.Infrastructure.ProductData;
 using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
+using FluentAssertions.Common;
 
 namespace CaaS.Test.RepositoryTests; 
 
@@ -126,5 +127,5 @@ public class CartRepositoryTest {
         return new CartRepository(cartDao, cartItemDao, productRepository, customerRepository, couponRepository, new StaticSystemClock(currentDate));
     }
     
-    private static DateTimeOffset AsUtc(DateTime dateTime) => new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    private static DateTimeOffset AsUtc(DateTime dateTime) => dateTime.ToUniversalTime().ToDateTimeOffset();
 }

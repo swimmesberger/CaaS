@@ -128,28 +128,6 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
     }
 
     private bool FilterSimple(T item, IWhereStatement where) {
-
-        //Date range filter
-        if (where.Parameters.Count().Equals(2) 
-            && where.Parameters.ElementAt(0).Value is DateTimeOffset
-            && where.Parameters.ElementAt(1).Value is DateTimeOffset) {
-            var fromDate = (DateTimeOffset)where.Parameters.ElementAt(0).Value;
-            var untilDate = (DateTimeOffset)where.Parameters.ElementAt(1).Value;
-            return  item.CreationTime >= fromDate && item.CreationTime <= untilDate;
-        }
-        
-        //Date filter
-        if (where.Parameters.Count().Equals(1)
-            && where.Parameters.ElementAt(0).Value is DateTimeOffset
-            && where.Parameters.ElementAt(0).Comparator.Equals(WhereComparator.Less)
-           ) {
-            var prop = _properties[where.Parameters.ElementAt(0).Name];
-            var propValue = (DateTimeOffset)prop.GetValue(item);
-            var paramValue = (DateTimeOffset)where.Parameters.ElementAt(0).Value;
-            var result = propValue < paramValue;
-            return result;
-        }
-        
         foreach (var param in where.Parameters) {
             var prop = _properties[param.Name];
             if (param.Value is IEnumerable enumerable and not string) {
@@ -157,11 +135,13 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
                 if (!lookup.Contains(prop.GetValue(item)))
                     return false;
             } else {
-                if (prop.GetValue(item) == null) {
+                var propValue = prop.GetValue(item);
+                if (propValue == null) {
                     return false;
                 }
-                if (!prop.GetValue(item)!.Equals(param.Value))
+                if (!CompareValues(propValue, param.Value!, param.Comparator)) {
                     return false;
+                }
             }
         }
         return true;
@@ -179,6 +159,26 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
         return false;
     }
 
+    private bool CompareValues(object propValue, object paramValue, WhereComparator comparator) {
+        switch (comparator) {
+            case WhereComparator.Equal:
+                return propValue.Equals(paramValue);
+            case WhereComparator.Less:
+                var valLess = (IComparable)propValue;
+                return valLess.CompareTo(paramValue) < 0;
+            case WhereComparator.LessOrEqual:
+                var valLessOrEqual = (IComparable)propValue;
+                return valLessOrEqual.CompareTo(paramValue) <= 0;
+            case WhereComparator.Greater:
+                var valGreater = (IComparable)propValue;
+                return valGreater.CompareTo(paramValue) > 0;
+            case WhereComparator.GreaterOrEqual:
+                var valGreaterOrEqual = (IComparable)propValue;
+                return valGreaterOrEqual.CompareTo(paramValue) >= 0;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
 
     private class MemoryDaoRecordMetadataProvider: IRecordMetadataProvider {
 

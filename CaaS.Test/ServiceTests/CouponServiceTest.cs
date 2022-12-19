@@ -8,6 +8,7 @@ using CaaS.Infrastructure.OrderData;
 using CaaS.Infrastructure.ProductData;
 using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
+using FluentAssertions.Common;
 
 namespace CaaS.Test.ServiceTests; 
 
@@ -293,5 +294,5 @@ public class CouponServiceTest {
         return new CouponService(couponRepository, cartRepository, orderRepository, new StaticTenantIdAccessor(TestShopId.ToString()));
     }
     
-    private static DateTimeOffset AsUtc(DateTime dateTime) => new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    private static DateTimeOffset AsUtc(DateTime dateTime) => dateTime.ToUniversalTime().ToDateTimeOffset();
 }

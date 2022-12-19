@@ -18,6 +18,7 @@ using CaaS.Infrastructure.DiscountData;
 using CaaS.Infrastructure.ProductData;
 using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
+using FluentAssertions.Common;
 using Microsoft.Extensions.Options;
 
 namespace CaaS.Test.ServiceTests; 
@@ -181,10 +182,8 @@ public class CartServiceTest {
         await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
 
-    private void PrepareCartService(out ICartRepository cartRepository, out ICustomerRepository customerRepository, 
-        out IProductRepository productRepository, out IShopRepository shopRepository, out IDiscountService discountService, 
-        out ICouponRepository couponRepository, out ITenantIdAccessor tenantIdAccessor) {
 
+    private ICartService CreateCartService(ISystemClock clock) {
         var shopDao = new MemoryDao<ShopDataModel>(new List<ShopDataModel>() {
             new ShopDataModel() { Id = TestShopId, Name = TestShopName, AdminId = TestShopAdminId, CartLifetimeMinutes = 60}
         });
@@ -197,9 +196,9 @@ public class CartServiceTest {
         });
         var customerDao = new MemoryDao<CustomerDataModel>(new List<CustomerDataModel>());
         var cartDao = new MemoryDao<CartDataModel>(new List<CartDataModel>() {
-            new CartDataModel() { Id = ExistingCartId, ShopId = TestShopId, LastAccess = DateTimeOffset.Parse("2022-12-18 20:00:00 +1:00")},
-            new CartDataModel() {ShopId = TestShopId, LastAccess = DateTimeOffset.Parse("2022-12-18 17:00:00 +1:00")},
-            new CartDataModel() {ShopId = TestShopId, LastAccess = DateTimeOffset.Parse("2022-12-18 16:00:00 +1:00")},
+            new CartDataModel() { Id = ExistingCartId, ShopId = TestShopId, LastAccess = DateTimeOffset.Parse("2022-12-18 19:00:00 +00:00")},
+            new CartDataModel() {ShopId = TestShopId, LastAccess = DateTimeOffset.Parse("2022-12-18 16:00:00 +00:00")},
+            new CartDataModel() {ShopId = TestShopId, LastAccess = DateTimeOffset.Parse("2022-12-18 15:00:00 +00:00")},
         });
         var cartItemDao = new MemoryDao<ProductCartDataModel>(new List<ProductCartDataModel>() {
             new ProductCartDataModel() { Id = CartItem1Id, Amount = 2, CartId = ExistingCartId, ProductId = ProductAId }
@@ -211,29 +210,23 @@ public class CartServiceTest {
         });
         var discountSettingsDao = new MemoryDao<DiscountSettingDataModel>(new List<DiscountSettingDataModel>());
         
-        shopRepository = new ShopRepository(shopDao, shopAdminDao);
-        productRepository = new ProductRepository(productDao, shopRepository);
-        customerRepository = new CustomerRepository(customerDao);
-        couponRepository = new CouponRepository(couponDao);
+        var shopRepository = new ShopRepository(shopDao, shopAdminDao);
+        var productRepository = new ProductRepository(productDao, shopRepository);
+        var customerRepository = new CustomerRepository(customerDao);
+        var couponRepository = new CouponRepository(couponDao);
 
-        tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
-        cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository,  couponRepository, SystemClock.Instance);
+        var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
+        var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository,  couponRepository, clock);
         var componentFactory = new DiscountComponentFactory(ImmutableArray<DiscountComponentMetadata>.Empty, null!);
         var jsonConverter = new DiscountSettingRawConverter(new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()), componentFactory.GetDiscountMetadata());
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, jsonConverter);
         var validator = new MockValidator();
-        discountService = new CaasDiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
-    }
-
-    private ICartService CreateCartService(ISystemClock clock) {
-        
-        PrepareCartService(out var cartRepository, out var customerRepository, out var productRepository, out var shopRepository, out var discountService,
-            out var couponRepository, out var tenantIdAccessor);
+        var discountService = new CaasDiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
         
         return new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
             tenantIdAccessor, clock);
     }
-    
-    private static DateTimeOffset AsUtc(DateTime dateTime) => new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
-    
+
+    private static DateTimeOffset AsUtc(DateTime dateTime) => dateTime.ToUniversalTime().ToDateTimeOffset();
+
 }

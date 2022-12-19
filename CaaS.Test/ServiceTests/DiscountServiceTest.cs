@@ -14,6 +14,7 @@ using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.DiscountData;
 using CaaS.Test.Common;
+using FluentAssertions.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -367,5 +368,5 @@ public class DiscountServiceTest {
         return cart;
     }
 
-    private static DateTimeOffset AsUtc(DateTime dateTime) => new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    private static DateTimeOffset AsUtc(DateTime dateTime) => dateTime.ToUniversalTime().ToDateTimeOffset();
 }
