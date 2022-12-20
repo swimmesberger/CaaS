@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  caas_db:
+    container_name: caas_db
+    build: 
+      context: ./
+      dockerfile: Dockerfile_db
+    environment:
+      - POSTGRES_DB=caas
+      - POSTGRES_USER=caas
+      - POSTGRES_PASSWORD=caas
+    ports:
+      - 5433:5432
+    networks:
+      - caas_net
+    volumes:
+      - caas_db_vol:/var/lib/postgresql/data
+
+  caas_app:
+    container_name: caas_app
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - caas_net
+    depends_on:
+      - caas_db
+
+networks:
+  caas_net:
+      
+volumes:
+  caas_db_vol:
+
+
+# docker compose build
+# docker compose up

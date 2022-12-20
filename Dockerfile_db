@@ -1,0 +1,21 @@
+# dump build stage
+FROM postgres:15 as dumper
+
+#COPY ./CaaS.Infrastructure/Base/Sql/V1__Database.sql /docker-entrypoint-initdb.d/
+COPY ./CaaS.Infrastructure/Base/Sql/V2__Initial_version.sql /docker-entrypoint-initdb.d/
+COPY ./CaaS.Infrastructure/Base/Sql/V3_Mock_data.sql /docker-entrypoint-initdb.d/
+
+RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
+
+ENV POSTGRES_DB=caas
+ENV POSTGRES_USER=caas
+ENV POSTGRES_PASSWORD=caas
+ENV PGDATA=/data
+
+RUN ["/usr/local/bin/docker-entrypoint.sh", "postgres"]
+
+# final build stage
+FROM postgres:15
+
+COPY --from=dumper /data $PGDATA
+
