@@ -53,8 +53,8 @@ public class CouponServiceTest {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
         var result = await couponService.GetByCartIdAsync(ExistingCart1Id);
-        result.Count().Should().Be(2);
-        var items = result.ToArray();
+        result.Items.Count().Should().Be(2);
+        var items = result.Items.ToArray();
         items[0].Id.Should().Be(CouponIdA);
         items[1].Id.Should().Be(CouponIdB);
     }
@@ -64,7 +64,7 @@ public class CouponServiceTest {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
         var result = await couponService.GetByCartIdAsync(CustomerIdA);
-        result.Count().Should().Be(0);
+        result.Items.Count().Should().Be(0);
     }
     
     [Fact]
@@ -72,8 +72,8 @@ public class CouponServiceTest {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
         var result = await couponService.GetByOrderIdAsync(ExistingOrderId);
-        result.Count().Should().Be(2);
-        var items = result.ToArray();
+        result.Items.Count().Should().Be(2);
+        var items = result.Items.ToArray();
         items[0].Id.Should().Be(CouponIdC);
         items[1].Id.Should().Be(CouponIdD);
     }
@@ -83,7 +83,7 @@ public class CouponServiceTest {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
         var result = await couponService.GetByOrderIdAsync(CustomerIdA);
-        result.Count().Should().Be(0);
+        result.Items.Count().Should().Be(0);
     }
     
     [Fact]
@@ -91,8 +91,8 @@ public class CouponServiceTest {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
         var result = await couponService.GetByCustomerIdAsync(CustomerIdA);
-        result.Count().Should().Be(2);
-        var items = result.ToArray();
+        result.Items.Count().Should().Be(2);
+        var items = result.Items.ToArray();
         items[0].Id.Should().Be(CouponIdA);
         items[1].Id.Should().Be(CouponIdB);
     }
@@ -102,7 +102,7 @@ public class CouponServiceTest {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
         var result = await couponService.GetByCustomerIdAsync(ExistingCart1Id);
-        result.Count().Should().Be(0);
+        result.Items.Count().Should().Be(0);
     }
 
     [Fact]
@@ -286,7 +286,7 @@ public class CouponServiceTest {
         
         var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository, couponRepository, new StaticSystemClock(currentDate));
         
-        return new CouponService(couponRepository, cartRepository, orderRepository, new StaticTenantIdAccessor(TestShopId.ToString()));
+        return new CouponService(couponRepository, new StaticTenantIdAccessor(TestShopId.ToString()));
     }
     
     private static DateTimeOffset AsUtc(DateTime dateTime) => dateTime.ToUniversalTime().ToDateTimeOffset();

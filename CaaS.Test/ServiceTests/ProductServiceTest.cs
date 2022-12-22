@@ -23,9 +23,9 @@ public class ProductServiceTest {
     public async Task GetByTextSearchOptimistic() {
         var productService = CreateProductService();
         var result = await productService.GetByTextSearchAsync("nice");
-        result.TotalCount.Should().Be(3);
+        result.Items.Count.Should().Be(3);
         result.TotalPages.Should().Be(1);
-        var items = result.ToArray();
+        var items = result.Items.ToArray();
         items[0].Name.Should().Be("ProductA");
         items[1].Name.Should().Be("ProductB");
         items[2].Name.Should().Be("ProductC");

@@ -28,7 +28,7 @@ public class ShopAdministrationController : ControllerBase {
     public async Task<IEnumerable<ShopDto>> GetAll(CancellationToken cancellationToken = default) {
         var result = await _shopService.GetAllAsync(cancellationToken);
         Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
-        return _mapper.Map<IEnumerable<ShopDto>>(result);
+        return _mapper.Map<IEnumerable<ShopDto>>(result.Items);
     }
     
     [HttpGet("name/{name}")]

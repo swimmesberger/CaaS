@@ -2,7 +2,6 @@
 using CaaS.Api.Base;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.ProductApi.Models;
-using CaaS.Core.Base;
 using CaaS.Core.Base.Pagination;
 using CaaS.Core.ProductAggregate;
 using Microsoft.AspNetCore.Mvc;
@@ -32,9 +31,9 @@ public class ProductController : ControllerBase {
     [HttpGet]
     public async Task<PagedResult<Product>> GetByTextSearch([FromQuery(Name = "q")] string searchQuery, 
         [FromQuery] KeysetPaginationDirection paginationDirection = KeysetPaginationDirection.Forward,
-        [FromQuery(Name = "$skiptoken")] string? skipToken = null,
+        [FromQuery(Name = "$skiptoken")] string? skipToken = null, [FromQuery] int? limit = null,
         CancellationToken cancellationToken = default) {
-        var paginationToken = new PaginationToken(paginationDirection, skipToken);
+        var paginationToken = new PaginationToken(paginationDirection, skipToken, limit);
         var result = await _productService.GetByTextSearchAsync(searchQuery, paginationToken, cancellationToken);
         Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
         return result;

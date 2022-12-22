@@ -1,9 +1,7 @@
 ﻿using CaaS.Core.Base.Pagination;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
-using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Base.Repository;
 using CaaS.Infrastructure.Gen;
 using CaaS.Infrastructure.ProductData;
@@ -32,8 +30,8 @@ public class ProductDaoTest : BaseDaoTest {
             OrderParameters = new OrderParameters("Name")
         };
 
-        var paginationToken = new PaginationToken(KeysetPaginationDirection.Forward);
-        var pages = await productDao.FindByPagedAsync(statementParams, 2, paginationToken);
+        var paginationToken = new PaginationToken(Direction: KeysetPaginationDirection.Forward, Limit: 2);
+        var pages = await productDao.FindByPagedAsync(statementParams, paginationToken);
 
         pages.TotalPages.Should().Be(2);
         pages.TotalCount.Should().Be(3);

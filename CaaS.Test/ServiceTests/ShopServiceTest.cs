@@ -33,7 +33,7 @@ public class ShopServiceTest {
         var shopService = CreateShopService();
         var shops = await shopService.GetAllAsync();
         shops.TotalCount.Should().Be(2);
-        var shopItems = shops.Select(s => s).ToArray();
+        var shopItems = shops.Items.Select(s => s).ToArray();
         shopItems[0].Id.Should().Be(TestShopId1);
     }
 
@@ -60,7 +60,7 @@ public class ShopServiceTest {
 
         var allShops = await shopService.GetAllAsync();
         allShops.TotalCount.Should().Be(3);
-        var shops = allShops.Select(s => s).ToArray();
+        var shops = allShops.Items.Select(s => s).ToArray();
         shops[0].Id.Should().Be("CE005B43-4C62-4BF9-9045-1AA48F9170CA");
     }
 

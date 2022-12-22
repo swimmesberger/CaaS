@@ -27,7 +27,7 @@ public class CrudReadRepository<TData, TDomain> : IRepository
     
     public Task<PagedResult<TDomain>> FindAllPagedAsync(PaginationToken? paginationToken = null,
         CancellationToken cancellationToken = default) {
-        return FindByPagedAsync(StatementParameters.Empty, null, paginationToken, cancellationToken);
+        return FindByPagedAsync(StatementParameters.Empty, paginationToken, cancellationToken);
     }
     
     public async Task<TDomain?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) {
@@ -41,12 +41,12 @@ public class CrudReadRepository<TData, TDomain> : IRepository
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
 
-    protected async Task<PagedResult<TDomain>> FindByPagedAsync(StatementParameters parameters, long? pageSize = null, PaginationToken? paginationToken = null, 
+    protected async Task<PagedResult<TDomain>> FindByPagedAsync(StatementParameters parameters, PaginationToken? paginationToken = null, 
         CancellationToken cancellationToken = default) {
         if (!parameters.OrderBy.Any()) {
             parameters = parameters.WithOrderBy(GetPaginationOrderByParameters());
         }
-        var pagesModels = await Dao.FindByPagedAsync(parameters, pageSize, paginationToken, cancellationToken);
+        var pagesModels = await Dao.FindByPagedAsync(parameters, paginationToken, cancellationToken);
         return await pagesModels.MapAsync(items => 
             Converter.ConvertToDomain(items.ToAsyncEnumerable(), cancellationToken));
     }

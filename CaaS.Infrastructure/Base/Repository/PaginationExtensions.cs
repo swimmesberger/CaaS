@@ -8,10 +8,19 @@ namespace CaaS.Infrastructure.Base.Repository;
 
 public static class PaginationExtensions {
     
-    public static StatementParameters WithPagination(this StatementParameters statementParameters, long? pageSize = null, 
+    public static StatementParameters WithPagination(this StatementParameters statementParameters, 
         Action<OrderParameterBuilder>? orderBuilderOptions = null, ParsedPaginationToken? paginationToken = null) {
-        pageSize ??= ParsedPaginationToken.DefaultPageSize;
         paginationToken ??= ParsedPaginationToken.First;
+        if (paginationToken.Limit == null) {
+            paginationToken = paginationToken with {
+                Limit = ParsedPaginationToken.DefaultPageLimit
+            };
+        }
+        if (paginationToken.Limit > ParsedPaginationToken.MaximumPageLimit) {
+            paginationToken = paginationToken with {
+                Limit = ParsedPaginationToken.MaximumPageLimit
+            };
+        }
         IReadOnlyList<OrderParameter> columns;
         if (orderBuilderOptions != null) {
             var builder = new OrderParameterBuilder(statementParameters.OrderBy);
@@ -42,30 +51,29 @@ public static class PaginationExtensions {
         return statementParameters with {
             WhereParameters = where,
             OrderBy = orderBy,
-            Limit = pageSize
+            Limit = paginationToken.Limit
         };
     }
     
     public static async Task<PagedResult<TR>> MapAsync<T, TR>(this PagedResult<T> result, Func<IEnumerable<T>, Task<IReadOnlyList<TR>>> selector) => new() {
-        TotalCount = result.TotalCount,
         TotalPages = result.TotalPages,
+        TotalCount = result.TotalCount,
         FirstPage = result.FirstPage,
         PreviousPage = result.PreviousPage,
         NextPage = result.NextPage,
         LastPage = result.LastPage,
-        Items = await selector.Invoke(result)
+        Items = await selector.Invoke(result.Items)
     };
     
-    public static async Task<PagedResult<T>> FindByPagedAsync<T>(this IDao<T> dao, StatementParameters parameters, long? pageSize = null, 
-        PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
-        pageSize ??= ParsedPaginationToken.DefaultPageSize;
+    public static async Task<PagedResult<T>> FindByPagedAsync<T>(this IDao<T> dao, StatementParameters parameters, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
+        var pageLimit = paginationToken?.Limit ?? ParsedPaginationToken.DefaultPageLimit;
         var metadataProvider = dao.CreateMetadataProvider();
         var parsedPaginationToken = paginationToken == null ? null : 
             new ParsedPaginationToken(paginationToken.Direction, paginationToken.Reference == null ? null : 
-                SkipTokenUtil.Parse(paginationToken.Reference, metadataProvider));
+                SkipTokenUtil.Parse(paginationToken.Reference, metadataProvider), pageLimit);
         var totalCount = await dao.CountAsync(parameters, cancellationToken: cancellationToken);
-        var totalPages = (long)Math.Ceiling(totalCount / (double)pageSize);
-        var paginationParameters = parameters.WithPagination(pageSize, null, parsedPaginationToken);
+        var totalPages = (long)Math.Ceiling(totalCount / (double)pageLimit);
+        var paginationParameters = parameters.WithPagination(null, parsedPaginationToken);
         var parameterNames = parameters.OrderBy.Select(o => o.Name).ToList();
         var data = await dao.FindBy(paginationParameters, cancellationToken).ToListAsync(cancellationToken);
         return new PagedResult<T>() {

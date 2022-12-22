@@ -1,13 +1,15 @@
+using CaaS.Core.Base;
+
 namespace CaaS.Core.CouponAggregate; 
 
 public interface ICouponService {
     Task<Coupon?> GetByIdAsync(Guid couponId, CancellationToken cancellationToken = default);
     
-    Task<IReadOnlyCollection<Coupon>> GetByCartIdAsync(Guid cartId, CancellationToken cancellationToken = default);
+    Task<CountedResult<Coupon>> GetByCartIdAsync(Guid cartId, CancellationToken cancellationToken = default);
     
-    Task<IReadOnlyCollection<Coupon>> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default);
+    Task<CountedResult<Coupon>> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default);
     
-    Task<IReadOnlyCollection<Coupon>> GetByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default);
+    Task<CountedResult<Coupon>> GetByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default);
     
     Task<Coupon> SetValueOfCouponAsync(Guid couponId, decimal value, CancellationToken cancellationToken = default);
     

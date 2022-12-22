@@ -19,7 +19,7 @@ public class ProductRepository : CrudRepository<ProductDataModel, Product>, IPro
                 new QueryParameter(nameof(ProductDataModel.Description)) { Value = text }
             }))
         };
-        return await FindByPagedAsync(statementParameters, null, paginationToken, cancellationToken);
+        return await FindByPagedAsync(statementParameters, paginationToken, cancellationToken);
     }
 }
 

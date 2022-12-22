@@ -1,36 +1,34 @@
+using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
-using CaaS.Core.CartAggregate;
-using CaaS.Core.OrderAggregate;
 
 namespace CaaS.Core.CouponAggregate; 
 
 public class CouponService : ICouponService {
     private readonly ICouponRepository _couponRepository;
-    private readonly ICartRepository _cartRepository;
-    private readonly IOrderRepository _orderRepository;
     private readonly ITenantIdAccessor _tenantIdAccessor;
 
-    public CouponService(ICouponRepository couponRepository, ICartRepository cartRepository, IOrderRepository orderRepository, ITenantIdAccessor tenantIdAccessor) {
+    public CouponService(ICouponRepository couponRepository, ITenantIdAccessor tenantIdAccessor) {
         _couponRepository = couponRepository;
-        _cartRepository = cartRepository;
-        _orderRepository = orderRepository;
         _tenantIdAccessor = tenantIdAccessor;
     }
     public async Task<Coupon?> GetByIdAsync(Guid couponId, CancellationToken cancellationToken = default) {
         return await _couponRepository.FindByIdAsync(couponId, cancellationToken);
     }
     
-    public async Task<IReadOnlyCollection<Coupon>> GetByCartIdAsync(Guid cartId, CancellationToken cancellationToken = default) {
-        return await _couponRepository.FindByCartIdAsync(cartId, cancellationToken);
+    public async Task<CountedResult<Coupon>> GetByCartIdAsync(Guid cartId, CancellationToken cancellationToken = default) {
+        var items = await _couponRepository.FindByCartIdAsync(cartId, cancellationToken);
+        return new CountedResult<Coupon>() { Items = items, TotalCount = await _couponRepository.CountAsync(cancellationToken) };
     }
     
-    public async Task<IReadOnlyCollection<Coupon>> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default) {
-        return await _couponRepository.FindByOrderIdAsync(orderId, cancellationToken);
+    public async Task<CountedResult<Coupon>> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default) {
+        var items = await _couponRepository.FindByOrderIdAsync(orderId, cancellationToken);
+        return new CountedResult<Coupon>() { Items = items, TotalCount = await _couponRepository.CountAsync(cancellationToken) };
     }
     
-    public async Task<IReadOnlyCollection<Coupon>> GetByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default) {
-        return await _couponRepository.FindByCustomerIdAsync(customerId, cancellationToken);
+    public async Task<CountedResult<Coupon>> GetByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default) {
+        var items = await _couponRepository.FindByCustomerIdAsync(customerId, cancellationToken);
+        return new CountedResult<Coupon>() { Items = items, TotalCount = await _couponRepository.CountAsync(cancellationToken) };
     }
     
     public async Task<Coupon> UpdateAsync(Guid couponId, Coupon updatedCoupon, CancellationToken cancellationToken = default) {

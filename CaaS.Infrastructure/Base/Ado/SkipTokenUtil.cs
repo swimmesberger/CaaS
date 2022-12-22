@@ -5,7 +5,7 @@ using CaaS.Infrastructure.Base.Mapping;
 
 namespace CaaS.Infrastructure.Base.Ado; 
 
-public class SkipTokenUtil {
+public static class SkipTokenUtil {
     public static SkipTokenValue? CreateFromRecord(IRecordValues? recordValues, IEnumerable<string> properties) {
         if (recordValues == null) return null;
         var propertyValuePairs = new Dictionary<string, object?>();

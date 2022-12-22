@@ -21,7 +21,7 @@ public class ProductRepositoryTest {
         var result = await productRepository.FindByTextSearchAsync("cable", null);
         result.TotalCount.Should().Be(3);
         result.TotalPages.Should().Be(1);
-        var items = result.ToArray();
+        var items = result.Items.ToArray();
         items[0].Name.Should().Be("HDMI cable");
         items[1].Name.Should().Be("USB cable");
         items[2].Name.Should().Be("VGA cable");
@@ -38,7 +38,7 @@ public class ProductRepositoryTest {
     public async Task FindAllPaged() {
         var productRepository = GetProductRepository();
         var result = await productRepository.FindAllPagedAsync();
-        var items = result.ToList();
+        var items = result.Items.ToList();
 
         result.TotalPages.Should().Be(1);
         result.NextPage!.Reference!.PropertyValues["Name"].Should().Be("VGA cable");

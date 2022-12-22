@@ -15,8 +15,8 @@ public class ShopService : IShopService {
     }
     
     public async Task<CountedResult<Shop>> GetAllAsync(CancellationToken cancellationToken = default) {
-        var items = await _shopRepository.FindAllAsync(cancellationToken);
-        return new CountedResult<Shop>() { TotalCount = items.Count, Items = items };
+        var shops = await _shopRepository.FindAllAsync(cancellationToken);
+        return new CountedResult<Shop>() { Items = shops, TotalCount = shops.Count };
     }
     
     public async Task<Shop?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) {

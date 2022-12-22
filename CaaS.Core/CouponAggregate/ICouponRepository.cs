@@ -17,4 +17,5 @@ public interface ICouponRepository : IRepository {
     Task<Coupon> UpdateAsync(Coupon oldEntity, Coupon newEntity, CancellationToken cancellationToken = default);
     Task DeleteAsync(Coupon coupon, CancellationToken cancellationToken = default);
 
+    Task<long> CountAsync(CancellationToken cancellationToken = default);
 }

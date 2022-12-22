@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using AutoMapper;
+using CaaS.Api.Base;
 using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.CouponApi.Models;
 using CaaS.Core.CouponAggregate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 
 namespace CaaS.Api.CouponApi; 
 
@@ -31,20 +33,23 @@ public class CouponAdministrationController : ControllerBase {
     
     [HttpGet("getByCartId/{cartId:guid}")]
     public async Task<IEnumerable<CouponDto>> GetCouponsByCartId(Guid cartId, CancellationToken cancellationToken = default) {
-        var coupon = await _couponService.GetByCartIdAsync(cartId, cancellationToken);
-        return _mapper.Map<IEnumerable<CouponDto>>(coupon);
+        var result =  await _couponService.GetByCartIdAsync(cartId, cancellationToken);
+        Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
+        return _mapper.Map<IEnumerable<CouponDto>>(result.Items);
     }
     
     [HttpGet("getByOrderId/{orderId:guid}")]
     public async Task<IEnumerable<CouponDto>> GetCouponsByOrderId(Guid orderId, CancellationToken cancellationToken = default) {
-        var coupon = await _couponService.GetByOrderIdAsync(orderId, cancellationToken);
-        return _mapper.Map<IEnumerable<CouponDto>>(coupon);
+        var result =  await _couponService.GetByOrderIdAsync(orderId, cancellationToken);
+        Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
+        return _mapper.Map<IEnumerable<CouponDto>>(result.Items);
     }
     
     [HttpGet("getByCustomerId/{customerId:guid}")]
     public async Task<IEnumerable<CouponDto>> GetCouponsByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
-        var coupon = await _couponService.GetByCustomerIdAsync(customerId, cancellationToken);
-        return _mapper.Map<IEnumerable<CouponDto>>(coupon);
+        var result =  await _couponService.GetByCustomerIdAsync(customerId, cancellationToken);
+        Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
+        return _mapper.Map<IEnumerable<CouponDto>>(result.Items);
     }
     
     [HttpPost]
