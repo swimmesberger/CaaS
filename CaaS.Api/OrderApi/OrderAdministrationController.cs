@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
@@ -32,25 +33,16 @@ public class OrderAdministrationController : ControllerBase {
         return _mapper.Map<OrderDto>(result);
     }
     
-    [HttpGet("/AverageValueOfOrdersInTimePeriodConsideringDiscountsAndCoupons")]
-    public async Task<decimal> AverageValueOfOrdersInTimePeriodConsideringDiscountsAndCoupons([FromQuery] DateTimeOffset from, [FromQuery] DateTimeOffset until, CancellationToken cancellationToken = default) {
-        if (from.Offset != TimeSpan.Zero) {
-            throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
-        }
-        if (until.Offset != TimeSpan.Zero) {
-            throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
-        }
-        return await _statisticsService.AverageDiscountedValueOfOrdersInTimePeriod(from, until, cancellationToken: cancellationToken);
-    }
     
-    [HttpGet("/AverageRevenueOfOrdersInTimePeriod")]
-    public async Task<decimal> AverageValueOfOrdersInTimePeriod([FromQuery] DateTimeOffset from, [FromQuery] DateTimeOffset until, CancellationToken cancellationToken = default) {
+    [HttpGet("/OrderStatisticsAggregatedByDate")]
+    public async Task<IReadOnlyCollection<OrderStatisticsResultDateAggregate>> OrderStatisticsAggregatedByDate([FromQuery] DateTimeOffset from, [FromQuery] DateTimeOffset until, 
+            [Required][FromQuery] AggregateByDatePart aggregate, CancellationToken cancellationToken = default) {
         if (from.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
         }
         if (until.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
         }
-        return await _statisticsService.AverageValueOfOrdersInTimePeriod(from, until, cancellationToken: cancellationToken);
+        return await _statisticsService.OrderStatisticsAggregatedByDate(from, until, aggregate, cancellationToken);
     }
 }

@@ -62,7 +62,6 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T> where T: IDataMod
         if (insertValues.Count == 0) return Statement.Empty;
 
         var columnNames = GetPropertyNames();
-
         var insertParameters = new InsertParameters() {
             ColumnNames = columnNames,
             Values = insertValues

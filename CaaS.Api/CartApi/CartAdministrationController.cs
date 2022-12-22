@@ -27,15 +27,27 @@ public class CartAdministrationController : ControllerBase {
         _mapper = mapper;
     }
     
-    [HttpGet("/CartStatistics")]
-    public async Task<CartStatisticsResult> GetCartStatistics([FromQuery] [Required] DateTimeOffset from, [FromQuery] [Required] DateTimeOffset until, CancellationToken cancellationToken = default) {
+    [HttpGet("/CartStatisticsOverall")]
+    public async Task<CartStatisticsResult> CartStatisticsOverall([FromQuery] [Required] DateTimeOffset from, [FromQuery] [Required] DateTimeOffset until, CancellationToken cancellationToken = default) {
         if (from.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
         }
         if (until.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
         }
-        return await _statisticsService.GetCartStatistics(from, until, cancellationToken: cancellationToken);
+        return await _statisticsService.CartStatisticsOverall(from, until, cancellationToken: cancellationToken);
+    }
+    
+    [HttpGet("/CartStatisticsAggregatedByDate")]
+    public async Task<IReadOnlyCollection<CartStatisticsResultDateAggregate>> CartStatisticsAggregatedByDate([FromQuery] [Required] DateTimeOffset from, 
+        [FromQuery] [Required] DateTimeOffset until, [Required] [FromQuery] AggregateByDatePart aggregate, CancellationToken cancellationToken = default) {
+        if (from.Offset != TimeSpan.Zero) {
+            throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
+        }
+        if (until.Offset != TimeSpan.Zero) {
+            throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
+        }
+        return await _statisticsService.CartStatisticsAggregatedByDate(from, until, aggregate, cancellationToken: cancellationToken);
     }
     
 }

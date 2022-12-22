@@ -60,13 +60,14 @@ public class ProductAdministrationController : ControllerBase {
     }
     
     [HttpGet("/MostSoldProducts")]
-    public async Task<MostSoldProductResult> GetMostSoldProduct([FromQuery][Required] DateTimeOffset from, [FromQuery][Required] DateTimeOffset until, CancellationToken cancellationToken = default) {
+    public async Task<MostSoldProductResult> MostSoldProducts([FromQuery][Required] DateTimeOffset from, 
+                    [FromQuery][Required] DateTimeOffset until, CancellationToken cancellationToken = default) {
         if (from.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
         }
         if (until.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
         }
-        return await _statisticsService.GetMostSoldProduct(from, until, cancellationToken: cancellationToken);
+        return await _statisticsService.MostSoldProductOverall(from, until, cancellationToken: cancellationToken);
     }
 }
