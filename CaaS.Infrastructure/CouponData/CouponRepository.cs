@@ -12,7 +12,7 @@ public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICoupon
     public CouponRepository(IDao<CouponDataModel> dao): 
                             base(dao, new CouponDomainModelConvert()) { }
     
-    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIds(IReadOnlyCollection<Guid> orderIds,
+    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIdsAsync(IReadOnlyCollection<Guid> orderIds,
         CancellationToken cancellationToken = default) {
         
         return (await Converter
@@ -22,7 +22,7 @@ public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICoupon
             .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<Coupon>)grp.ToList());
     }
     
-    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByCartIds(IReadOnlyCollection<Guid> cartIds,
+    public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByCartIdsAsync(IReadOnlyCollection<Guid> cartIds,
         CancellationToken cancellationToken = default) {
 
         if (cartIds.Count.Equals(0)) {
@@ -36,17 +36,17 @@ public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICoupon
             .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<Coupon>)grp.ToList());
     }
     
-    public async Task<IReadOnlyList<Coupon>> FindByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Coupon>> FindByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.CustomerId), customerId), cancellationToken), cancellationToken))
             .ToList();
     }
-    public async Task<IReadOnlyList<Coupon>> FindByOrderId(Guid orderId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Coupon>> FindByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.OrderId), orderId), cancellationToken), cancellationToken))
             .ToList();
     }
-    public async Task<IReadOnlyList<Coupon>> FindByCartId(Guid cartId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Coupon>> FindByCartIdAsync(Guid cartId, CancellationToken cancellationToken = default) {
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.CartId), cartId), cancellationToken), cancellationToken))
             .ToList();

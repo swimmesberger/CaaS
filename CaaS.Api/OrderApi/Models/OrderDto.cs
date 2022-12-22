@@ -17,5 +17,6 @@ public record OrderDto {
     
     public Address BillingAddress { get; init; } = Address.Empty;
     public DateTimeOffset OrderDate { get; init; }
+    public decimal TotalPrice { get; init; }
     public string ConcurrencyToken { get; init; } = string.Empty;
 }

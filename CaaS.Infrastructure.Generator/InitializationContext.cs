@@ -5,8 +5,9 @@ namespace CaaS.Infrastructure.Generator {
         public const string GenerateMapperAttributeName = "CaaS.Infrastructure.Base.Mapping.GenerateMapper";
         public const string GenerateMapperSimpleAttributeName = "GenerateMapper";
         public const string GenerateNamespace = "CaaS.Infrastructure.Gen";
-        public const string TenantIdColumnAttributeName = "CaaS.Infrastructure.Base.Mapping.TenantIdColumn";
-        public const string JsonColumnAttributeName = "CaaS.Infrastructure.Base.Mapping.JsonColumn";
+        public const string TenantIdColumnAttributeName = "CaaS.Infrastructure.Base.Mapping.TenantIdColumnAttribute";
+        public const string JsonColumnAttributeName = "CaaS.Infrastructure.Base.Mapping.JsonColumnAttribute";
+        public const string SqlIgnoreAttributeName = "CaaS.Infrastructure.Base.Mapping.SqlIgnoreAttribute";
         public const string EntitySuffix = "DataModel";
         public static readonly string Version = typeof(InitializationContext).Assembly.GetName().Version.ToString();
 

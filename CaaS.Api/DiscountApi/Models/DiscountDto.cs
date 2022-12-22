@@ -6,4 +6,5 @@ public record DiscountDto {
     public decimal DiscountValue { get; init; }
     public Guid ShopId { get; init; }
     public Guid ParentId { get; init; }
+    public string ConcurrencyToken { get; init; } = string.Empty;
 }

@@ -1,19 +1,19 @@
 ﻿namespace CaaS.Core.CartAggregate; 
 
 public interface ICartService {
-    Task<Cart?> GetCartById(Guid cartId, CancellationToken cancellationToken = default);
+    Task<Cart?> GetByIdAsync(Guid cartId, CancellationToken cancellationToken = default);
 
-    Task<Cart> AddProductToCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default);
+    Task<Cart> AddProductToCartAsync(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default);
     
-    Task<int> DeleteExpiredCarts(CancellationToken cancellationToken = default);
+    Task<int> DeleteExpiredCartsAsync(CancellationToken cancellationToken = default);
     
-    Task<Cart> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default);
+    Task<Cart> RemoveProductFromCartAsync(Guid cartId, Guid productId, CancellationToken cancellationToken = default);
     
-    Task<Cart> SetProductQuantityInCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default);
+    Task<Cart> SetProductQuantityInCartAsync(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default);
 
-    Task<Cart> AddCouponToCart(Guid cartId, Guid couponId, CancellationToken cancellationToken = default);
+    Task<Cart> AddCouponToCartAsync(Guid cartId, Guid couponId, CancellationToken cancellationToken = default);
     
-    Task DeleteCart(Guid cartId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid cartId, CancellationToken cancellationToken = default);
 
-    Task<long> Count(CancellationToken cancellationToken = default);
+    Task<long> CountAsync(CancellationToken cancellationToken = default);
 }

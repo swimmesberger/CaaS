@@ -21,7 +21,7 @@ public class StatisticsImpl : IStatisticsService {
 
         string sql = "select " +
                      "po.product_id as product_id, " +
-                     "sum(po.amount) as sum " +
+                     "COALESCE(sum(po.amount),0) as sum " +
                      "from " +
                      "\"product_order\" po join \"order\" o ON (po.order_id = o.id) " +
                      "where " +
@@ -51,7 +51,7 @@ public class StatisticsImpl : IStatisticsService {
         CancellationToken cancellationToken = default) {
 
         string sql =
-            "SELECT AVG(order_value) " +
+            "SELECT COALESCE(AVG(order_value),0) " +
             "FROM( " +
             "SELECT " +
             "order_discounted_sum, " +
@@ -103,7 +103,7 @@ public class StatisticsImpl : IStatisticsService {
     public async Task<decimal> AverageValueOfOrdersInTimePeriod(DateTimeOffset from, DateTimeOffset until,
         CancellationToken cancellationToken = default) {
 
-        string sql = "SELECT AVG(i.sum)" +
+        string sql = "SELECT COALESCE(AVG(i.sum),0)" +
                      "FROM( " +
                      "SELECT " +
                      "SUM(amount*price_per_piece) as sum " +
@@ -134,11 +134,11 @@ public class StatisticsImpl : IStatisticsService {
         CancellationToken cancellationToken = default) {
 
         string sql = "SELECT " +
-                         "COUNT(base.cart_id) as count_carts, " +
-                         "SUM(base.sum_cart) as sum_value_carts, " +
-                         "SUM(base.count_products_in_cart) as count_products_in_carts, " +
-                         "AVG(base.sum_cart) as avg_value_carts, " +
-                         "AVG(base.count_products_in_cart) as avg_products_in_carts	" +
+                         "COALESCE(COUNT(base.cart_id),0) as count_carts, " +
+                         "COALESCE(SUM(base.sum_cart),0) as sum_value_carts, " +
+                         "COALESCE(SUM(base.count_products_in_cart),0) as count_products_in_carts, " +
+                         "COALESCE(AVG(base.sum_cart),0) as avg_value_carts, " +
+                         "COALESCE(AVG(base.count_products_in_cart),0) as avg_products_in_carts	" +
                      "FROM " +
                          "(SELECT " +
                              "cart_id, " +

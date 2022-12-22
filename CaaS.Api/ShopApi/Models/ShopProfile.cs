@@ -10,6 +10,9 @@ public class ShopProfile : Profile {
         
         CreateMap<ShopForCreationDto, Shop>().ForMember(s => s.ShopAdmin,
             opt => opt.MapFrom(src => new ShopAdmin() { Id = src.ShopAdminId }));
+        
+        CreateMap<ShopForUpdateDto, Shop>().ForMember(s => s.ShopAdmin,
+            opt => opt.MapFrom(src => new ShopAdmin() { Id = src.ShopAdminId }));
     }
     
 }

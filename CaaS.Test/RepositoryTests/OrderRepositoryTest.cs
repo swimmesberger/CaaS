@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate.Models;
@@ -16,7 +17,7 @@ namespace CaaS.Test.RepositoryTests;
 
 public class OrderRepositoryTest  {
     private static readonly Guid TestShopId = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");
-    private const string TestShopName = "TestShop";
+    private static readonly string TestShopName = "TestShop";
     private static readonly Guid ExistingOrderId = new Guid("0EE2F24E-E2DF-4A0E-B055-C804A6672D44");
     private static readonly Guid ExistingOrder2Id = new Guid("AAABBB4E-E2DF-4A0E-B055-C804A6672555");
     private static readonly Guid CustomerIdA = new Guid("99C91EA1-4CA5-9097-DFDB-CF688F0DA31F");
@@ -226,7 +227,7 @@ public class OrderRepositoryTest  {
     [Fact]
     public async Task FindByCustomerIdOptimistic() {
         var orderRepository = GetOrderRepository();
-        var orders = await orderRepository.FindByCustomerId(CustomerIdA);
+        var orders = await orderRepository.FindByCustomerIdAsync(CustomerIdA);
         orders.Count.Should().Be(2);
         orders[0].Id.Should().Be(ExistingOrderId);
         orders[1].Id.Should().Be(ExistingOrder2Id);
@@ -464,7 +465,7 @@ public class OrderRepositoryTest  {
     [Fact]
     public async Task FindByDateRangOptimistic() {
         var orderRepository = GetOrderRepository();
-        var result = await orderRepository.FindByDateRange(DateTimeOffset.Parse("2022-01-01"),
+        var result = await orderRepository.FindByDateRangeAsync(DateTimeOffset.Parse("2022-01-01"),
             DateTimeOffset.Parse("2023-01-01"));
         result.Count().Should().Be(1);
         result[0].Id.Should().Be(ExistingOrderId);
@@ -478,5 +479,19 @@ public class OrderRepositoryTest  {
         await orderRepository.DeleteAsync(order);
         order = await orderRepository.FindByIdAsync(ExistingOrderId);
         order.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task FindOrderNumberByIdOptimistic() {
+        var orderRepository = GetOrderRepository();
+        var orderNumber = await orderRepository.FindOrderNumberById(ExistingOrderId);
+        orderNumber.Should().Be(54212);
+    }
+    
+    [Fact]
+    public async Task FindOrderNumberByIdPessimistic() {
+        var orderRepository = GetOrderRepository();
+        Func<Task> act = async () => { await orderRepository.FindOrderNumberById(TestShopId);};
+        await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
 }

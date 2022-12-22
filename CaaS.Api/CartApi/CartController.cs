@@ -21,32 +21,42 @@ public class CartController : ControllerBase {
     }
 
     [HttpGet("{cartId:guid}")]
-    public async Task<CartDto?> GetCartById(Guid cartId, CancellationToken cancellationToken = default) {
-        var result = await _cartService.GetCartById(cartId, cancellationToken);
-        return _mapper.Map<CartDto>(result);
+    public async Task<CartDto?> GetById(Guid cartId, CancellationToken cancellationToken = default) {
+        var result = await _cartService.GetByIdAsync(cartId, cancellationToken);
+        return _mapper.Map<CartDto?>(result);
     }
 
-    // TODO: handle as Created without value response?
     [HttpPost("{cartId:guid}/product/{productId:guid}")]
-    public async Task<Cart> AddProductToCart(Guid cartId, Guid productId, [Required][FromQuery] int productQuantity, CancellationToken cancellationToken = default) {
-        return await _cartService.AddProductToCart(cartId, productId, productQuantity, cancellationToken);
+    public async Task<ActionResult> AddProductToCart(Guid cartId, Guid productId, [Required][FromQuery] int productQuantity, CancellationToken cancellationToken = default) {
+        var result = await _cartService.AddProductToCartAsync(cartId, productId, productQuantity, cancellationToken);
+        
+        return CreatedAtAction(
+            controllerName: "Cart",
+            actionName: nameof(GetById),
+            routeValues: new { cartId = result.Id },
+            value: _mapper.Map<CartDto>(result));
     }
 
-    // TODO: handle as Deleted without value response?
     [HttpDelete("{cartId:guid}/product/{productId:guid}")]
-    public async Task<Cart> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default) {
-        return await _cartService.RemoveProductFromCart(cartId, productId, cancellationToken);
+    public async Task<ActionResult> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default) {
+        var result = await _cartService.RemoveProductFromCartAsync(cartId, productId, cancellationToken);
+        return CreatedAtAction(
+            controllerName: "Cart",
+            actionName: nameof(GetById),
+            routeValues: new { cartId = result.Id },
+            value: _mapper.Map<CartDto>(result));
     }
 
     [HttpPut("{cartId:guid}/product/{productId:guid}")]
-    public async Task<Cart> SetProductQuantityInCart(Guid cartId, Guid productId, [Required][FromQuery] int productQuantity,
+    public async Task<CartDto> SetProductQuantityInCart(Guid cartId, Guid productId, [Required][FromQuery] int productQuantity,
             CancellationToken cancellationToken = default) {
-        return await _cartService.SetProductQuantityInCart(cartId, productId, productQuantity, cancellationToken);
+        var result = await _cartService.SetProductQuantityInCartAsync(cartId, productId, productQuantity, cancellationToken);
+        return _mapper.Map<CartDto>(result);
     }
     
-    [HttpPut("{cartId:guid}")]
-    public async Task<CartDto> AddCouponToCart(Guid cartId, [FromQuery] [Required] Guid couponId, CancellationToken cancellationToken = default) {
-        var result = await _cartService.AddCouponToCart(cartId, couponId, cancellationToken);
+    [HttpPut("{cartId:guid}/coupon/{couponId:guid}")]
+    public async Task<CartDto> AddCouponToCart(Guid cartId, [Required] Guid couponId, CancellationToken cancellationToken = default) {
+        var result = await _cartService.AddCouponToCartAsync(cartId, couponId, cancellationToken);
         return _mapper.Map<CartDto>(result);
     }
 }

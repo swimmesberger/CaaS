@@ -27,7 +27,7 @@ public class CartCleanupService : BackgroundService {
                     // set the tenant id for the current scope
                     tenantIdAccessor.SetTenantGuid(shopId);
                     // delete expired carts
-                    var removedCartCount = await cartService.DeleteExpiredCarts(stoppingToken);
+                    var removedCartCount = await cartService.DeleteExpiredCartsAsync(stoppingToken);
                     _logger.LogInformation("Removed {CartCount} expired carts for shop {ShopId}", removedCartCount, shopId);
                 }
             }

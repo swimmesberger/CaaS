@@ -19,5 +19,18 @@ public record Order : IEntityBase {
     public DateTimeOffset OrderDate { get; init; } = SystemClock.GetNow();
     
     public string ConcurrencyToken { get; init; } = string.Empty;
+    
+    public decimal TotalPrice {
+        get {
+            var price = Items.Select(i => i.TotalPrice).Sum();
+            foreach (var orderCoupon in Coupons) {
+                price -= orderCoupon.Value;
+            }
+            foreach (var orderDiscount in OrderDiscounts) {
+                price -= orderDiscount.DiscountValue;
+            }
+            return price;
+        }
+    }
 
 }

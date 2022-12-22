@@ -41,23 +41,18 @@ public class CouponServiceTest {
     public async Task GetByIdOptimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var result = await couponService.GetCouponById(CouponIdA);
+        var result = await couponService.GetByIdAsync(CouponIdA);
         result.Id.Should().Be(CouponIdA);
+
+        result = await couponService.GetByIdAsync(ExistingOrderId);
+        result.Should().BeNull();
     }
     
-    [Fact]
-    public async Task GetByIdPessimistic() {
-        var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
-        var couponService = CreateCouponService(currentTime);
-        Func<Task> act = async () => { await couponService.GetCouponById(CustomerIdA); };
-        await act.Should().ThrowAsync<CaasItemNotFoundException>();
-    }
-
     [Fact]
     public async Task GetByCartId() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var result = await couponService.GetCouponsByCartId(ExistingCart1Id);
+        var result = await couponService.GetByCartIdAsync(ExistingCart1Id);
         result.Count().Should().Be(2);
         var items = result.ToArray();
         items[0].Id.Should().Be(CouponIdA);
@@ -68,7 +63,7 @@ public class CouponServiceTest {
     public async Task GetByCartIdPessimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var result = await couponService.GetCouponsByCartId(CustomerIdA);
+        var result = await couponService.GetByCartIdAsync(CustomerIdA);
         result.Count().Should().Be(0);
     }
     
@@ -76,7 +71,7 @@ public class CouponServiceTest {
     public async Task GetByOrderId() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var result = await couponService.GetCouponsByOrderId(ExistingOrderId);
+        var result = await couponService.GetByOrderIdAsync(ExistingOrderId);
         result.Count().Should().Be(2);
         var items = result.ToArray();
         items[0].Id.Should().Be(CouponIdC);
@@ -87,7 +82,7 @@ public class CouponServiceTest {
     public async Task GetByOrderIdPessimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var result = await couponService.GetCouponsByOrderId(CustomerIdA);
+        var result = await couponService.GetByOrderIdAsync(CustomerIdA);
         result.Count().Should().Be(0);
     }
     
@@ -95,7 +90,7 @@ public class CouponServiceTest {
     public async Task GetByCustomerId() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var result = await couponService.GetCouponsByCustomerId(CustomerIdA);
+        var result = await couponService.GetByCustomerIdAsync(CustomerIdA);
         result.Count().Should().Be(2);
         var items = result.ToArray();
         items[0].Id.Should().Be(CouponIdA);
@@ -106,7 +101,7 @@ public class CouponServiceTest {
     public async Task GetByCustomerIdPessimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var result = await couponService.GetCouponsByCustomerId(ExistingCart1Id);
+        var result = await couponService.GetByCustomerIdAsync(ExistingCart1Id);
         result.Count().Should().Be(0);
     }
 
@@ -114,10 +109,10 @@ public class CouponServiceTest {
     public async Task SetValueOptimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var coupon = await couponService.GetCouponById(CouponIdE);
+        var coupon = await couponService.GetByIdAsync(CouponIdE);
         coupon.Value.Should().Be(40);
 
-        coupon = await couponService.SetValueOfCoupon(CouponIdE, 100);
+        coupon = await couponService.SetValueOfCouponAsync(CouponIdE, 100);
         coupon.Value.Should().Be(100);
     }
     
@@ -125,10 +120,10 @@ public class CouponServiceTest {
     public async Task SetValueOfRedeemedCouponPessimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var coupon = await couponService.GetCouponById(CouponIdA);
+        var coupon = await couponService.GetByIdAsync(CouponIdA);
         coupon.Value.Should().Be(4);
 
-        Func<Task> act = async () => { await couponService.SetValueOfCoupon(CouponIdA, 20); };
+        Func<Task> act = async () => { await couponService.SetValueOfCouponAsync(CouponIdA, 20); };
         await act.Should().ThrowAsync<CaasValidationException>();
     }
     
@@ -136,10 +131,10 @@ public class CouponServiceTest {
     public async Task SetValueOfNonExistingCouponPessimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var coupon = await couponService.GetCouponById(CouponIdA);
+        var coupon = await couponService.GetByIdAsync(CouponIdA);
         coupon.Value.Should().Be(4);
 
-        Func<Task> act = async () => { await couponService.SetValueOfCoupon(CustomerIdA, 20); };
+        Func<Task> act = async () => { await couponService.SetValueOfCouponAsync(CustomerIdA, 20); };
         await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
 
@@ -147,14 +142,14 @@ public class CouponServiceTest {
     public async Task UpdateOptimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var coupon = await couponService.GetCouponById(CouponIdA);
+        var coupon = await couponService.GetByIdAsync(CouponIdA);
         coupon.Value.Should().Be(4);
         var updatedCoupon = coupon with {
             Value = 500,
             OrderId = ExistingOrder2Id
         };
 
-        var result = await couponService.UpdateCoupon(CouponIdA, updatedCoupon);
+        var result = await couponService.UpdateAsync(CouponIdA, updatedCoupon);
         result.Value.Should().Be(500);
         result.OrderId.Should().Be(ExistingOrder2Id);
     }
@@ -163,14 +158,14 @@ public class CouponServiceTest {
     public async Task UpdatePessimistic() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var coupon = await couponService.GetCouponById(CouponIdA);
+        var coupon = await couponService.GetByIdAsync(CouponIdA);
         coupon.Value.Should().Be(4);
         var updatedCoupon = coupon with {
             Value = 500,
             OrderId = ExistingOrder2Id
         };
 
-        Func<Task> act = async () => { await couponService.UpdateCoupon(CustomerIdA, updatedCoupon); };
+        Func<Task> act = async () => { await couponService.UpdateAsync(CustomerIdA, updatedCoupon); };
         await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
 
@@ -185,7 +180,7 @@ public class CouponServiceTest {
             Value = 99
         };
 
-        var result = await couponService.AddCoupon(coupon);
+        var result = await couponService.AddAsync(coupon);
         result.Id.Should().Be(id);
         result.Value.Should().Be(99);
     }
@@ -202,7 +197,7 @@ public class CouponServiceTest {
             OrderId = ExistingOrderId
         };
         
-        Func<Task> act = async () => {await couponService.AddCoupon(coupon); };
+        Func<Task> act = async () => {await couponService.AddAsync(coupon); };
         await act.Should().ThrowAsync<CaasValidationException>();
     }
 
@@ -210,12 +205,12 @@ public class CouponServiceTest {
     public async Task Delete() {
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
         var couponService = CreateCouponService(currentTime);
-        var coupon = await couponService.GetCouponById(CouponIdE);
+        var coupon = await couponService.GetByIdAsync(CouponIdE);
         coupon.Id.Should().Be(CouponIdE);
 
-        await couponService.DeleteCoupon(CouponIdE);
+        await couponService.DeleteAsync(CouponIdE);
         
-        Func<Task> act = async () => {await couponService.DeleteCoupon(CouponIdE); };
+        Func<Task> act = async () => {await couponService.DeleteAsync(CouponIdE); };
         await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
     

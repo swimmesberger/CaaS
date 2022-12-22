@@ -19,7 +19,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
             base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository, timeProvider, couponRepository)) {
     }
     
-    public async Task<IReadOnlyList<Cart>> FindExpiredCarts(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Cart>> FindExpiredCartsAsync(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
             new(nameof(Cart.LastAccess), WhereComparator.Less, Converter.TimeProvider.UtcNow.Subtract(TimeSpan.FromMinutes(lifeTimeMinutes))),
         };
@@ -105,7 +105,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
             var customerDict = (await CustomerRepository
                     .FindByIdsAsync(customerIds, cancellationToken))
                 .ToDictionary(s => s.Id, s => s);
-            var couponsDict = await CouponRepository.FindByCartIds(cartIds, cancellationToken);
+            var couponsDict = await CouponRepository.FindByCartIdsAsync(cartIds, cancellationToken);
             var domainModels = ImmutableList.CreateBuilder<Cart>();
             foreach (var dataModel in dataModels) {
                 var cartItems = cartItemsDict.TryGetValue(dataModel.Id, out var cartItemsList)

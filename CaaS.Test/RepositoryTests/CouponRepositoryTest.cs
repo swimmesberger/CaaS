@@ -20,7 +20,7 @@ public class CouponRepositoryTest {
     [Fact]
     public async Task FindByCustomerId() {
         var couponRepository = CreateCouponRepository();
-        var result = await couponRepository.FindByCustomerId(CustomerIdA);
+        var result = await couponRepository.FindByCustomerIdAsync(CustomerIdA);
         result.Count().Should().Be(2);
         result[0].Id.Should().Be(CouponIdA);
         result[1].Id.Should().Be(CouponIdB);
@@ -29,7 +29,7 @@ public class CouponRepositoryTest {
     [Fact]
     public async Task FindByOrderId() {
         var couponRepository = CreateCouponRepository();
-        var result = await couponRepository.FindByOrderId(ExistingOrderId);
+        var result = await couponRepository.FindByOrderIdAsync(ExistingOrderId);
         result.Count().Should().Be(2);
         result[0].Id.Should().Be(CouponIdC);
         result[1].Id.Should().Be(CouponIdD);
@@ -39,7 +39,7 @@ public class CouponRepositoryTest {
     public async Task FindByOrderIds() {
         var couponRepository = CreateCouponRepository();
         var orderList = new List<Guid>() { ExistingOrderId, ExistingOrder2Id };
-        var result = await couponRepository.FindByOrderIds(orderList);
+        var result = await couponRepository.FindByOrderIdsAsync(orderList);
         result.Count().Should().Be(2);
         result.Should().ContainKey(ExistingOrderId);
         result.Should().ContainKey(ExistingOrder2Id);
@@ -52,7 +52,7 @@ public class CouponRepositoryTest {
     [Fact]
     public async Task FindByCartId() {
         var couponRepository = CreateCouponRepository();
-        var result = await couponRepository.FindByCartId(ExistingCart1Id);
+        var result = await couponRepository.FindByCartIdAsync(ExistingCart1Id);
         result.Count().Should().Be(2);
         result[0].Id.Should().Be(CouponIdA);
         result[1].Id.Should().Be(CouponIdB);
@@ -62,7 +62,7 @@ public class CouponRepositoryTest {
     public async Task FindByCartIds() {
         var couponRepository = CreateCouponRepository();
         var cartList = new List<Guid>() { ExistingCart1Id};
-        var result = await couponRepository.FindByCartIds(cartList);
+        var result = await couponRepository.FindByCartIdsAsync(cartList);
         result.Count().Should().Be(1);
         result.Should().ContainKey(ExistingCart1Id);
         result[ExistingCart1Id][0].Id.Should().Be(CouponIdA);

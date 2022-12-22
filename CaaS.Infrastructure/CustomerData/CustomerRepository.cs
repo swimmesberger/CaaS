@@ -8,6 +8,13 @@ namespace CaaS.Infrastructure.CustomerData;
 public class CustomerRepository : CrudRepository<CustomerDataModel, Customer>, ICustomerRepository {
     public CustomerRepository(IDao<CustomerDataModel> dao) : 
             base(dao, new CustomerDomainModelConverter()) { }
+    
+    public async Task<Customer?> FindByEmailAsync(string email, CancellationToken cancellationToken = default) {
+        var dataModel = await Dao.FindBy(StatementParameters.CreateWhere(nameof(CustomerDataModel.EMail), email), cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (dataModel == null) return null;
+        return await Converter.ConvertToDomain(dataModel, cancellationToken);
+    }
 }
 
 internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerDataModel, Customer> {

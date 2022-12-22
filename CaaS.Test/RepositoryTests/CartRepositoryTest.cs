@@ -47,7 +47,7 @@ public class CartRepositoryTest {
     public async Task FindExpiredCarts() {
         var currentTime = AsUtc(new DateTime(2022, 12, 18, 16, 30, 0, DateTimeKind.Local));
         var cartRepository = CreateCartRepository(currentTime);
-        var result = await cartRepository.FindExpiredCarts(120);
+        var result = await cartRepository.FindExpiredCartsAsync(120);
         result.Count().Should().Be(1);
         result[0].Id.Should().Be(ExistingCart2Id);
     }

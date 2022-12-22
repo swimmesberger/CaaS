@@ -29,6 +29,13 @@ public class ShopRepositoryTest {
         var shopRepository = CreateShopService();
         (await shopRepository.CountAsync()).Should().Be(2);
     }
+    
+    [Fact]
+    public async Task FindByAdminIdOptimistic() {
+        var shopRepository = CreateShopService();
+        var shop = await shopRepository.FindByAdminIdAsync(TestShopAdminId1);
+        shop!.Id.Should().Be(TestShopId1);
+    }
 
     [Fact]
     public async Task FindAllOptimistic() {
@@ -105,12 +112,12 @@ public class ShopRepositoryTest {
     public async Task UpdateOptimistic() {
         var shopRepository = CreateShopService();
         var shop = await shopRepository.FindByIdAsync(TestShopId1);
-        shop = shop! with {
+        var updatedShop = shop! with {
             CartLifetimeMinutes = 799
         };
         
-        var updatedShop = await shopRepository.UpdateAsync(shop);
-        updatedShop.CartLifetimeMinutes.Should().Be(799);
+        var result = await shopRepository.UpdateAsync(shop, updatedShop);
+        result.CartLifetimeMinutes.Should().Be(799);
     }
 
     [Fact]

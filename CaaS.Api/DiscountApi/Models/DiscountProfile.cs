@@ -8,7 +8,7 @@ public class DiscountProfile : Profile {
         CreateMap<Discount, DiscountDto>();
         
         CreateMap<DiscountSetting, DiscountSettingRaw>();
-
-        CreateMap<DiscountSettingForCreationOrUpdateDto, DiscountSettingRaw>();
+        CreateMap<DiscountSettingForCreationDto, DiscountSettingRaw>();
+        CreateMap<DiscountSettingForUpdateDto, DiscountSettingRaw>();
     }
 }

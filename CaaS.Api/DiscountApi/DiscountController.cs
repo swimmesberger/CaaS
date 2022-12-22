@@ -1,14 +1,17 @@
 ﻿using AutoMapper;
+using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.DiscountApi.Models;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace CaaS.Api.DiscountApi; 
 
+[Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
 [ApiController]
 [Route("[controller]")]
 [CaasApiConvention]
@@ -35,25 +38,30 @@ public class DiscountController : ControllerBase {
 
     [HttpGet]
     public async Task<IEnumerable<DiscountSettingRaw>> GetAll(CancellationToken cancellationToken = default) {
-        return await _discountService.GetAllDiscountSettingsAsync(cancellationToken);
+        return await _discountService.GetAllAsync(cancellationToken);
+    }
+    
+    [HttpGet("{discountSettingId:guid}")]
+    public async Task<DiscountSettingRaw?> GetById(Guid discountSettingId, CancellationToken cancellationToken = default) {
+        return await _discountService.GetByIdAsync(discountSettingId, cancellationToken);
     }
     
     [HttpPost]
-    public async Task<CreatedAtActionResult> AddDiscountSetting(DiscountSettingForCreationOrUpdateDto forCreationOrUpdateDto, CancellationToken cancellationToken = default) {
-        var discountSettingRaw = _mapper.Map<DiscountSettingRaw>(forCreationOrUpdateDto);
-        var result = await _discountService.AddDiscountSettingAsync(discountSettingRaw, cancellationToken);
+    public async Task<CreatedAtActionResult> AddDiscountSetting([FromBody] DiscountSettingForCreationDto forCreationDto, CancellationToken cancellationToken = default) {
+        var discountSettingRaw = _mapper.Map<DiscountSettingRaw>(forCreationDto);
+        var result = await _discountService.AddAsync(discountSettingRaw, cancellationToken);
         return CreatedAtAction(
-            actionName: nameof(AddDiscountSetting),
+            controllerName: "Discount",
+            actionName: nameof(GetById),
             routeValues: new { discountSettingId = result.Id },
             value: result);
     }
 
-    [HttpPut("{discountSettingId:guid}")]
-    public async Task<DiscountSettingRaw> UpdateDiscountSetting(Guid discountSettingId, DiscountSettingForCreationOrUpdateDto forCreationOrUpdateDto,
+    [HttpPut("{id:guid}")]
+    public async Task<DiscountSettingRaw> UpdateDiscountSetting(Guid id, [FromBody] DiscountSettingForUpdateDto forUpdateDto,
         CancellationToken cancellationToken = default) {
-        forCreationOrUpdateDto = forCreationOrUpdateDto with { Id = discountSettingId };
-        var discountSettingRaw = _mapper.Map<DiscountSettingRaw>(forCreationOrUpdateDto);
-        return await _discountService.UpdateDiscountSettingAsync(discountSettingRaw, cancellationToken);
+        var discountSettingRaw = _mapper.Map<DiscountSettingRaw>(forUpdateDto);
+        return await _discountService.UpdateAsync(id, discountSettingRaw, cancellationToken);
     }
 
     [HttpDelete("{discountSettingId:guid}")]

@@ -30,6 +30,15 @@ public class DiscountServiceTest {
     private static readonly Guid DiscountSettingMetadataId2 = new Guid("8CCDA3DD-0AE4-45D3-BB82-D44CF85B547F");
     
     [Fact]
+    public async Task FindByIdOptimistic() {
+        var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
+        await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateBlackFridaySettings);
+        var discountService = serviceProvider.GetRequiredService<IDiscountService>();
+        var discountSetting = await discountService.GetByIdAsync(DiscountSettingId);
+        discountSetting!.Id.Should().Be(DiscountSettingId);
+    }
+        
+    [Fact]
     public async Task ApplyDiscountTimeOutOfRange() {
         // out of range date
         var currentTime = AsUtc(new DateTime(2022, 11, 24, 0, 0, 0, DateTimeKind.Local));
@@ -109,11 +118,11 @@ public class DiscountServiceTest {
         await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateFixedValueSetting);
         var discountService = serviceProvider.GetRequiredService<IDiscountService>();
 
-        var allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        var allDiscountSettings = await discountService.GetAllAsync();
         allDiscountSettings.Should().HaveCount(1);
         
-        await discountService.AddDiscountSettingAsync(CreateNewDiscountSettingRaw());
-        allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        await discountService.AddAsync(CreateNewDiscountSettingRaw());
+        allDiscountSettings = await discountService.GetAllAsync();
 
         var discountSettingRaws = allDiscountSettings as DiscountSettingRaw[] ?? allDiscountSettings.ToArray();
         discountSettingRaws.Should().HaveCount(2);
@@ -126,7 +135,7 @@ public class DiscountServiceTest {
         await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateFixedValueSetting);
         var discountService = serviceProvider.GetRequiredService<IDiscountService>();
         
-        var addedDiscountSetting = await discountService.AddDiscountSettingAsync(CreateNewDiscountSettingRaw());
+        var addedDiscountSetting = await discountService.AddAsync(CreateNewDiscountSettingRaw());
 
         var updatedActionParam = new FixedValueDiscountSettings() {
             Version = 0,
@@ -142,7 +151,7 @@ public class DiscountServiceTest {
             }
         };
 
-        var updatedDiscountSetting = await discountService.UpdateDiscountSettingAsync(addedDiscountSetting);
+        var updatedDiscountSetting = await discountService.UpdateAsync(DiscountSettingId ,addedDiscountSetting);
         var actionParameters = (FixedValueDiscountSettings?)updatedDiscountSetting.Action.Parameters.Deserialize(typeof(FixedValueDiscountSettings), 
             new DiscountJsonOptions().JsonSerializerOptions);
 
@@ -155,14 +164,14 @@ public class DiscountServiceTest {
         var currentTime = AsUtc(new DateTime(2022, 12, 10, 0, 0, 0, DateTimeKind.Local));
         await using var serviceProvider = SetupDiscountServiceProvider(currentTime, CreateFixedValueSetting);
         var discountService = serviceProvider.GetRequiredService<IDiscountService>();
-        var allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        var allDiscountSettings = await discountService.GetAllAsync();
         allDiscountSettings.Should().HaveCount(1);
 
-        await discountService.AddDiscountSettingAsync(CreateNewDiscountSettingRaw());
-        allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        await discountService.AddAsync(CreateNewDiscountSettingRaw());
+        allDiscountSettings = await discountService.GetAllAsync();
         allDiscountSettings.Should().HaveCount(2);
         await discountService.DeleteDiscountSettingAsync(DiscountSettingId);
-        allDiscountSettings = await discountService.GetAllDiscountSettingsAsync();
+        allDiscountSettings = await discountService.GetAllAsync();
         allDiscountSettings.Should().HaveCount(1);
     }
     
@@ -185,6 +194,7 @@ public class DiscountServiceTest {
     private List<DiscountSettingDataModel> CreateBlackFridaySettings(IOptions<DiscountJsonOptions> jsonOptions) {
         return new List<DiscountSettingDataModel>() {
             new DiscountSettingDataModel() {
+                Id = DiscountSettingId,
                 ShopId = TestShopId,
                 Name = "Black Friday",
                 RuleId = TimeWindowDiscountRule.Id,

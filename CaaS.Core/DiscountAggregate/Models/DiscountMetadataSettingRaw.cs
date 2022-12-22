@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using CaaS.Core.Base;
 
 namespace CaaS.Core.DiscountAggregate.Models;
 

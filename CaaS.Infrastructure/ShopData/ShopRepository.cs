@@ -18,6 +18,12 @@ public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopReposito
         if (dataModel == null) return null;
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
+    public async Task<Shop?> FindByAdminIdAsync(Guid adminId, CancellationToken cancellationToken = default) {
+        var dataModel = await Dao.FindBy(StatementParameters.CreateWhere(nameof(ShopDataModel.AdminId), adminId), cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (dataModel == null) return null;
+        return await Converter.ConvertToDomain(dataModel, cancellationToken);
+    }
 
     public async Task<int?> FindCartLifetimeByIdAsync(Guid id, CancellationToken cancellationToken = default) {
         var parameters = new StatementParameters {
@@ -31,7 +37,7 @@ public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopReposito
 
         return result[0];
     }
-
+    
     public Task<bool> VerifyAppKeyAsync(Guid id, string appKey, CancellationToken cancellationToken = default) {
         var parameters = new StatementParameters {
             SelectParameters = new SelectParameters( nameof(ShopDataModel.AppKey)),

@@ -13,5 +13,6 @@ public record CartDto {
     public IReadOnlyList<CouponDto> Coupons { get; init; } = ImmutableArray<CouponDto>.Empty;
     public IReadOnlyList<DiscountDto> CartDiscounts { get; init; } = ImmutableArray<DiscountDto>.Empty;
     public DateTimeOffset LastAccess { get; init; }
+    public decimal TotalPrice { get; init; }
     public string ConcurrencyToken { get; init; } = string.Empty;
 }

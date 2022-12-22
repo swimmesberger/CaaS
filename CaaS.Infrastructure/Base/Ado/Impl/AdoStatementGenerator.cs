@@ -39,15 +39,32 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T> where T: IDataMod
     }
 
     public Statement CreateInsert(IEnumerable<T> entities) {
+
         var insertValues = entities
-                .Select(entity => DataRecordMapper.RecordFromEntity(entity).ByPropertyName())
-                .Select(record => GetPropertyNames()
-                        .Select(propertyName => new QueryParameter(propertyName, record.GetTypedValue(propertyName)))
-                        .ToList())
-                .ToList();
+            .Select(entity => DataRecordMapper.RecordFromEntity(entity).ByPropertyName())
+            .Select(record => GetPropertyNames()
+                .Select(propertyName => new QueryParameter(propertyName, record.GetTypedValue(propertyName)))
+                .Where(p => {
+                    // ignore the property if it has the SqlIgnore attribute and the default value
+                    var propMapper = DataRecordMapper.ByPropertyName();
+                    if (!propMapper.IsSqlIgnored(p.Name, StatementType.Create)) 
+                        return true;
+                    var propType = record.GetPropertyType(p.Name);
+                    var defaultValue = propType.IsValueType ? Activator.CreateInstance(propType) : null;
+                    if (Equals(defaultValue, p.Value)) {
+                        return false;
+                    }
+                    return true;
+                })
+                .ToList())
+            .ToList();
+        
         if (insertValues.Count == 0) return Statement.Empty;
+
+        var columnNames = GetPropertyNames();
+
         var insertParameters = new InsertParameters() {
-            ColumnNames = GetPropertyNames(),
+            ColumnNames = columnNames,
             Values = insertValues
         };
         return new Statement(StatementType.Create, DataRecordMapper.ByPropertyName()) {

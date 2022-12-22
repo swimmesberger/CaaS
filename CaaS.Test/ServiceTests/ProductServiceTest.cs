@@ -22,7 +22,7 @@ public class ProductServiceTest {
     [Fact]
     public async Task GetByTextSearchOptimistic() {
         var productService = CreateProductService();
-        var result = await productService.GetByTextSearch("nice");
+        var result = await productService.GetByTextSearchAsync("nice");
         result.TotalCount.Should().Be(3);
         result.TotalPages.Should().Be(1);
         var items = result.ToArray();
@@ -47,7 +47,7 @@ public class ProductServiceTest {
         };
 
         var productService = CreateProductService();
-        var result = await productService.AddProduct(product);
+        var result = await productService.AddAsync(product);
         result.Id.Should().Be(productId);
         result.Name.Should().Be("the new product");
     }
@@ -55,61 +55,61 @@ public class ProductServiceTest {
     [Fact]
     public async Task UpdateOptimistic() {
         var productService = CreateProductService();
-        var oldProduct = await productService.FindByIdAsync(ProductAId);
+        var oldProduct = await productService.GetByIdAsync(ProductAId);
         oldProduct!.Name.Should().Be("ProductA");
 
         var updatedProduct = oldProduct with {
             Name = "Super duper product"
         };
 
-        var result = await productService.UpdateProduct(oldProduct.Id, updatedProduct);
+        var result = await productService.UpdateAsync(oldProduct.Id, updatedProduct);
         result.Name.Should().Be("Super duper product");
 
-        result = await productService.FindByIdAsync(ProductAId);
+        result = await productService.GetByIdAsync(ProductAId);
         result!.Name.Should().Be("Super duper product");
     }
 
     [Fact]
     public async Task SetPriceOptimistic() {
         var productService = CreateProductService();
-        var product = await productService.FindByIdAsync(ProductAId);
+        var product = await productService.GetByIdAsync(ProductAId);
         product!.Price.Should().Be(10);
 
-        product = await productService.SetPriceOfProduct(ProductAId, 99);
+        product = await productService.SetPriceAsync(ProductAId, 99);
         product!.Price.Should().Be(99);
     }
     
     [Fact]
     public async Task SetPriceInvalidPrice() {
         var productService = CreateProductService();
-        var product = await productService.FindByIdAsync(ProductAId);
+        var product = await productService.GetByIdAsync(ProductAId);
         product!.Price.Should().Be(10);
         
-        Func<Task> act = async () => { await productService.SetPriceOfProduct(ProductAId, -1); };
+        Func<Task> act = async () => { await productService.SetPriceAsync(ProductAId, -1); };
         await act.Should().ThrowAsync<CaasValidationException>();
     }
     
     [Fact]
     public async Task SetPriceInvalidProduct() {
         var productService = CreateProductService();
-        Func<Task> act = async () => { await productService.SetPriceOfProduct(Guid.Parse("BE16A432-EDD8-4DDB-8D06-7F53C3DBA7B1"), 100); };
+        Func<Task> act = async () => { await productService.SetPriceAsync(Guid.Parse("BE16A432-EDD8-4DDB-8D06-7F53C3DBA7B1"), 100); };
         await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
 
     [Fact]
     public async Task DeleteProductOptimistic() {
         var productService = CreateProductService();
-        var product = await productService.FindByIdAsync(ProductAId);
+        var product = await productService.GetByIdAsync(ProductAId);
         product!.Deleted.Should().Be(false);
-        await productService.DeleteProduct(ProductAId);
-        product = await productService.FindByIdAsync(ProductAId);
+        await productService.DeleteAsync(ProductAId);
+        product = await productService.GetByIdAsync(ProductAId);
         product!.Deleted.Should().Be(true);
     }
     
     [Fact]
     public async Task DeleteProductPessimistic() {
         var productService = CreateProductService();
-        Func<Task> act = async () => { await productService.DeleteProduct(Guid.Parse("BE16A432-EDD8-4DDB-8D06-7F53C3DBA7B1")); };
+        Func<Task> act = async () => { await productService.DeleteAsync(Guid.Parse("BE16A432-EDD8-4DDB-8D06-7F53C3DBA7B1")); };
         await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
     

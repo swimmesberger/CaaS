@@ -3,7 +3,7 @@
 namespace CaaS.Core.CartAggregate; 
 
 public interface ICartRepository : IRepository {
-    Task<IReadOnlyList<Cart>> FindExpiredCarts(int lifeTimeMinutes, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Cart>> FindExpiredCartsAsync(int lifeTimeMinutes, CancellationToken cancellationToken = default);
     Task<Cart?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<long> CountAsync(CancellationToken cancellationToken = default);
     Task<Cart> AddAsync(Cart entity, CancellationToken cancellationToken = default);

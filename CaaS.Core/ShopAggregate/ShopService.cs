@@ -14,27 +14,35 @@ public class ShopService : IShopService {
         _shopAdminRepository = shopAdminRepository;
     }
     
-    public async Task<CountedResult<Shop>> GetAll(CancellationToken cancellationToken = default) {
+    public async Task<CountedResult<Shop>> GetAllAsync(CancellationToken cancellationToken = default) {
         var items = await _shopRepository.FindAllAsync(cancellationToken);
         return new CountedResult<Shop>() { TotalCount = items.Count, Items = items };
     }
     
-    public async Task<Shop?> GetByName(string name, CancellationToken cancellationToken = default) {
+    public async Task<Shop?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) {
+        return await _shopRepository.FindByIdAsync(id, cancellationToken);
+    }
+    
+    public async Task<Shop?> GetByAdminIdAsync(Guid adminId, CancellationToken cancellationToken = default) {
+        return await _shopRepository.FindByAdminIdAsync(adminId, cancellationToken);
+    }
+
+    public async Task<Shop?> GetByNameAsync(string name, CancellationToken cancellationToken = default) {
         return await _shopRepository.FindByNameAsync(name, cancellationToken);
     }
     
-    public async Task<Shop> SetName(Guid id, string name, CancellationToken cancellationToken = default) {
+    public async Task<Shop> SetNameAsync(Guid id, string name, CancellationToken cancellationToken = default) {
         await using var uow = _unitOfWorkManager.Begin();
         var shop = await _shopRepository.FindByIdAsync(id, cancellationToken);
         if (shop == null) {
             throw new CaasItemNotFoundException($"Shop {id} not found");
         }
-        shop = shop with { Name = name };
-        shop = await _shopRepository.UpdateAsync(shop, cancellationToken);
+        var updatedShop = shop with { Name = name };
+        shop = await _shopRepository.UpdateAsync(shop, updatedShop, cancellationToken);
         await uow.CompleteAsync(cancellationToken);
         return shop;
     }
-    public async Task<Shop> Add(Shop shop, CancellationToken cancellationToken = default) {
+    public async Task<Shop> AddAsync(Shop shop, CancellationToken cancellationToken = default) {
         var admin = await _shopAdminRepository.FindByIdAsync(shop.ShopAdmin.Id, cancellationToken);
         if (admin == null) {
             throw new CaasItemNotFoundException($"ShopAdmin {shop.ShopAdmin.Id} does not exist");
@@ -47,5 +55,32 @@ public class ShopService : IShopService {
         shop = await _shopRepository.AddAsync(shop, cancellationToken);
         
         return shop;
+    }
+    public async Task<Shop> UpdateAsync(Guid id, Shop updatedShop, CancellationToken cancellationToken = default) {
+        var oldShop = await _shopRepository.FindByIdAsync(id, cancellationToken);
+        if (oldShop == null) {
+            throw new CaasItemNotFoundException($"Shop '{id}' not found");
+        }
+
+        var shopAdmin = await _shopAdminRepository.FindByIdAsync(updatedShop.ShopAdmin.Id, cancellationToken);
+        if (shopAdmin == null) {
+            throw new CaasItemNotFoundException($"ShopAdmin '{updatedShop.ShopAdmin.Id}' not found");
+        }
+        
+        updatedShop = updatedShop with {
+            Id = id,
+            ShopAdmin = shopAdmin
+        };
+
+        return await _shopRepository.UpdateAsync(oldShop, updatedShop, cancellationToken);
+    }
+    
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default) {
+        var shop = await _shopRepository.FindByIdAsync(id, cancellationToken);
+        if (shop == null) {
+            throw new CaasItemNotFoundException($"ShopId {id} not found");
+        }
+        
+        await _shopRepository.DeleteAsync(shop, cancellationToken);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using CaaS.Core.Base;
-using CaaS.Core.ShopAggregate;
 
 namespace CaaS.Core.DiscountAggregate.Models;
 

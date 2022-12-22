@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using CaaS.Infrastructure.Generator.Mapping;
@@ -86,11 +87,18 @@ namespace CaaS.Infrastructure.Generator {
 
         private MapperEntityProperty CreateEntityProperty(IPropertySymbol propertySymbol, PropertyNamingPolicy namingPolicy) {
             var isJson = propertySymbol.HasAttribute(InitializationContext.JsonColumnAttributeName);
+            var sqlIgnore = propertySymbol.GetAttribute(InitializationContext.SqlIgnoreAttributeName);
+            var sqlIgnoreValues = sqlIgnore?.ConstructorArguments
+                .FirstOrDefault().Values
+                .Select(v => v.Value?.ToString())
+                .Where(v => v != null).Cast<string>()
+                .ToImmutableHashSet();
             return new MapperEntityProperty() {
                     PropertyName = propertySymbol.Name,
                     ColumnName = namingPolicy.ConvertName(propertySymbol.Name),
                     TypeName = propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                    IsJson = isJson
+                    IsJson = isJson,
+                    IgnoredStatementTypes = sqlIgnoreValues
             };
         }
         

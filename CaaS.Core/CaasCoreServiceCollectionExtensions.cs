@@ -30,7 +30,7 @@ public static class CaasCoreServiceCollectionExtensions {
     public static IServiceCollection AddCaasDiscountCore(this IServiceCollection services) {
         services.AddSingleton<IDiscountComponentFactory, DiscountComponentFactory>();
         services.AddSingleton<IDiscountComponentProvider>(sp => sp.GetRequiredService<IDiscountComponentFactory>());
-        services.AddScoped<IDiscountService, CaasDiscountService>();
+        services.AddScoped<IDiscountService, DiscountService>();
         services.AddDiscountRule<MinProductCountDiscountRule, MinProductCountSettings>(MinProductCountDiscountRule.Id);
         services.AddDiscountRule<TimeWindowDiscountRule, TimeWindowDiscountSettings>(TimeWindowDiscountRule.Id);
         services.AddDiscountRule<CompositeDiscountRule, CompositeDiscountRuleSettings>(CompositeDiscountRule.Id);

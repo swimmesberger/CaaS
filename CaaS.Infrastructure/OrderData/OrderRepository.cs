@@ -30,7 +30,7 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
                                                         customerRepository,
                                                         couponRepository)) { }
     
-    public async Task<IReadOnlyList<Order>> FindByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Order>> FindByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default) {
         return await Converter
             .ConvertToDomain(Dao
                 .FindBy(StatementParameters.CreateWhere(nameof(OrderDataModel.CustomerId), customerId), cancellationToken), cancellationToken);
@@ -41,7 +41,6 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
             Id = entity.Id,
             ShopId = entity.ShopId,
             CustomerId = entity.Customer.Id,
-            OrderNumber = entity.OrderNumber,
             OrderDate = entity.OrderDate,
             AddressStreet = address.Street,
             AddressCity = address.City,
@@ -50,6 +49,7 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
             AddressCountry = address.Country,
             RowVersion = entity.GetRowVersion()
         };
+
         dataModel = await Dao.AddAsync(dataModel, cancellationToken);
         
         await Converter.OrderItemRepository.AddAsync(entity.Items, cancellationToken);
@@ -59,7 +59,7 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
         return entity;
     }
     
-    public async Task<IReadOnlyList<Order>> FindByDateRange(DateTimeOffset from, DateTimeOffset until, CancellationToken cancellationToken = default) {
+    public async Task<IReadOnlyList<Order>> FindByDateRangeAsync(DateTimeOffset from, DateTimeOffset until, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
             new (nameof(OrderDataModel.CreationTime), WhereComparator.GreaterOrEqual, from),
             new (nameof(OrderDataModel.CreationTime), WhereComparator.LessOrEqual, until),
@@ -68,6 +68,22 @@ public class OrderRepository : CrudReadRepository<OrderDataModel, Order>, IOrder
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(new StatementParameters { Where = parameters }, cancellationToken), cancellationToken))
             .ToList();
+    }
+
+    public async Task<int> FindOrderNumberById(Guid orderId, CancellationToken cancellationToken = default) {
+        var parameters = new StatementParameters {
+            SelectParameters = new SelectParameters("OrderNumber"),
+            WhereParameters = new WhereParameters(new QueryParameter[] {
+              new(nameof(OrderDataModel.Id), orderId)  
+            })
+        };
+        
+        var result = await Dao.FindScalarBy<int>(parameters, cancellationToken).ToListAsync(cancellationToken);
+        if (result.Count == 0) {
+            throw new CaasItemNotFoundException($"order '{orderId}' does not exist");
+        }
+
+        return result[0];
     }
 
     public async Task<Order> UpdateAsync(Order oldEntity, Order newEntity, CancellationToken cancellationToken = default) {
@@ -142,7 +158,7 @@ internal class OrderDomainModelConvert : IDomainReadModelConverter<OrderDataMode
         var orderIds = dataModels.Select(p => p.Id).ToHashSet();
         var customerIds = dataModels.Select(p => p.CustomerId).ToHashSet();
         
-        var couponsDict = await CouponRepository.FindByOrderIds(orderIds, cancellationToken);
+        var couponsDict = await CouponRepository.FindByOrderIdsAsync(orderIds, cancellationToken);
         var orderDiscountsDict = await OrderDiscountRepository.FindByOrderIdsAsync(orderIds, cancellationToken);
         var orderItemsDict = await OrderItemRepository.FindByOrderIds(orderIds, cancellationToken);
         var customerDict = (await CustomerRepository

@@ -13,6 +13,10 @@ namespace CaaS.Infrastructure.Generator {
                 current = current.BaseType;
             }
         }
+        
+        public static AttributeData? GetAttribute(this ISymbol symbol, string attributeName) {
+            return symbol.GetAttributes().FirstOrDefault(a => attributeName.Equals(a.AttributeClass?.ToString()));
+        }
 
         public static bool HasAttribute(this ISymbol symbol, string attributeName) {
             return symbol.GetAttributes().Any(a => attributeName.Equals(a.AttributeClass?.ToString()));

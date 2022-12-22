@@ -16,15 +16,22 @@ public class ShopServiceTest {
     public async Task GetByNameOptimistic() {
         var shopService = CreateShopService();
 
-        var shop = await shopService.GetByName(TestShopName1
+        var shop = await shopService.GetByNameAsync(TestShopName1
         );
+        shop!.Id.Should().Be(TestShopId1);
+    }
+
+    [Fact]
+    public async Task GetByShopAdminOptimistic() {
+        var shopService = CreateShopService();
+        var shop = await shopService.GetByAdminIdAsync(TestShopAdminId1);
         shop!.Id.Should().Be(TestShopId1);
     }
 
     [Fact]
     public async Task GetAll() {
         var shopService = CreateShopService();
-        var shops = await shopService.GetAll();
+        var shops = await shopService.GetAllAsync();
         shops.TotalCount.Should().Be(2);
         var shopItems = shops.Select(s => s).ToArray();
         shopItems[0].Id.Should().Be(TestShopId1);
@@ -33,15 +40,15 @@ public class ShopServiceTest {
     [Fact]
     public async Task SetName() {
         var shopService = CreateShopService();
-        var updatedShop = await shopService.SetName(TestShopId1, "Aaaamazon");
-        var shop = await shopService.GetByName("Aaaamazon");
+        var updatedShop = await shopService.SetNameAsync(TestShopId1, "Aaaamazon");
+        var shop = await shopService.GetByNameAsync("Aaaamazon");
         shop!.Name.Should().Be("Aaaamazon");
     }
 
     [Fact]
     public async Task AddShopOptimistic() {
         var shopService = CreateShopService();
-        await shopService.Add(new Shop {
+        await shopService.AddAsync(new Shop {
             Id = Guid.Parse("CE005B43-4C62-4BF9-9045-1AA48F9170CA"),
             Name = "added shop",
             CartLifetimeMinutes = 120,
@@ -51,7 +58,7 @@ public class ShopServiceTest {
             AppKey = "no key",
         });
 
-        var allShops = await shopService.GetAll();
+        var allShops = await shopService.GetAllAsync();
         allShops.TotalCount.Should().Be(3);
         var shops = allShops.Select(s => s).ToArray();
         shops[0].Id.Should().Be("CE005B43-4C62-4BF9-9045-1AA48F9170CA");

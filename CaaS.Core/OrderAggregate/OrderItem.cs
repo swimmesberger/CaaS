@@ -16,4 +16,14 @@ public record OrderItem : IEntityBase {
     public IImmutableList<Discount> OrderItemDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
     public decimal PricePerPiece { get; init; }
     public string ConcurrencyToken { get; init; } = string.Empty;
+    
+    public decimal TotalPrice {
+        get {
+            var price = PricePerPiece * Amount;
+            foreach (var orderDiscount in OrderItemDiscounts) {
+                price -= orderDiscount.DiscountValue;
+            }
+            return price;
+        }
+    }
 }

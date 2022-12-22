@@ -44,7 +44,7 @@ public class OrderServiceTest {
     private static readonly Guid CartItemIdA = new Guid("37D2E80C-CC04-4369-83E3-EF278CCB956D");
     private static readonly Guid CartItemIdB = new Guid("614A8687-1F49-41C4-8B7D-2614F88E5F76");
 
-    private static readonly Address Address = new() {
+    private static readonly Address TestAddress = new() {
         Street = "Street",
         City = "City",
         State = "State",
@@ -53,22 +53,11 @@ public class OrderServiceTest {
     };
     
     [Fact]
-    public async Task CreateOrderOptimistic() {
-        var paymentService = new PaymentServiceImpl();
-        var orderService = CreateOrderService(paymentService);
-        
-        var createOrder = await orderService.CreateOrder(CustomerIdA, Address);
-        createOrder.Should().NotBeNull();
-        createOrder.ShopId.Should().Be(TestShopId);
-        createOrder.Items.Should().BeEmpty();
-    }
-    
-    [Fact]
     public async Task FindOrderByIdOptimistic() {
         var paymentService = new PaymentServiceImpl();
         var orderService = CreateOrderService(paymentService);
 
-        var foundOrder = await orderService.FindOrderById(ExistingOrderId);
+        var foundOrder = await orderService.FindByIdAsync(ExistingOrderId);
         foundOrder.Should().NotBeNull();
         foundOrder!.Id.Should().Be(ExistingOrderId);
         foundOrder.Items.Count.Should().Be(2);
@@ -79,7 +68,7 @@ public class OrderServiceTest {
         var paymentService = new PaymentServiceImpl();
         var orderService = CreateOrderService(paymentService);
 
-        Func<Task> act = async () => { await orderService.CreateOrderFromCart(Guid.Parse("56C5AA6D-A4D6-48B1-9973-51CAC50204A3"), Address); };
+        Func<Task> act = async () => { await orderService.CreateOrderFromCartAsync(Guid.Parse("56C5AA6D-A4D6-48B1-9973-51CAC50204A3"), TestAddress); };
         await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
 
@@ -88,7 +77,7 @@ public class OrderServiceTest {
         var paymentService = new PaymentServiceImpl();
         var orderService = CreateOrderService(paymentService);
         
-        var result = await orderService.CreateOrderFromCart(ExistingCartId1, Address);
+        var result = await orderService.CreateOrderFromCartAsync(ExistingCartId1, TestAddress);
         result.Items.Count.Should().Be(2);
         result.Items[0].Product.Id.Should().Be(ProductAId);
         result.Items[0].Amount.Should().Be(2);
@@ -103,8 +92,8 @@ public class OrderServiceTest {
         var paymentService = new PaymentServiceImpl();
         var orderService = CreateOrderService(paymentService);
         
-        Func<Task> act = async () => { await orderService.CreateOrderFromCart(ExistingCartId2, Address); };
-        await act.Should().ThrowAsync<SwKoPayCreditCardInvalidException>();
+        Func<Task> act = async () => { await orderService.CreateOrderFromCartAsync(ExistingCartId2, TestAddress); };
+        await act.Should().ThrowAsync<CaasPaymentCardInvalidException>();
     }
 
     [Fact]
@@ -112,8 +101,8 @@ public class OrderServiceTest {
         var paymentService = new PaymentServiceImpl();
         var orderService = CreateOrderService(paymentService);
         
-        Func<Task> act = async () => { await orderService.CreateOrderFromCart(ExistingCartId3, Address); };
-        await act.Should().ThrowAsync<SwKoPayCardInactiveException>();
+        Func<Task> act = async () => { await orderService.CreateOrderFromCartAsync(ExistingCartId3, TestAddress); };
+        await act.Should().ThrowAsync<CaasPaymentCardInvalidException>();
     }
     
     [Fact]
@@ -121,8 +110,8 @@ public class OrderServiceTest {
         var paymentService = new PaymentServiceImpl();
         var orderService = CreateOrderService(paymentService);
         
-        Func<Task> act = async () => { await orderService.CreateOrderFromCart(ExistingCartId4, Address); };
-        await act.Should().ThrowAsync<SwKoPayInsufficientCreditException>();
+        Func<Task> act = async () => { await orderService.CreateOrderFromCartAsync(ExistingCartId4, TestAddress); };
+        await act.Should().ThrowAsync<CaasPaymentInsufficientCreditException>();
     }
 
     [Fact]
@@ -143,10 +132,16 @@ public class OrderServiceTest {
             CreditCardNumber = "4405100664466647"
         };
 
+        orderRepositoryMock.Setup(x => x.FindOrderNumberById(It.IsAny<Guid>(), CancellationToken.None))
+            .ReturnsAsync(4514);
+        
+        orderRepositoryMock.Setup(x => x.AddAsync(It.IsAny<Order>(), It.IsAny<Address>(), CancellationToken.None))
+            .ReturnsAsync(new Order() {Id = ExistingOrderId});
+
         customerRepositoryMock.Setup(x => x.FindByIdAsync(It.IsAny<Guid>(), CancellationToken.None))
             .ReturnsAsync(new Customer() { Id = CustomerIdA });
-
-        cartServiceMock.Setup(x => x.GetCartById(It.IsAny<Guid>(), CancellationToken.None)).
+        
+        cartServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), CancellationToken.None)).
             ReturnsAsync(new Cart(){Id = ExistingCartId1, Customer = customer});
         
         couponRepositoryMock.Setup(x => 
@@ -156,7 +151,7 @@ public class OrderServiceTest {
         var orderService = new OrderService(orderRepositoryMock.Object, customerRepositoryMock.Object, cartServiceMock.Object, couponRepositoryMock.Object, 
             tenantIdAccessor, uowManager, paymentService.Object);
 
-        Func<Task> act = async () => { await orderService.CreateOrderFromCart(ExistingCartId1, Address);};
+        Func<Task> act = async () => { await orderService.CreateOrderFromCartAsync(ExistingCartId1, TestAddress);};
         await act.Should().ThrowAsync<CaasDbException>();
         
         paymentService.Verify(impl => impl.RefundPayment(It.IsAny<Guid>()), Times.Exactly(1));
@@ -240,7 +235,7 @@ public class OrderServiceTest {
         var jsonConverter = new DiscountSettingRawConverter(new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()), componentFactory.GetDiscountMetadata());
         var validator = new MockValidator();
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, jsonConverter);
-        var discountService = new CaasDiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
+        var discountService = new DiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
 
         var uowManager = new MockUnitOfWorkManager();
 

@@ -1,4 +1,5 @@
-﻿using CaaS.Infrastructure.Base.Mapping;
+﻿using CaaS.Infrastructure.Base.Ado.Query;
+using CaaS.Infrastructure.Base.Mapping;
 
 namespace CaaS.Infrastructure.Base.Ado.Impl; 
 
@@ -13,9 +14,11 @@ public class EmptyPropertyMapping : IPropertyMapping {
     private class EmptyPropertyMapper : IPropertyMapper {
         public string TypeName => string.Empty;
         public string MappedTypeName => string.Empty;
-        
-        public IEnumerable<string> Keys => Enumerable.Empty<string>();
 
+        public IEnumerable<string> Keys => Enumerable.Empty<string>();
+        
         public string MapName(string key) => key;
+
+        public bool IsSqlIgnored(string key, StatementType statementType) => false;
     }
 }

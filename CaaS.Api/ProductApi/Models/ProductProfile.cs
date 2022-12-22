@@ -10,5 +10,6 @@ public class ProductProfile : Profile {
             opt => opt.MapFrom(src => src.Shop.Id));
 
         CreateMap<ProductForCreationDto, Product>();
+        CreateMap<ProductForUpdateDto, Product>();
     }
 }

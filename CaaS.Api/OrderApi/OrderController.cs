@@ -21,22 +21,15 @@ public class OrderController : ControllerBase {
         _mapper = mapper;
     }
     
-    [HttpGet("{orderId:guid}")]
-    public async Task<OrderDto?> GetOrderById(Guid orderId, CancellationToken cancellationToken = default) {
-        var result = await _orderService.FindOrderById(orderId, cancellationToken);
-        return _mapper.Map<OrderDto>(result);
-    }
-
     [HttpPost("createOrderWithCustomer/{cartId:guid}")]
     public async Task<OrderDto> CreateOrderFromCart(Guid cartId, [FromBody][Required] OrderForCreationDto orderDto, CancellationToken cancellationToken = default) {
-        var customer = _mapper.Map<Customer>(orderDto.Customer);
-        var result = await _orderService.CreateOrderFromCart(cartId, customer, orderDto.BillingAddress, cancellationToken);
+        var result = await _orderService.CreateOrderFromCartAsync(cartId, orderDto.CustomerId, orderDto.BillingAddress, cancellationToken);
         return _mapper.Map<OrderDto>(result);
     }
     
     [HttpPost("createOrderWithoutCustomer/{cartId:guid}")]
     public async Task<OrderDto> CreateOrderFromCart(Guid cartId, [FromBody][Required] Address billingAddress, CancellationToken cancellationToken = default) {
-        var result = await _orderService.CreateOrderFromCart(cartId, billingAddress, cancellationToken);
+        var result = await _orderService.CreateOrderFromCartAsync(cartId, billingAddress, cancellationToken);
         return _mapper.Map<OrderDto>(result);
     }
 }

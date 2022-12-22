@@ -33,29 +33,14 @@ public class OrderService : IOrderService {
         _paymentService = paymentService;
     }
 
-    public async Task<Order?> FindOrderById(Guid orderId, CancellationToken cancellationToken = default) {
-        var order = await _orderRepository.FindByIdAsync(orderId, cancellationToken);
-        return order ?? null;
-    }
-    
-    public async Task<Order> CreateOrder(Guid customerId, Address billingAddress, CancellationToken cancellationToken = default) {
-        var customer = await _customerRepository.FindByIdAsync(customerId, cancellationToken);
-        if (customer == null) {
-            throw new CaasItemNotFoundException();
-        }
-        
-        var order = new Order() {
-            ShopId = _tenantIdAccessor.GetTenantGuid(),
-            Customer = customer,
-            OrderDate = SystemClock.GetNow()
-        };
-        return await _orderRepository.AddAsync(order, billingAddress, cancellationToken);
+    public async Task<Order?> FindByIdAsync(Guid orderId, CancellationToken cancellationToken = default) {
+        return await _orderRepository.FindByIdAsync(orderId, cancellationToken);
     }
 
-    public async Task<Order> CreateOrderFromCart(Guid cartId, Address billingAddress, CancellationToken cancellationToken = default) {
-        var cart = await _cartService.GetCartById(cartId, cancellationToken);
+    public async Task<Order> CreateOrderFromCartAsync(Guid cartId, Address billingAddress, CancellationToken cancellationToken = default) {
+        var cart = await _cartService.GetByIdAsync(cartId, cancellationToken);
         if (cart == null) {
-            throw new CaasItemNotFoundException();
+            throw new CaasItemNotFoundException($"Cart '{cartId}' not found");
         }
 
         if (cart.Customer == null) {
@@ -65,17 +50,21 @@ public class OrderService : IOrderService {
         return await CreateOrderFromCartImpl(cart, cart.Customer, billingAddress, cancellationToken);
     }
 
-    public async Task<Order> CreateOrderFromCart(Guid cartId, Customer customer, Address billingAddress, CancellationToken cancellationToken = default) {
-        var cart = await _cartService.GetCartById(cartId, cancellationToken);
+    public async Task<Order> CreateOrderFromCartAsync(Guid cartId, Guid customerId, Address billingAddress, CancellationToken cancellationToken = default) {
+        var cart = await _cartService.GetByIdAsync(cartId, cancellationToken);
         if (cart == null) {
-            throw new CaasItemNotFoundException();
+            throw new CaasItemNotFoundException($"Cart '{cartId}' not found");
         }
-
+        
         if (cart.Customer != null) {
             throw new CaasValidationException("cart customer must be null if customer is provided");
         }
         
-        await _customerRepository.AddAsync(customer, cancellationToken);
+        var customer = await _customerRepository.FindByIdAsync(customerId, cancellationToken);
+        if (customer == null) {
+            throw new CaasItemNotFoundException($"Customer '{customerId}' not found");
+        }
+
         return await CreateOrderFromCartImpl(cart, customer, billingAddress, cancellationToken);
     }
     
@@ -83,7 +72,7 @@ public class OrderService : IOrderService {
         Order order;
         var chargeId = Guid.Empty;
         await using var uow = _unitOfWorkManager.Begin();
-        
+
         try {
             Dictionary<string, string> metadata = new Dictionary<string, string>() {
                 { "CaasCustomerId", customer.Id.ToString() }
@@ -114,7 +103,7 @@ public class OrderService : IOrderService {
                 orderItems.Add(orderItem);
             }
 
-            
+
             order = new Order {
                 Id = orderId,
                 ShopId = _tenantIdAccessor.GetTenantGuid(),
@@ -125,19 +114,30 @@ public class OrderService : IOrderService {
                 OrderDate = SystemClock.GetNow()
             };
 
-            await _cartService.DeleteCart(cart.Id, cancellationToken);
+            await _cartService.DeleteAsync(cart.Id, cancellationToken);
             var updatedCoupons = cart.Coupons.Select(c => c with { CartId = null, CustomerId = customer.Id, OrderId = orderId });
-            await _couponRepository.UpdateAsync(cart.Coupons, updatedCoupons, cancellationToken);
-            
             order = await _orderRepository.AddAsync(order, billingAddress, cancellationToken);
-            await uow.CompleteAsync(cancellationToken);
+            var orderNumber = await _orderRepository.FindOrderNumberById(orderId, cancellationToken);
+            order = order with { OrderNumber = orderNumber };
+            await _couponRepository.UpdateAsync(cart.Coupons, updatedCoupons, cancellationToken);
+            var coupons = await _couponRepository.FindByOrderIdAsync(orderId, cancellationToken);
+            order = order with { Coupons = coupons.ToImmutableArray() };
             
+            await uow.CompleteAsync(cancellationToken);
             await _paymentService.ConfirmPayment(chargeId);
         } catch (CaasDbException e) {
             await _paymentService.RefundPayment(chargeId);
-            throw new CaasDbException("CaaS transaction error", e);
-        } catch (SwKoPayPaymentNotFoundException e) {
-            throw new SwKoPayPaymentNotFoundException("SwKo service could not confirm payment", e);
+            throw new CaasDbException("CaaS database transaction error. Payment was refunded", e);
+        } catch (SwKoPayCardInactiveException ex) { //transaction not committed by default, if uow.CompleteAsync is not called
+            throw new CaasPaymentCardInvalidException("Credit card is inactive. Order was not successful.");
+        } catch (SwKoPayCreditCardInvalidException ex) {
+            throw new CaasPaymentCardInvalidException("Credit card is invalid. Order was not successful.");
+        } catch (SwKoPayInsufficientCreditException ex) {
+            throw new CaasPaymentInsufficientCreditException($"{cart.TotalPrice} is not covered by provided credit card");
+        } catch (SwKoPayPaymentNotFoundException ex) {
+            throw new CaasPaymentException(ex.Message);
+        } catch (SwKoPayCannotRefundConfirmedPayment ex) {
+            throw new CaasPaymentException(ex.Message);
         }
         
         return order;

@@ -33,7 +33,7 @@ public class CartService : ICartService {
         _timeProvider = timeProvider;
     }
 
-    public async Task<Cart?> GetCartById(Guid cartId, CancellationToken cancellationToken = default) {
+    public async Task<Cart?> GetByIdAsync(Guid cartId, CancellationToken cancellationToken = default) {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) return null;
         var updatedCart = cart with { LastAccess = _timeProvider.UtcNow };
@@ -42,17 +42,17 @@ public class CartService : ICartService {
         return cart;
     }
 
-    public async Task<int> DeleteExpiredCarts(CancellationToken cancellationToken = default) {
+    public async Task<int> DeleteExpiredCartsAsync(CancellationToken cancellationToken = default) {
         var cartLifetime = await _shopRepository.FindCartLifetimeByIdAsync(_tenantIdAccessor.GetTenantGuid(), cancellationToken);
         if (cartLifetime == null) {
             throw new CaasValidationException(new ValidationFailure("tenantId", "Invalid tenant id"));
         }
-        var expiredCarts = await _cartRepository.FindExpiredCarts(cartLifetime.Value, cancellationToken);
+        var expiredCarts = await _cartRepository.FindExpiredCartsAsync(cartLifetime.Value, cancellationToken);
         await _cartRepository.DeleteAsync(expiredCarts, cancellationToken);
         return expiredCarts.Count;
     }
 
-    public async Task<Cart> AddProductToCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
+    public async Task<Cart> AddProductToCartAsync(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
         if (productQuantity <= 0) {
             throw new CaasValidationException(new ValidationFailure(nameof(productQuantity), "Invalid product quantity"));
         }
@@ -89,6 +89,7 @@ public class CartService : ICartService {
                 ShopId = _tenantIdAccessor.GetTenantGuid(),
                 CartId = cartId,
                 Amount = productQuantity,
+                ConcurrencyToken = "0"
             };
             updatedCart = cart with {
                 Items = cart.Items.Add(productItem),
@@ -100,7 +101,7 @@ public class CartService : ICartService {
         return updatedCart;
     }
     
-    public async Task<Cart> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default) {
+    public async Task<Cart> RemoveProductFromCartAsync(Guid cartId, Guid productId, CancellationToken cancellationToken = default) {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) {
             throw new CaasItemNotFoundException();
@@ -118,7 +119,7 @@ public class CartService : ICartService {
         return updatedCart;
     }
     
-    public async Task<Cart> SetProductQuantityInCart(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
+    public async Task<Cart> SetProductQuantityInCartAsync(Guid cartId, Guid productId, int productQuantity, CancellationToken cancellationToken = default) {
         if (productQuantity <= 0) {
             throw new CaasValidationException(new ValidationFailure(nameof(productQuantity), "Invalid product quantity"));
         }
@@ -143,7 +144,7 @@ public class CartService : ICartService {
         return updatedCart;
     }
     
-    public async Task<Cart> AddCouponToCart(Guid cartId, Guid couponId, CancellationToken cancellationToken = default) {
+    public async Task<Cart> AddCouponToCartAsync(Guid cartId, Guid couponId, CancellationToken cancellationToken = default) {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) {
             throw new CaasItemNotFoundException($"Cart {cartId} not found");
@@ -168,21 +169,22 @@ public class CartService : ICartService {
         };
 
         await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
-        return (await _cartRepository.FindByIdAsync(cartId, cancellationToken))!;
+        cart = (await _cartRepository.FindByIdAsync(cartId, cancellationToken))!;
+        return await PostProcessCart(cart);
     }
 
     private async Task<Cart> PostProcessCart(Cart cart) {
         return await _discountService.ApplyDiscountAsync(cart);
     }
     
-    public async Task DeleteCart(Guid cartId, CancellationToken cancellationToken = default) {
+    public async Task DeleteAsync(Guid cartId, CancellationToken cancellationToken = default) {
         var cart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (cart == null) {
             throw new CaasItemNotFoundException();
         }
         await _cartRepository.DeleteAsync(cart, cancellationToken);
     }
-    public Task<long> Count(CancellationToken cancellationToken = default) {
+    public Task<long> CountAsync(CancellationToken cancellationToken = default) {
         return _cartRepository.CountAsync(cancellationToken);
     }
 }

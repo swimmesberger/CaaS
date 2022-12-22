@@ -1,3 +1,3 @@
 ﻿namespace CaaS.Infrastructure.Base.Mapping; 
 
-public class TenantIdColumn : Attribute { }
+public class TenantIdColumnAttribute : Attribute { }
