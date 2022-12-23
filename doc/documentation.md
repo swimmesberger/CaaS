@@ -1,4 +1,4 @@
-﻿# CaaS Projektarbeit - Ausbaustufe 1
+﻿# CaaS Projektarbeit - Ausbaustufe 1 & 2
 
 Roman Kofler-Hofer (S2010307022)
 
@@ -245,14 +245,268 @@ Mindestens 10 Kunden mit offenem Warenkorb
 
 <div style="page-break-after: always;"></div>
 
+## API
+Wir haben die API wie gefordert sehr schmal gehalten. Sämtliche Businesslogik ist an das CaaS-Core Projekt ausgelagert. 
+Der Fluss der Anfragen ist wie beschrieben folgender: API -> Service -> Repository -> Dao. 
+Die Controller haben wir nach den "Aufgabenbereichen" aufgeteilt. D.h. es gibt Controller für die Cart-Logiken, für die Customer-Logiken, für die Order-Logiken usw. Innerhalb der Bereiche gibt es - wo sinnvoll - zwei Controller. 
+Einen, der Anfragen abwickelt, die den Admin betreffen (für die man authentifiziert sein muss) sowie einen weiteren der Anfragen von Usern (ohne Registrierung) abwickelt.
+
+![structure_api_project](./assets/structure_api_project.png)
+
+Der Code zeigt einen Ausschnitt aus dem CouponAdministrationController. 
+Wie man sieht, erfolgt im Controller das Mapping von Dtos zu den tatsächlichen Datenmodellen. 
+Ansonsten werden die Anfragen nur an die jeweiligen Methoden des Services weitergeleitet.
+
+```csharp
+[HttpGet("getByCustomerId/{customerId:guid}")]
+public async Task<IEnumerable<CouponDto>> GetCouponsByCustomerId(Guid customerId, CancellationToken cancellationToken = default) {
+    var coupon = await _couponService.GetCouponsByCustomerId(customerId, cancellationToken);
+    return _mapper.Map<IEnumerable<CouponDto>>(coupon);
+}
+
+[HttpPut("{couponId:guid}")]
+public async Task<CouponDto> UpdateCoupon(Guid couponId, CouponForUpdateDto couponDto, CancellationToken cancellationToken = default) {
+    var updatedCoupon = _mapper.Map<Coupon>(couponDto);
+    var result = await _couponService.UpdateCoupon(couponId, updatedCoupon, cancellationToken);
+    return _mapper.Map<CouponDto>(result);
+}
+
+[HttpPost]
+public async Task<ActionResult> AddCoupon(CouponForCreationDto couponDto, CancellationToken cancellationToken = default) {
+    var coupon = _mapper.Map<Coupon>(couponDto);
+    var result = await _couponService.AddCoupon(coupon, cancellationToken);
+    
+    return CreatedAtAction(
+        actionName: nameof(AddCoupon),
+        routeValues: new { couponId = result.Id },
+        value: _mapper.Map<CouponDto>(result));
+}
+```
+### OpenAPI
+Alle Controller APIs werden in eine swagger.json Datei auf Basis der OpenAPI Spezifikation hinzugefügt. Mithilfe des ASP .NET
+Swashbuckle Nuget packages können die ASP .NET Metadaten ausgewertet werden, wodurch sehr viele OpenAPI Informationen automatisch
+generiert werden können. Da die Erweiterung nicht erkennt, welche möglichen Status Codes zurückgegeben werden können und es sehr
+mühsam ist, diese immer wieder anzuführen, haben wir Konventionen eingeführt. Konvention heißt, dass es nur gewisse Arten von APIs
+gibt (Get, Create, Update, Delete) die sich alle jedoch ähnlich bis gleich verhalten. Die Web-API-Konventionen die ASP .NET bereits
+zur Verfügung stellt, sind zwar bereits sehr mächtig, erfüllten jedoch nicht alle Anforderungen die wir hatten. Daher haben wir einen
+OpenAPI IOperationFilter implementiert. Swashbuckle bietet damit eine einfache Möglichkeit, die OpenAPI Generierung zu beeinflussen.
+In diesen Filtern werden unsere spezifischen Attribute sowie die standardisierten Attribute ausgewertet. Zusätzlich werden unsere definierten Konventionen in Form von OpenAPI Metadaten angewendet. Hier ein kleiner Auszug des Filters:
+```csharp
+public class CaasConventionOperationFilter : IOperationFilter {
+    ...
+    public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+        var attribute = context.MethodInfo.GetAttribute<AuthorizeAttribute>();
+        if (attribute != null) {
+            AddProblemDetailsByStatusCode(StatusCodes.Status401Unauthorized, operation, context);
+            AddAppKeySecurity(operation);
+        }
+        if (ApplyReadFor(operation, context)) return;
+        if (ApplyWriteFor(operation, context)) return;
+
+        if (ApplyReadFor<HttpGetAttribute>(operation, context)) return;
+        if (ApplyWriteFor<HttpPostAttribute>(operation, context)) {
+            Replace200With201(operation);
+            return;
+        }
+        if (ApplyWriteFor<HttpDeleteAttribute>(operation, context)) return;
+        if (ApplyWriteFor<HttpPutAttribute>(operation, context)) return;
+    }
+    ...
+}
+```
+
+### Error Handling
+Um auftretende Exceptions in der API nicht als simplen Stacktrace Text zu retournieren, sondern auch diese strukturiert mit Fehlercode
+zurückzugeben haben wir uns für die RFC 7807 Problem Details for HTTP APIs Spezifikation entschieden. Bei Fehler wird hierfür ein
+definiertes JSON Objekt zurückgegeben. Da die Fehlerbehandlung im Controlller sehr repititiv sein kann, haben wir hier für eine ASP .NET 
+Middleware in Form von dem "Hellang.Middleware.ProblemDetails" nuget packages entschieden. Dies erlaubt ein sehr einfaches Mapping
+einer Exception auf bestimmte Fehlercodes und/oder HTTP Status Codes. Hier ein Auszug unseres Mappings:
+```csharp
+private static void ConfigureProblemDetails(ProblemDetailsOptions options) {
+    // log exception in development mode
+    options.ShouldLogUnhandledException = (context, _, _) 
+        => context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment();
+    options.MapToStatusCode<NotImplementedException>(StatusCodes.Status501NotImplemented);
+    options.MapToStatusCode<HttpRequestException>(StatusCodes.Status503ServiceUnavailable);
+    options.MapToStatusCode<CaasUpdateConcurrencyDbException>(StatusCodes.Status409Conflict);
+    options.MapToStatusCode<CaasItemNotFoundException>(StatusCodes.Status404NotFound);
+    options.MapToStatusCode<CaasNoTenantException>(StatusCodes.Status400BadRequest);
+
+    // Custom mapping function for ValidationException.
+    options.Map<CaasValidationException>((ctx, ex) => HandleValidationErrors(ctx, ex.Errors));
+
+    // Because exceptions are handled polymorphically, this will act as a "catch all" mapping, which is why it's added last.
+    // If an exception other than NotImplementedException and HttpRequestException is thrown, this will handle it.
+    options.MapToStatusCode<Exception>(StatusCodes.Status500InternalServerError);
+}
+```
+
+### Architektur & App-Key
+Für die App-Key Authentifizierung haben wir einen eindeutigen Key pro Shop erzeugt. Administrative API Aufrufe, müssen zusätzlich
+zur Mandanten ID, auch einen AppKey als HTTP Header mitsenden. Passt der AppKey nicht zur Mandanten ID, wird der Aufruf abgelehnt.
+Da ASP .NET bereits einen Mechanismus zur Authentifzierung bietet, haben wir die AppKey Authentifizierung auf Basis diesen Mechanismus
+implementiert. Hierfür muss ein Authentifizierungs Handler implementiert werden, in diesem Fall sieht dieser wie folgt aus:
+```csharp
+public class AppKeyAuthenticationHandler : AuthenticationHandler<AppKeyAuthenticationOptions> {
+    public AppKeyAuthenticationHandler(IOptionsMonitor<AppKeyAuthenticationOptions> options, ILoggerFactory logger,
+    UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock) { }
+
+    protected override async Task<AuthenticateResult> HandleAuthenticateAsync() {
+        if (!Request.Headers.TryGetValue(HeaderConstants.AppKey, out var appKey)) {
+            return AuthenticateResult.Fail("No app-key provided");
+        }
+        var appKeyValidator = Context.RequestServices.GetRequiredService<IAppKeyValidator>();
+        if (!await appKeyValidator.ValidateAppKeyAsync(appKey)) {
+            return AuthenticateResult.Fail("Invalid app-key provided");
+        }
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(null, Scheme.Name));
+        var ticket = new AuthenticationTicket(principal, null, Scheme.Name);
+        return AuthenticateResult.Success(ticket);
+    }
+}
+```
+Dies hat den Vorteil, dass für AppKey-authentifizierte Controller nur ein Attribut hinzugefügt werden:
+```csharp
+[Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
+```
+Die Authentifizierung wurde auf eine eigene Policy ausgelagert, um in Zukunft auch andere Authentifizierungsmechanismen zu unterstützen (z.B. OAuth).
+
+## Geschäftslogik
+
+In diesem Abschnitt werden die Hauptkomponenten der Geschäftslogik beschrieben.
+
+### Rabattlogik
+Für die Rabatte wurden zwei interaces eingeführt, einmal die Regel:
+```csharp
+public interface IDiscountRule {
+    Task<RuleResult> Evaluate(Cart cart, CancellationToken cancellationToken = default);
+}
+```
+Diese ist dafür zuständig den Einkaufswagen auszuwerten und festzustellen ob die dazugehörige Aktion ausgeführt werden soll oder nicht.
+Das Interface für Aktionen sieht hierfür folgendermaßen aus:
+```csharp
+public interface IDiscountAction {
+    Task<Cart> ApplyDiscountAsync(Cart cart, RuleResult triggeredRule, CancellationToken cancellationToken = default);
+}
+```
+Die Regel bekommt wie beschrieben den Einkaufswagen und zusätzliche Infos der Regel, wie z.B. ob die Aktion auf den ganzen Warenkorb oder
+nur auf einzelne Artikel angewendet werden soll. Die Aktion muss dann einen neuen Warenkorb liefern (immutability) welcher dann die
+entsprechenden Aktionen berücksichtigt.
+
+Um das Entwickeln neuer Regeln und Aktionen so komfortabel wie möglich zu gestalten, haben wir uns ein System auf Basis von Dependency
+Injection überlegt. Regeln und Aktionen müssen dem System zuerst bekannt gemacht werden:
+```csharp
+services.AddDiscountRule<MinProductCountDiscountRule, MinProductCountSettings>(MinProductCountDiscountRule.Id);
+services.AddDiscountRule<TimeWindowDiscountRule, TimeWindowDiscountSettings>(TimeWindowDiscountRule.Id);
+services.AddDiscountRule<CompositeDiscountRule, CompositeDiscountRuleSettings>(CompositeDiscountRule.Id);
+services.AddDiscountAction<PercentageDiscountAction, PercentageDiscountSettings>(PercentageDiscountAction.Id);
+services.AddDiscountAction<FixedValueDiscountAction, FixedValueDiscountSettings>(FixedValueDiscountAction.Id);
+services.AddDiscountAction<AndDiscountAction, AndDiscountActionSettings>(AndDiscountAction.Id);
+```
+Jede Regel und Aktion muss eine eindeutige Guid liefern die die Regel bzw. Aktion eindeutig identifiziert.
+Außerdem muss bekannt gemacht werden durch welchen C# (CLR) Typ die Regel oder Aktion konfiguriert werden kann.
+Dadurch kann vom Fontend auch abgefragt werden, welche Einstellungsmöglichkeiten für welche Aktion/Regel zur Verfügung stehen
+und durch welche Typen die jeweiligen Einstellungen repräsentiert werden (int, double, string, bool, ...).
+Durch die Registierung stehen all diese Metadaten zur Verfügung. Da jedoch die Regeln und Aktionen dynamisch mit unterschiedlichen
+Einstellungen erstellt werden können, stehen die konkreten Instanzen einer Regel bzw. Aktion zur Laufzeit nicht zur verfügung.
+Zur Verfügung steht lediglich die Logik, sowie der Datentyp für die Einstellungen. Wenn im Frontend Regeln bzw. Aktionen erstellt
+werden, werden diese im Backend zuerst validiert und danach in die Datenbank eingetragen. Da die Einstellungen der jeweiligen Regeln
+und Aktionen sehr unterschiedlich sein können und das Hinzufügen von neuen Regeln und Aktionen zu keiner Datenbankschema-Änderung
+führen soll, werden diese in Form von JSON bzw. BSON (Binary JSON) eingetragen. Die Verknüpfung zur jeweiligen Logik findet 
+über die vorher erwähnten IDs statt.
+Wenn ein Einkaufwagen auf Rabatte überprüft werden soll, werden alle in der Datenbank vorhandenen Rabatte abgerufen und aus den
+jeweiligen JSON Einstellungen konkrete C# Objektinstanzen erzeugt. Anhand der verknüpften IDs von Regel und Aktionen kann die
+C# Klasse ausfindig gemacht werden die die entsprechende Logik enthält. Diese Klassen werden dann mithilfe von Reflection erstellt
+und auch die zur Klasse gehörende konkrete Einstellungsklasse wird injiziert. Es besteht keine Restriktion, welche Klassen in den
+Konstruktoren der Logik aufgeführt werden dürfen, solange es sich entweder um eine Einstellungsklasse oder um Klassen im 
+Dependency Injection Container handelt. Dies könnte dann wie folgt aussehen:
+```csharp
+public class TimeWindowDiscountRule : IDiscountRule {
+    public static readonly Guid Id = new Guid("0F4E0B04-E32B-4897-804C-92F858468D8A");
+
+    private readonly TimeWindowDiscountSettings _settings;
+    private readonly ISystemClock _timeProvider;
+
+    public TimeWindowDiscountRule(IDiscountOptions<TimeWindowDiscountSettings> settings, ISystemClock timeProvider) {
+        _timeProvider = timeProvider;
+        _settings = settings.Value;
+    }
+    ...
+}
+```
+Durch diese Mechanismus fühlen sich .NET Entwickler gut aufgehoben, da sehr viele Mechanismen (wie z.B. Controller in ASP .NET) so
+funktionieren. Die Implementierung beschränkt sich dadurch auf nur sehr wenige Zeilen Code und der Großteil der Arbeit wird vom Framework
+abgenommen.
+
+Die konkreten Regeln und Aktionen wurden wie folgt abgebildet:
+
+Um möglichst flexibel zu sein und Kombinationen von verschiedenen Regeln zu erlauben, haben wir die sogenannte CompositeRule eingeführt. Innerhalb dieser ist es wiederrum möglich verschiedene Regeln unter Berücksichtigung einer bestimmten Verknüpfung (und/oder) zu kombinieren. Die Regeln auf Einzelebene sind die TimeWindowDiscountRule sowie die MinProductCountDiscountRule. Sofern ein Cart im definierten Zeitraum existiert, wird die TimeWindowDiscountRule angewendet. Damit die MinProductCountRule zieht, muss von einem bestimmten Produkt eine Mindestbestellmenge im Cart liegen.
+
+Hinsichtlich der auszuführenden Actions habe wir eine AndDiscountAction eingeführt, die es erlaubt, einzelne Aktionen zu kombinieren. Die einzelnen Actions sind die PercentageDiscountAction sowie die FixedValueDiscountAction. Wie der Name schon sagt, wird entweder ein prozentueller oder ein fixer Betrag abgezogen, falls eine Regel die Aktion triggered.
+
+### Bezahlsystem
+
+Für das Bezahlsystem wurde eine Third-Party-Applikation nachgemacht ("gemocked"). Die Applikation haben wir SwKo.Pay benannt. Die Schnittstellendefinition der Anwendung findet sich im Projekt SwKo.Pay.Api. Wir haben versucht uns bei dem Design etwas an dem populären Bezahldienst "stripe" zu orientieren. Grundsätzlich werden von dem Service 3 Methoden angeboten.
+
+```csharp
+public interface IPaymentService {
+    
+    Task<Guid> RegisterPayment(Customer customer, decimal amount, Currency currency);
+    
+    Task ConfirmPayment(Guid paymentId);
+    
+    Task RefundPayment(Guid paymentId);
+
+}
+```
+
+* RegisterPayment -> jede Zahlung muss zuerst "angemeldet" werden
+* Confirm Payment ->  Wenn auf Seiten der zugreifenden Geschäftslogik keine Fehler aufgetreten sind, kann die Zahlung bestätigt werden. Erst dann wird der Betrag abgebucht
+* RefundPayment -> Zahlungen die erst registriert wurden aber noch nicht bestätigt sind, können so rückgängig gemacht werden.
+
+Wie bei stripe auch gibt es verschiedene Datenobjekte. Z.B. einen SwKo.Pay Customer (nicht zu verwechseln mit einem Customer aus dem CaaS Projekt). Ein SwKo.Pay Customer kann Metadaten enthalten (Key-Value Storage) welcher z.B. die CustomerId aus CaaS beinhalten könnte. Für den Benutzer nicht sichtbar gibt es intern weitere Model-Klassen wie "Payment" oder "CreditCard". Für eine Kreditkarte ist jeweils die Nummer, der Status (aktiv oder inaktiv) sowie der aktuell verfügbare Kredit hinterlegt.
+
+Weiters gibt es verschiedene Exceptions die im Fehlerfall geschmissen werden. Z.B. wird überprüft ob die Kreditkartennummer valide ist. Diese Prüfung erfolgt über einfaches Patternmatching und sollte in der Praxis natürlich anders gelöst werden. Weitere Fehlerfälle können sein, dass die Kreditkarte nicht mehr aktiv ist (z.B. gestohlen gemeldet) oder der verfügbare Kredit nicht für die zu bezahlende Summe ausreicht.
+
+Die Implementierung des Services ist wie verlangt nur gemocked. Das heißt, im Speicher sind hardcoded Kreditkarten hinterlegt. Damit in CaaS-Projekt Zahlungen erfolgreich sind, sollte man also die hier zuletzt aufgeführte Kreditkarte verwenden.
+
+```csharp
+//Invalid card number
+CreditCardsDict.Add("9999999999999999", new CreditCard(){CreditCardNumber = "9999999999999999", Active = true, Credit = (decimal)500.10});
+
+//Valid card but inactive (e.g. because lost or expired)
+CreditCardsDict.Add("4594233824721535", new CreditCard(){CreditCardNumber = "4594233824721535", Active = false, Credit = (decimal)487.94});
+
+//Valid, active card with little credit
+CreditCardsDict.Add("5349801875979163", new CreditCard(){CreditCardNumber = "5349801875979163", Active = true, Credit = (decimal)2.20});
+
+//Valid, active card with large credit
+CreditCardsDict.Add("4405100664466647", new CreditCard(){CreditCardNumber = "4405100664466647", Active = true, Credit = (decimal)10000.00});
+```
+Zur Simulation, dass eine Zahlung länger dauern kann, wurde in der Methode RegisterPayment ein Task Delay von 2 Sekunden eingebaut.
+
+#### Verwendung von SwKo.Pay im CaaS Projekt
+Im OrderService gibt es die Methode CreateOrderFromCart. Wie der Name bereits sagt, wird dabei ein Cart in eine Order überführt. Im Zuge dieses Methodenaufrufs wird auf den PaymentService SwKo zugegriffen. Es wird eine Zahlung über die Summe des Carts registriert. Dann werden in einer Transaktion alle DB-Operationen ausgeführt, die für die Überführung eines Carts in eine Order benötigt werden. Sofern keine CaaS-Exception geworfen wird, wird die Zahlung bestätigt. Falls eine CaaS-Exception geworfen wird, wird im Catch-Block RefundPayment aufgerufen. Mögliche SwKo.Pay-Exceptions werden auf CaaS-Exceptions gemapped.
+
+### Statistikservice
+Der Statistikservice liefert Statistiken zum meistverkauften Produkt sowie Summen und Durchschnittswerte von Bestellungen und Einkaufskörben in einem bestimmten Zeitraum. Teilweise kann auch ausgewählt werden, wonach aggregiert werden soll (Tag, Monat oder Jahr). Das kann im Frontend für Zeitreihenanalysen relevant sein.
+
+Wir haben uns dazu entschieden, die Abfragen direkt auf der Datenbank zu machen. D.h. wir erhalten bereits das gewünschte Ergebnis fertig aufbereitet und aggregiert von der Datenbankabfrage zurück. Der Vorteil davon ist, dass keine großen Datenmengen in den Speicher geladen werden müssen. Außerdem ersparen wir uns dann möglicherweise mehrmaliges Iterieren über die Daten im Backend. Der Nachteil ist, dass wir eventuell etwas unflexibler sind, da die Daten eben genau in einer bestimmten Form geliefert werden. D.h. für jede konkrete Anforderung benötigt es eine DB-Anfrage (auch einer Methode und u.U einen bestimmten Rückgabetyp)
+
 ## Testing
 
 Die Datenzugriffsschicht testen wir mittels Integration-Tests. Vor jedem Test wird dazu ein Container (mit Testcontainers for .NET) hochgefahren und darin wird eine Datenbank mit Testdaten instanziert. Dadurch können wir die DAOs mit einem echten Datenbankzugriff testen.
 
 ![integration_tests](./assets/integration_tests_dal.png)
 
-Bereits bestehende Unit-Tests betreffen eher die Businesslogik (Services, Repositories) und werden auf Basis von in-memory Testdaten durchgeführt.
+Repositories und Services haben wir auf Basis von Unit-Tests getestet. Die Daos mocken wir mittels einer selbst implementierten MemoryDao Klasse weg (diese implementiert das IDao Interface).
 
+![unit_tests](./assets/unit_tests.png)
+
+Die Tests decken einen Großteil des Infrastructure (Implementierung der Repositories und Services) und des Core Projekts (Interfaces, Domainmodels etc.) ab. Wie man in den Screenshots sieht liegt die Testabdeckung bei den einzelnen Aggregaten (Shop, Cart, Customer,...) bei ca. 90%. Insgesamt liegt die Testabdeckung für diese Projekt bei einem geringeren Anteil weil Codestücke wie Automapper, Dependency Injection usw. gibt, die von den Tests nicht abgedeckt sind.
+
+![test_coverage_infra](./assets/test_coverage_infrastructure.png)
+![test_coverage_infra](./assets/test_coverage_core.png)
 
 ## Entwicklung im Team
 Wie in der Angabe gefordert haben wir Maßnahmen gesetzt, um die Entwicklung im Team zu vereinfachen. Eine der Maßnahmen war es Tickets für einzelne Arbeitspakete zu erstellen, die dann einem Teammitglied zugeteilt wurden. Über das Kanban-Board in GitHub konnte so der Fortschritt der einzelnen Tickets verfolgt werden.
@@ -264,3 +518,8 @@ Für einzelne Tickets wurden im Regelfall Branches erstellt, welche wieder in Ma
 Für automatische Builds haben wir zwei Workflows definiert. Einer baut ein .NET Projekt der andere baut ein Docker-Image welches dann zur einfachen Verteilung unserer Lösung verwendet werden kann.
 
 <div style="page-break-after: always;"></div>
+
+## Verteilung des Systems
+Die Anwendung sowie die Datenbank haben wir mittels Docker Compose dockerisiert. Sobald die Container hochgefahren werden, ist die Anwendung samt DB und befüllten Testdaten (würde man in der Realität nicht machen) verfügbar.
+
+
