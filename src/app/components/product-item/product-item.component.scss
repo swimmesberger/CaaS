@@ -1,0 +1,82 @@
+@import './src/variables';
+
+// Product card
+$product-card-hover-box-shadow:       $box-shadow-lg !default;
+$product-card-transition:             all .15s ease-in-out !default;
+
+.product-card {
+  padding-bottom: $card-spacer-y;
+  border: 0;
+  transition: $product-card-transition;
+
+  .product-card-actions,
+  > .btn-wishlist,
+  .badge {
+    position: absolute;
+    top: $spacer * .75;
+    right: $spacer * .75;
+    z-index: 5;
+  }
+
+  .product-card-actions .btn-action {
+    padding: .5rem;
+    transition: $product-card-transition;
+    @include border-radius($border-radius-sm);
+    background-color: $white;
+    font-size: $font-size-ms;
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .badge {
+    right: auto;
+    left: $spacer * .75;
+    &.badge-end {
+      right: $spacer * .75;
+      left: auto;
+    }
+  }
+
+  .card-body {
+    position: relative;
+    background-color: $card-bg;
+    z-index: 2;
+  }
+
+  .card-body-hidden {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    width: 100%;
+    margin-top: -$card-spacer-y;
+    transition: $product-card-transition;
+    @include border-radius($card-border-radius);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    background-color: $card-bg;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1;
+  }
+
+  @include media-breakpoint-up(sm) {
+    padding-bottom: 0;
+  }
+
+  @include media-breakpoint-up(lg) {
+    &:hover:not(.card-static) {
+      border-color: $card-bg !important;
+      box-shadow: $product-card-hover-box-shadow;
+      z-index: 10;
+      .product-card-actions .btn-action {
+        opacity: 1;
+        visibility: visible;
+      }
+      .card-body-hidden {
+        opacity: 1;
+        visibility: visible;
+        box-shadow: $product-card-hover-box-shadow;
+      }
+    }
+  }
+}

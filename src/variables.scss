@@ -1,0 +1,93 @@
+@import '../node_modules/bootstrap/scss/mixins';
+@import '../node_modules/bootstrap/scss/functions';
+@import '../node_modules/bootstrap/scss/variables';
+
+// Variables
+
+$font-family-sans-serif: "Rubik", sans-serif;
+$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+$font-size-base:              1rem;
+$font-size-xl:                ($font-size-base * 1.625);
+$font-size-lg:                ($font-size-base * 1.125);
+$font-size-md:                ($font-size-base * .9375);
+$font-size-sm:                ($font-size-base * .875);
+$font-size-ms:                ($font-size-base * .8125);
+$font-size-xs:                ($font-size-base * .75);
+
+$font-weight-medium:          500;
+
+// Navbar
+
+$navbar-padding-y:                    $spacer * 0.75;
+$navbar-nav-link-padding-y:           1rem;
+$navbar-nav-link-padding-x:           1.125rem;
+
+$navbar-brand-padding-y:              $spacer * .625;
+$navbar-brand-font-size:              $h3-font-size;
+$navbar-brand-font-weight:            $font-weight-medium;
+
+$navbar-toggler-padding-y:            .75rem;
+$navbar-toggler-padding-x:            .75rem;
+$navbar-toggler-font-size:            $font-size-base;
+$navbar-toggler-border-radius:        0;
+
+
+
+$navbar-dropdown-min-width:           12.5rem;
+$navbar-mega-dropdown-column-width:   15rem;
+
+$navbar-light-color:                  $gray-700;
+$navbar-light-hover-color:            var(--#{$prefix}primary);
+$navbar-light-active-color:           var(--#{$prefix}primary);
+$navbar-light-disabled-color:         $gray-600;
+$navbar-light-toggler-border-color:   transparent;
+$navbar-light-brand-color:            $gray-800;
+$navbar-light-brand-hover-color:      $navbar-light-brand-color;
+
+$navbar-dark-color:                   rgba($white, .65);
+$navbar-dark-hover-color:             $white;
+$navbar-dark-active-color:            $white;
+$navbar-dark-disabled-color:          rgba($white, .35);
+$navbar-dark-toggler-border-color:    transparent;
+$navbar-dark-brand-color:             $white;
+$navbar-dark-brand-hover-color:       $navbar-dark-brand-color;
+
+$navbar-tool-transition:              color .25s ease-in-out;
+$navbar-tool-icon-box-size:           2.875rem;
+$navbar-tool-icon-font-size:          1.25rem;
+$navbar-tool-label-size:              1.25rem;
+$navbar-tool-label-bg:                var(--#{$prefix}primary);
+$navbar-tool-label-color:             $white;
+$navbar-tool-label-font-size:         $font-size-xs;
+$navbar-tool-label-font-weight:       $font-weight-medium;
+$navbar-tool-text-font-size:          $font-size-sm;
+
+$navbar-light-tool-color:             $gray-700;
+$navbar-light-tool-hover-color:       $gray-900;
+$navbar-light-tool-text-small-color:  $gray-600;
+
+$navbar-dark-tool-color:              $white;
+$navbar-dark-tool-hover-color:        $white;
+$navbar-dark-tool-text-small-color:   rgba($white, .5);
+
+$navbar-stuck-box-shadow:             $box-shadow;
+
+$border-light-color:          rgba($white, .12);
+
+// Topbar
+
+$topbar-padding-y:                    .625rem;
+$topbar-font-size:                    $font-size-sm;
+
+$topbar-light-color:                  rgba($gray-700, .9);
+$topbar-light-muted-color:            rgba($gray-600, .9);
+$topbar-light-hover-color:            $gray-800;
+$topbar-light-active-color:           $gray-800;
+$topbar-light-icon-color:             var(--#{$prefix}primary);
+
+$topbar-dark-color:                   rgba($white, .65);
+$topbar-dark-muted-color:             rgba($white, .45);
+$topbar-dark-hover-color:             $white;
+$topbar-dark-active-color:            $white;
+$topbar-dark-icon-color:              var(--#{$prefix}primary);
