@@ -1,10 +1,11 @@
 ﻿using CaaS.Api.Base.Attributes;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace CaaS.Api.Base.Swagger;
 
-public class HeaderOperationFilter : IOperationFilter {
+public sealed class HeaderOperationFilter : IOperationFilter {
     public void Apply(OpenApiOperation operation, OperationFilterContext context) {
         ApplyProducesHeader(operation, context);
         ApplyConsumesHeader(operation, context);

@@ -1,3 +1,4 @@
+using CaaS.Core.Base.Url;
 using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.ProductData;
 using CaaS.Infrastructure.ShopData;
@@ -67,7 +68,7 @@ public class ProductRepositoryTest {
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
         
-        var productRepository = new ProductRepository(productDao, shopRepository);
+        var productRepository = new ProductRepository(productDao, shopRepository, NoOpLinkGenerator.Instance);
         return productRepository;
     }
     

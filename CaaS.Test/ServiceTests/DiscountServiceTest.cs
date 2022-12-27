@@ -182,6 +182,7 @@ public class DiscountServiceTest {
         serviceCollection.AddCaasDiscountCore();
         serviceCollection.AddCaasDiscountInfrastructure();
         serviceCollection.AddSingleton<ITenantIdAccessor>(new StaticTenantIdAccessor(TestShopId.ToString()));
+        serviceCollection.AddScoped<IUnitOfWorkManager, MockUnitOfWorkManager>();
 
         serviceCollection.AddSingleton<ISystemClock>(new StaticSystemClock(currentTime));
         serviceCollection.AddSingleton<IDao<DiscountSettingDataModel>>(sp

@@ -53,6 +53,9 @@ public class BaseDaoTest : IAsyncLifetime {
             script = await sqlFile.ReadToEndAsync();
         }
         var result = await _postgresqlContainer.ExecScriptAsync(script);
+        if (!string.IsNullOrEmpty(result.Stderr)) {
+            Output.WriteLine(result.Stderr);
+        }
         Assert.Equal(0, result.ExitCode);
     }
     

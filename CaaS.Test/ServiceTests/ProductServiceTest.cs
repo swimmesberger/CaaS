@@ -1,7 +1,9 @@
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Url;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Tenant;
+using CaaS.Infrastructure.BlobData;
 using CaaS.Infrastructure.ProductData;
 using CaaS.Infrastructure.ShopData;
 using CaaS.Test.Common;
@@ -129,9 +131,11 @@ public class ProductServiceTest {
         });
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
-        var productRepository = new ProductRepository(productDao, shopRepository);
+        var productRepository = new ProductRepository(productDao, shopRepository, NoOpLinkGenerator.Instance);
+        var blobService = new BlobService(new MemoryDao<BlobDataModel>());
+        var uowManager = new MockUnitOfWorkManager();
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
 
-        return new ProductService(productRepository, shopRepository, tenantIdAccessor);
+        return new ProductService(productRepository, shopRepository, blobService, uowManager, tenantIdAccessor);
     }
 }

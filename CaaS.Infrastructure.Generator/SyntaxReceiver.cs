@@ -74,7 +74,8 @@ namespace CaaS.Infrastructure.Generator {
             if (entityName.EndsWith(InitializationContext.EntitySuffix)) {
                 entityName = entityName.Substring(0, entityName.Length - InitializationContext.EntitySuffix.Length);
             }
-            var tableName = namingPolicy.ConvertName(entityName);
+            var tableName = typeSymbol.GetAttribute(InitializationContext.SqlTableAttributeName)?.ConstructorArguments.FirstOrDefault().Value?.ToString();
+            tableName ??= namingPolicy.ConvertName(entityName);
             entity.TenantIdProperty = tenantIdProperty;
             entity.Namespace = typeSymbol.ContainingNamespace.ToString();
             entity.TypeName = typeName;

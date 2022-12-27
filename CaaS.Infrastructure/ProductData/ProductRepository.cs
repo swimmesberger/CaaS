@@ -1,5 +1,6 @@
 ﻿using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Pagination;
+using CaaS.Core.Base.Url;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Ado;
@@ -9,15 +10,21 @@ using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.ProductData; 
 public class ProductRepository : CrudRepository<ProductDataModel, Product>, IProductRepository {
-    public ProductRepository(IDao<ProductDataModel> productDao, IShopRepository shopRepository) : 
-            base(productDao, new ProductDomainModelConverter(shopRepository)) {}
+    public ProductRepository(IDao<ProductDataModel> productDao, IShopRepository shopRepository, ILinkGenerator linkGenerator) : 
+            base(productDao, new ProductDomainModelConverter(shopRepository, linkGenerator)) {}
 
-    public async Task<PagedResult<Product>> FindByTextSearchAsync(string text, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
-        var statementParameters = new StatementParameters() {
-            WhereParameters = new WhereParameters(new SearchWhere(new[] {
+    public async Task<PagedResult<Product>> FindByTextSearchAsync(string? text, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
+        var whereStatements = new List<IWhereStatement> {
+            new SimpleWhere(new QueryParameter(nameof(ProductDataModel.Deleted)) { Value = false })
+        };
+        if (text != null) {
+            whereStatements.Add(new SearchWhere(new[] {
                 new QueryParameter(nameof(ProductDataModel.Name)) { Value = text },
                 new QueryParameter(nameof(ProductDataModel.Description)) { Value = text }
-            }))
+            }));
+        }
+        var statementParameters = new StatementParameters() {
+            WhereParameters = new WhereParameters(whereStatements)
         };
         return await FindByPagedAsync(statementParameters, paginationToken, cancellationToken);
     }
@@ -27,9 +34,11 @@ internal class ProductDomainModelConverter : IDomainModelConverter<ProductDataMo
     public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(ProductDataModel.Name));
     
     private readonly IShopRepository _shopRepository;
+    private readonly ILinkGenerator _linkGenerator;
 
-    public ProductDomainModelConverter(IShopRepository shopRepository) {
+    public ProductDomainModelConverter(IShopRepository shopRepository, ILinkGenerator linkGenerator) {
         _shopRepository = shopRepository;
+        _linkGenerator = linkGenerator;
     }
     
     public ProductDataModel ApplyDomainModel(ProductDataModel dataModel, Product domainModel) {
@@ -37,7 +46,8 @@ internal class ProductDomainModelConverter : IDomainModelConverter<ProductDataMo
             Name = domainModel.Name,
             Price = domainModel.Price,
             Description = domainModel.Description,
-            DownloadLink = domainModel.DownloadLink,
+            //DownloadLink = domainModel.DownloadLink, -- do not allow change
+            //ImageSrc = domainModel.ImageSrc, -- do not allow change
             Deleted = domainModel.Deleted
         };
     }
@@ -52,7 +62,8 @@ internal class ProductDomainModelConverter : IDomainModelConverter<ProductDataMo
             Name = product.Name,
             Price = product.Price,
             Description = product.Description,
-            DownloadLink = product.DownloadLink,
+            DownloadLink = _linkGenerator.CreateRelativeUrl(product.DownloadLink),
+            ImageSrc = _linkGenerator.CreateRelativeUrl(product.ImageSrc),
             ShopId = product.Shop.Id,
             Deleted = product.Deleted,
             RowVersion = product.GetRowVersion()
@@ -86,7 +97,8 @@ internal class ProductDomainModelConverter : IDomainModelConverter<ProductDataMo
             Name = dataModel.Name,
             Price = dataModel.Price,
             Description = dataModel.Description,
-            DownloadLink = dataModel.DownloadLink,
+            DownloadLink = _linkGenerator.CreateAbsoluteUrl(dataModel.DownloadLink),
+            ImageSrc = _linkGenerator.CreateAbsoluteUrl(dataModel.ImageSrc),
             Shop = shop,
             Deleted = dataModel.Deleted,
             ConcurrencyToken = dataModel.GetConcurrencyToken()

@@ -10,15 +10,17 @@ VALUES ('ba86a395-51ca-4f29-a047-5296ce90ab79',3,'2022-01-25 05:39:19','2022-09-
 INSERT INTO shop(id,row_version,creation_time,last_modification_time,name,cart_lifetime_minutes,admin_id,app_key)
 VALUES ('c277a395-51ca-4f29-a047-5296ce90ab79',3,'2022-01-25 05:39:19','2022-09-30 15:40:10','Kanoodle',32382,'bbfc1894-0c7e-4414-aa71-20d7cbbe7236','7f272c83-97d5-4b95-a652-d15c4ba988bf');
 
+INSERT INTO files (id, shop_id, name, path, mime_type, blob) VALUES ('581e4c62-9127-4b95-898b-2836ca3d90d2', 'a468d796-db09-496d-9794-f6b42f8c7c0b', 'veryday_clean_dandruff.pdf', 'downloads/581e4c62-9127-4b95-898b-2836ca3d90d2', 'application/pdf', '\x255044462d312e32200a392030206f626a0a3c3c0a3e3e0a73747265616d0a42542f203332205466282020594f55522054455854204845524520202029272045540a656e6473747265616d0a656e646f626a0a342030206f626a0a3c3c0a2f54797065202f506167650a2f506172656e742035203020520a2f436f6e74656e74732039203020520a3e3e0a656e646f626a0a352030206f626a0a3c3c0a2f4b696473205b3420302052205d0a2f436f756e7420310a2f54797065202f50616765730a2f4d65646961426f78205b2030203020323530203530205d0a3e3e0a656e646f626a0a332030206f626a0a3c3c0a2f50616765732035203020520a2f54797065202f436174616c6f670a3e3e0a656e646f626a0a747261696c65720a3c3c0a2f526f6f742033203020520a3e3e0a2525454f46');
+
 INSERT INTO product(id,row_version,creation_time,last_modification_time,shop_id,name,description,download_link,price,deleted) 
     VALUES ('fcb3c98d-4392-4e4c-8d31-f89f0ebe3c83',8,'2022-05-31 10:38:18','2022-08-22 11:30:02','a468d796-db09-496d-9794-f6b42f8c7c0b','USB cable','liquam augue quam',
-            './downloads/fcb3c98d-4392-4e4c-8d31-f89f0ebe3c83',2.99,'false');
+            'downloads/581e4c62-9127-4b95-898b-2836ca3d90d2',2.99,'false');
 INSERT INTO product(id,row_version,creation_time,last_modification_time,shop_id,name,description,download_link,price,deleted) 
     VALUES ('ff66c1f5-d79e-4797-a03c-a665ae26b171',9,'2022-01-20 16:52:26','2022-08-26 16:35:52','a468d796-db09-496d-9794-f6b42f8c7c0b','HDMI cable',
-            'tincidunt ante vel ipsum.','./downloads/ff66c1f5-d79e-4797-a03c-a665ae26b171',5.99,'false');
+            'tincidunt ante vel ipsum.','downloads/581e4c62-9127-4b95-898b-2836ca3d90d2',5.99,'false');
 INSERT INTO product(id,row_version,creation_time,last_modification_time,shop_id,name,description,download_link,price,deleted) 
     VALUES ('587c3437-b430-405a-99dd-a0ce9ebde0a4',1,'2022-03-17 00:49:17','2022-08-25 06:39:49','a468d796-db09-496d-9794-f6b42f8c7c0b','LAN cable',
-            'estibulum ante','./downloads/587c3437-b430-405a-99dd-a0ce9ebde0a4',7.96,'false');
+            'estibulum ante','downloads/581e4c62-9127-4b95-898b-2836ca3d90d2',7.96,'false');
 
 INSERT INTO customer(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail,credit_card_number) 
     VALUES ('9234a988-0abd-4b44-808a-9e7a8852e19c',2,'2022-01-09 19:04:52','2022-10-21 05:29:31','a468d796-db09-496d-9794-f6b42f8c7c0b',

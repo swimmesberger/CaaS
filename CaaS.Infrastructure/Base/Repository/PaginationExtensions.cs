@@ -65,6 +65,18 @@ public static class PaginationExtensions {
         Items = await selector.Invoke(result.Items)
     };
     
+    public static PagedResult<TR> WithItems<T, TR>(this PagedResult<T> result, IReadOnlyCollection<TR> items) {
+        return new PagedResult<TR>() {
+            TotalCount = result.TotalCount,
+            TotalPages = result.TotalPages,
+            FirstPage = result.FirstPage,
+            PreviousPage = result.PreviousPage,
+            NextPage = result.NextPage,
+            LastPage = result.LastPage,
+            Items = items
+        };
+    }
+    
     public static async Task<PagedResult<T>> FindByPagedAsync<T>(this IDao<T> dao, StatementParameters parameters, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
         var pageLimit = paginationToken?.Limit ?? ParsedPaginationToken.DefaultPageLimit;
         var metadataProvider = dao.CreateMetadataProvider();

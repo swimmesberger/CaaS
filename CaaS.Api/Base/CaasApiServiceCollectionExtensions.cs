@@ -7,6 +7,7 @@ using CaaS.Api.DiscountApi.Swagger;
 using CaaS.Core;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.Base.Url;
 using CaaS.Core.Base.Validation;
 using CaaS.Infrastructure.Base;
 using CaaS.Infrastructure.Base.Ado.Model;
@@ -55,6 +56,7 @@ public static class CaasApiServiceCollectionExtensions {
         services.AddSwaggerGen(options => {
             options.OperationFilter<HeaderOperationFilter>();
             options.OperationFilter<RequireTenantOperationFilter>();
+            options.OperationFilter<AuthorizeOperationFilter>();
             options.OperationFilter<CaasConventionOperationFilter>();
             options.DocumentFilter<DiscountSettingsOpenApiDocumentFilter>();
             options.AddSecurityDefinition(AppKeyAuthenticationDefaults.AuthenticationScheme, new OpenApiSecurityScheme {
@@ -69,6 +71,7 @@ public static class CaasApiServiceCollectionExtensions {
         });
         services.AddHostedService<CartCleanupService>();
         services.AddScoped<IValidator, WebValidator>();
+        services.AddScoped<ILinkGenerator, WebBlobLinkGenerator>();
 
         services.AddCaasInfrastructure();
         services.AddCaasCore();

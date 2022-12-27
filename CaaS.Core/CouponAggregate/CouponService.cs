@@ -6,10 +6,12 @@ namespace CaaS.Core.CouponAggregate;
 
 public class CouponService : ICouponService {
     private readonly ICouponRepository _couponRepository;
+    private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ITenantIdAccessor _tenantIdAccessor;
 
-    public CouponService(ICouponRepository couponRepository, ITenantIdAccessor tenantIdAccessor) {
+    public CouponService(ICouponRepository couponRepository, IUnitOfWorkManager unitOfWorkManager, ITenantIdAccessor tenantIdAccessor) {
         _couponRepository = couponRepository;
+        _unitOfWorkManager = unitOfWorkManager;
         _tenantIdAccessor = tenantIdAccessor;
     }
     public async Task<Coupon?> GetByIdAsync(Guid couponId, CancellationToken cancellationToken = default) {
@@ -32,6 +34,7 @@ public class CouponService : ICouponService {
     }
     
     public async Task<Coupon> UpdateAsync(Guid couponId, Coupon updatedCoupon, CancellationToken cancellationToken = default) {
+        await using var uow = _unitOfWorkManager.Begin();
         var oldCoupon = await _couponRepository.FindByIdAsync(couponId, cancellationToken);
         if (oldCoupon == null) {
             throw new CaasItemNotFoundException($"CouponId {couponId} not found");
@@ -42,21 +45,26 @@ public class CouponService : ICouponService {
             ShopId = _tenantIdAccessor.GetTenantGuid()
         };
         
-        return await _couponRepository.UpdateAsync(oldCoupon, updatedCoupon, cancellationToken);
+        updatedCoupon = await _couponRepository.UpdateAsync(oldCoupon, updatedCoupon, cancellationToken);
+        await uow.CompleteAsync(cancellationToken);
+        return updatedCoupon;
     }
     
     public async Task<Coupon> AddAsync(Coupon coupon, CancellationToken cancellationToken = default) {
         if (coupon.OrderId != null || coupon.CartId != null || coupon.CustomerId != null) {
             throw new CaasValidationException("When creating a coupon orderId, cartId and customerId must be null.");
         }
-
+        await using var uow = _unitOfWorkManager.Begin();
         coupon = coupon with {
             ShopId = _tenantIdAccessor.GetTenantGuid()
         };
-        return await _couponRepository.AddAsync(coupon, cancellationToken);
+        coupon = await _couponRepository.AddAsync(coupon, cancellationToken);
+        await uow.CompleteAsync(cancellationToken);
+        return coupon;
     }
     
     public async Task DeleteAsync(Guid couponId, CancellationToken cancellationToken = default) {
+        await using var uow = _unitOfWorkManager.Begin();
         var coupon = await _couponRepository.FindByIdAsync(couponId, cancellationToken);
         if (coupon == null) {
             throw new CaasItemNotFoundException($"CouponId {couponId} not found");
@@ -67,8 +75,10 @@ public class CouponService : ICouponService {
         }
         
         await _couponRepository.DeleteAsync(coupon, cancellationToken);
+        await uow.CompleteAsync(cancellationToken);
     }
     public async Task<Coupon> SetValueOfCouponAsync(Guid couponId, decimal value, CancellationToken cancellationToken = default) {
+        await using var uow = _unitOfWorkManager.Begin();
         var coupon = await _couponRepository.FindByIdAsync(couponId, cancellationToken);
         if (coupon == null) {
             throw new CaasItemNotFoundException($"CouponId {couponId} not found");
@@ -83,6 +93,8 @@ public class CouponService : ICouponService {
             Value = value
         };
 
-        return await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
+        updatedCoupon = await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
+        await uow.CompleteAsync(cancellationToken);
+        return updatedCoupon;
     }
 }

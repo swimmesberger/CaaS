@@ -20,7 +20,9 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
         _properties = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p);
         MetadataProvider = new MemoryDaoRecordMetadataProvider(_properties);
     }
-    
+
+    public MemoryDao() : this(new List<T>()) { }
+
     public IAsyncEnumerable<T> FindAllAsync(CancellationToken cancellationToken = default) {
         return _data.ToAsyncEnumerable();
     }

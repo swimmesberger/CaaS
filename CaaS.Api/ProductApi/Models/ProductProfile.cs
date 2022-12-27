@@ -6,8 +6,8 @@ namespace CaaS.Api.ProductApi.Models;
 // ReSharper disable once UnusedType.Global
 public class ProductProfile : Profile {
     public ProductProfile() {
-        CreateMap<Product, ProductDto>().ForMember(p => p.ShopId,
-            opt => opt.MapFrom(src => src.Shop.Id));
+        CreateMap<Product, ProductDto>();
+        CreateMap<Product, ProductMinimalDto>();
 
         CreateMap<ProductForCreationDto, Product>();
         CreateMap<ProductForUpdateDto, Product>();

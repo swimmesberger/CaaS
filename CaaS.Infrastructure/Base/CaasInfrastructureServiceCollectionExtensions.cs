@@ -1,6 +1,7 @@
 ﻿using System.Data.Common;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.BlobAggregate;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
@@ -14,6 +15,7 @@ using CaaS.Infrastructure.Base.Ado.Impl.Npgsql;
 using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Di;
 using CaaS.Infrastructure.Base.Tenant;
+using CaaS.Infrastructure.BlobData;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
 using CaaS.Infrastructure.CustomerData;
@@ -40,6 +42,7 @@ public static class CaasInfrastructureServiceCollectionExtensions {
         services.AddScoped<ITenantIdAccessor>(sp => sp.GetRequiredService<StaticTenantIdAccessor>());
         services.AddComposite<ITenantIdAccessor, CompositeTenantIdAccessor>();
         services.AddScoped<IAppKeyValidator, ShopAppKeyValidator>();
+        services.AddScoped<IBlobService, BlobService>();
         return services;
     }
 

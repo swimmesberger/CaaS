@@ -1,16 +1,14 @@
 ﻿using System.Collections;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace CaaS.Api.Base.Swagger;
 
-public class CaasConventionOperationFilter : IOperationFilter {
+public sealed class CaasConventionOperationFilter : IOperationFilter {
     private static readonly IReadOnlyCollection<KeyValuePair<string, string>> ResponseDescriptionMap = new[] {
         new KeyValuePair<string, string>("1\\d{2}", "Information"),
 
@@ -46,11 +44,8 @@ public class CaasConventionOperationFilter : IOperationFilter {
     }
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context) {
-        var attribute = context.MethodInfo.GetAttribute<AuthorizeAttribute>();
-        if (attribute != null) {
-            AddProblemDetailsByStatusCode(StatusCodes.Status401Unauthorized, operation, context);
-            AddAppKeySecurity(operation);
-        }
+        var conventionAttribute = context.MethodInfo.DeclaringType?.GetAttribute<CaasApiConventionAttribute>();
+        if (conventionAttribute == null) return;
         if (ApplyReadFor(operation, context)) return;
         if (ApplyWriteFor(operation, context)) return;
 
@@ -131,25 +126,6 @@ public class CaasConventionOperationFilter : IOperationFilter {
         operation.Responses[StatusCodes.Status201Created.ToString()] = okSchema;
     }
 
-    private void AddAppKeySecurity(OpenApiOperation operation) {
-        operation.Security = new List<OpenApiSecurityRequirement>() {
-            new() {
-                {
-                    new OpenApiSecurityScheme {
-                        Reference = new OpenApiReference {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = AppKeyAuthenticationDefaults.AuthenticationScheme
-                        },
-                        Scheme = AppKeyAuthenticationDefaults.AuthenticationScheme,
-                        Name = AppKeyAuthenticationDefaults.AuthenticationScheme,
-                        In = ParameterLocation.Header,
-                    },
-                    new List<string>()
-                }
-            }
-        };
-    }
-    
     internal static void AddProblemDetailsByStatusCode(int statusCode, OpenApiOperation operation, OperationFilterContext context) {
         var statusCodeString = statusCode.ToString();
         var problemDetailsSchema = context.SchemaGenerator.GenerateSchema(typeof(ProblemDetails), context.SchemaRepository);

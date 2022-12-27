@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using CaaS.Api.Base;
 using CaaS.Api.Base.Attributes;
+using CaaS.Api.BlobApi;
 using CaaS.Api.ProductApi.Models;
 using CaaS.Core.Base.Pagination;
 using CaaS.Core.ProductAggregate;
+using CaaS.Infrastructure.Base.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 
@@ -29,13 +31,14 @@ public class ProductController : ControllerBase {
     }
     
     [HttpGet]
-    public async Task<PagedResult<Product>> GetByTextSearch([FromQuery(Name = "q")] string searchQuery, 
+    public async Task<PagedResult<ProductMinimalDto>> GetByTextSearch([FromQuery(Name = "q")] string? searchQuery, 
         [FromQuery] KeysetPaginationDirection paginationDirection = KeysetPaginationDirection.Forward,
         [FromQuery(Name = "$skiptoken")] string? skipToken = null, [FromQuery] int? limit = null,
         CancellationToken cancellationToken = default) {
         var paginationToken = new PaginationToken(paginationDirection, skipToken, limit);
         var result = await _productService.GetByTextSearchAsync(searchQuery, paginationToken, cancellationToken);
         Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
-        return result;
+        var viewProducts = _mapper.Map<IReadOnlyCollection<ProductMinimalDto>>(result.Items);
+        return result.WithItems(viewProducts);
     }
 }

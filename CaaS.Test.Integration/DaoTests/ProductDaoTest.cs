@@ -81,10 +81,11 @@ public class ProductDaoTest : BaseDaoTest {
                 Id = Guid.Parse("7A819343-23A1-4AD9-8798-64D1047CF01F"),
                 Name = "AddTest",
                 Description = "a new product",
-                DownloadLink = "download/file",
                 ShopId = Guid.Parse(ShopTenantId),
                 Price = 50,
-                Deleted = false
+                Deleted = false,
+                DownloadLink = "downloads/581e4c62-9127-4b95-898b-2836ca3d90d2",
+                ImageSrc = null!
         };
         await productDao.AddAsync(product);
         

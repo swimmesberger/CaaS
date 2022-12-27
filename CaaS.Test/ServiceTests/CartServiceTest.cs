@@ -2,6 +2,7 @@
 using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
+using CaaS.Core.Base.Url;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
@@ -211,7 +212,7 @@ public class CartServiceTest {
         var discountSettingsDao = new MemoryDao<DiscountSettingDataModel>(new List<DiscountSettingDataModel>());
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
-        var productRepository = new ProductRepository(productDao, shopRepository);
+        var productRepository = new ProductRepository(productDao, shopRepository, NoOpLinkGenerator.Instance);
         var customerRepository = new CustomerRepository(customerDao);
         var couponRepository = new CouponRepository(couponDao);
 
@@ -221,10 +222,11 @@ public class CartServiceTest {
         var jsonConverter = new DiscountSettingRawConverter(new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()), componentFactory.GetDiscountMetadata());
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, jsonConverter);
         var validator = new MockValidator();
-        var discountService = new DiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
+        var uowManager = new MockUnitOfWorkManager();
+        var discountService = new DiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator, uowManager);
         
         return new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
-            tenantIdAccessor, clock);
+            uowManager, tenantIdAccessor, clock);
     }
 
     private static DateTimeOffset AsUtc(DateTime dateTime) => dateTime.ToUniversalTime().ToDateTimeOffset();

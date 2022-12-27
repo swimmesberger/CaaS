@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Url;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate.Models;
@@ -72,7 +73,7 @@ public class OrderRepositoryTest  {
             new ProductDataModel() { Id = ProductBId, Name = "ProductB", Price = 20, ShopId = TestShopId }
         });
         
-        var productRepository = new ProductRepository(productDao, GetShopRepository());
+        var productRepository = new ProductRepository(productDao, GetShopRepository(), NoOpLinkGenerator.Instance);
         return productRepository;
     }
     private ICouponRepository GetCouponRepository() {

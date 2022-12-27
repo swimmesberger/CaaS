@@ -1,4 +1,5 @@
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Url;
 using CaaS.Core.CouponAggregate;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
@@ -239,7 +240,7 @@ public class CouponServiceTest {
             new ProductDataModel() { Id = ProductBId, Name = "ProductB", Price = 20, ShopId = TestShopId }
         });
         
-        var productRepository = new ProductRepository(productDao, shopRepository);
+        var productRepository = new ProductRepository(productDao, shopRepository, NoOpLinkGenerator.Instance);
 
         var couponDao = new MemoryDao<CouponDataModel>(new List<CouponDataModel>() {
             new CouponDataModel { Id = CouponIdA, ShopId = TestShopId, Value = 4, OrderId = ExistingOrder2Id, CartId = ExistingCart1Id, CustomerId = CustomerIdA},
@@ -286,7 +287,7 @@ public class CouponServiceTest {
         
         var cartRepository = new CartRepository(cartDao, cartItemDao, productRepository, customerRepository, couponRepository, new StaticSystemClock(currentDate));
         
-        return new CouponService(couponRepository, new StaticTenantIdAccessor(TestShopId.ToString()));
+        return new CouponService(couponRepository, new MockUnitOfWorkManager(), new StaticTenantIdAccessor(TestShopId.ToString()));
     }
     
     private static DateTimeOffset AsUtc(DateTime dateTime) => dateTime.ToUniversalTime().ToDateTimeOffset();

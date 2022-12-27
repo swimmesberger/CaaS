@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Url;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.CouponAggregate;
 using CaaS.Core.CustomerAggregate;
@@ -219,7 +220,7 @@ public class OrderServiceTest {
         });
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
-        var productRepository = new ProductRepository(productDao, shopRepository);
+        var productRepository = new ProductRepository(productDao, shopRepository, NoOpLinkGenerator.Instance);
         var customerRepository = new CustomerRepository(customerDao);
         var couponRepository = new CouponRepository(couponDao);
         
@@ -235,12 +236,13 @@ public class OrderServiceTest {
         var jsonConverter = new DiscountSettingRawConverter(new OptionsWrapper<DiscountJsonOptions>(new DiscountJsonOptions()), componentFactory.GetDiscountMetadata());
         var validator = new MockValidator();
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, jsonConverter);
-        var discountService = new DiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator);
-
         var uowManager = new MockUnitOfWorkManager();
+        var discountService = new DiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator, uowManager);
+
+
 
         var cartService = new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
-            tenantIdAccessor, SystemClock.Instance);
+            uowManager, tenantIdAccessor, SystemClock.Instance);
         return new OrderService(orderRepository, customerRepository, cartService, couponRepository, tenantIdAccessor, uowManager, paymentService);
     }
     

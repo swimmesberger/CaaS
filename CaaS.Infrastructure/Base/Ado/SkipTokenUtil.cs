@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using System.Text.Json;
 using CaaS.Core.Base.Pagination;
 using CaaS.Infrastructure.Base.Mapping;
@@ -22,7 +23,9 @@ public static class SkipTokenUtil {
             var pieces = pair.Split(new[] { SkipTokenValue.PropertyDelimiter }, 2);
             if (pieces.Length > 1 && !string.IsNullOrWhiteSpace(pieces[0])) {
                 var propertyType = propertyMapper.GetPropertyType(pieces[0]);
-                var propValue = StringToValue(pieces[1], propertyType);
+                var rawValue = pieces[1];
+                rawValue = WebUtility.UrlDecode(rawValue);
+                var propValue = StringToValue(rawValue, propertyType);
                 propertyValuePairs.Add(pieces[0], propValue);
             } else {
                 throw new ArgumentException("Failed to parse skip-token");
@@ -32,7 +35,24 @@ public static class SkipTokenUtil {
     }
 
     private static object? StringToValue(string rawValue, Type propertyType) {
-        return JsonSerializer.Deserialize(rawValue, propertyType);
+        if (typeof(string) == propertyType) {
+            return rawValue;
+        } else if (typeof(int) == propertyType) {
+            return int.Parse(rawValue);
+        } else if (typeof(double) == propertyType) {
+            return double.Parse(rawValue);
+        } else if (typeof(decimal) == propertyType) {
+            return decimal.Parse(rawValue);
+        } else if (typeof(long) == propertyType) {
+            return long.Parse(rawValue);
+        } else if (typeof(short) == propertyType) {
+            return short.Parse(rawValue);
+        } else if (typeof(float) == propertyType) {
+            return float.Parse(rawValue);
+        } else if (typeof(Guid) == propertyType) {
+            return Guid.Parse(rawValue);
+        }
+        throw new NotImplementedException("Unsupported type " + propertyType);
     }
     
     private static IList<string> ParseValue(string value, char delim) {

@@ -1,3 +1,4 @@
+using CaaS.Core.Base.Url;
 using CaaS.Core.CartAggregate;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
@@ -120,7 +121,7 @@ public class CartRepositoryTest {
         });
 
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
-        var productRepository = new ProductRepository(productDao, shopRepository);
+        var productRepository = new ProductRepository(productDao, shopRepository, NoOpLinkGenerator.Instance);
         var customerRepository = new CustomerRepository(customerDao);
         var couponRepository = new CouponRepository(couponDao);
         

@@ -54,6 +54,6 @@ public class CustomerServiceTest {
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
 
-        return new CustomerService(new StaticTenantIdAccessor(TestShopId.ToString()), customerRepository, shopRepository);
+        return new CustomerService(new StaticTenantIdAccessor(TestShopId.ToString()), customerRepository, shopRepository, new MockUnitOfWorkManager());
     }
 }
