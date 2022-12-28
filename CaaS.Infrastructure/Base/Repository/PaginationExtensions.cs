@@ -9,17 +9,13 @@ namespace CaaS.Infrastructure.Base.Repository;
 public static class PaginationExtensions {
     
     public static StatementParameters WithPagination(this StatementParameters statementParameters, 
-        Action<OrderParameterBuilder>? orderBuilderOptions = null, ParsedPaginationToken? paginationToken = null) {
+        Action<OrderParameterBuilder>? orderBuilderOptions = null, ParsedPaginationToken? paginationToken = null, int? limit = null) {
         paginationToken ??= ParsedPaginationToken.First;
-        if (paginationToken.Limit == null) {
-            paginationToken = paginationToken with {
-                Limit = ParsedPaginationToken.DefaultPageLimit
-            };
+        if (limit == null) {
+            limit = ParsedPaginationToken.DefaultPageLimit;
         }
-        if (paginationToken.Limit > ParsedPaginationToken.MaximumPageLimit) {
-            paginationToken = paginationToken with {
-                Limit = ParsedPaginationToken.MaximumPageLimit
-            };
+        if (limit > ParsedPaginationToken.MaximumPageLimit) {
+            limit = ParsedPaginationToken.MaximumPageLimit;
         }
         IReadOnlyList<OrderParameter> columns;
         if (orderBuilderOptions != null) {
@@ -51,7 +47,7 @@ public static class PaginationExtensions {
         return statementParameters with {
             WhereParameters = where,
             OrderBy = orderBy,
-            Limit = paginationToken.Limit
+            Limit = limit
         };
     }
     
@@ -82,19 +78,32 @@ public static class PaginationExtensions {
         var metadataProvider = dao.CreateMetadataProvider();
         var parsedPaginationToken = paginationToken == null ? null : 
             new ParsedPaginationToken(paginationToken.Direction, paginationToken.Reference == null ? null : 
-                SkipTokenUtil.Parse(paginationToken.Reference, metadataProvider), pageLimit);
+                SkipTokenUtil.Parse(paginationToken.Reference, metadataProvider));
         var totalCount = await dao.CountAsync(parameters, cancellationToken: cancellationToken);
         var totalPages = (long)Math.Ceiling(totalCount / (double)pageLimit);
-        var paginationParameters = parameters.WithPagination(null, parsedPaginationToken);
+        var paginationParameters = parameters.WithPagination(null, parsedPaginationToken, pageLimit);
         var parameterNames = parameters.OrderBy.Select(o => o.Name).ToList();
-        var data = await dao.FindBy(paginationParameters, cancellationToken).ToListAsync(cancellationToken);
+        var dataEnumerable = dao.FindBy(paginationParameters, cancellationToken);
+        if (parsedPaginationToken?.Direction == KeysetPaginationDirection.Backward) {
+            dataEnumerable = dataEnumerable.Reverse();
+        }
+        var data = await dataEnumerable.ToListAsync(cancellationToken);
+        var prevPage = dao.CreatePaginationToken(data.FirstOrDefault(), parameterNames, KeysetPaginationDirection.Backward);
+        var hasPrev = prevPage != null && await dao.AnyAsync(parameters, prevPage, cancellationToken);
+        var nextPage = dao.CreatePaginationToken(data.LastOrDefault(), parameterNames, KeysetPaginationDirection.Forward);
+        var hasNext = nextPage != null && await dao.AnyAsync(parameters, nextPage, cancellationToken);
         return new PagedResult<T>() {
             Items = data,
-            PreviousPage = dao.CreatePaginationToken(data.FirstOrDefault(), parameterNames, KeysetPaginationDirection.Backward),
-            NextPage = dao.CreatePaginationToken(data.LastOrDefault(), parameterNames, KeysetPaginationDirection.Forward),
+            PreviousPage = hasPrev ? prevPage : null,
+            NextPage = hasNext ? nextPage : null,
             TotalCount = totalCount,
             TotalPages = totalPages
         };
+    }
+    
+    private static Task<bool> AnyAsync<T>(this IDao<T> dao, StatementParameters parameters, ParsedPaginationToken paginationToken, CancellationToken cancellationToken = default) {
+        var paginationParameters = parameters.WithPagination(null, paginationToken);
+        return dao.AnyAsync(paginationParameters, cancellationToken);
     }
 
     private static IRecordMetadataProvider CreateMetadataProvider<T>(this IDao<T> dao) {

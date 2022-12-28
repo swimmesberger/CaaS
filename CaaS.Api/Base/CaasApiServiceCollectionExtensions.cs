@@ -6,6 +6,7 @@ using CaaS.Api.Base.Swagger;
 using CaaS.Api.DiscountApi.Swagger;
 using CaaS.Core;
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Pagination;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.Base.Url;
 using CaaS.Core.Base.Validation;
@@ -22,6 +23,8 @@ using Microsoft.OpenApi.Models;
 namespace CaaS.Api.Base; 
 
 public static class CaasApiServiceCollectionExtensions {
+    public const string CorsAllowSpecificOrigins = "_corsAllowSpecificOrigins";
+    
     public static IServiceCollection AddCaas(this IServiceCollection services, IConfiguration configuration) {
         services.AddAutoMapper(typeof(CaasApiServiceCollectionExtensions));
         services.AddControllers(options => {
@@ -68,6 +71,18 @@ public static class CaasApiServiceCollectionExtensions {
                 Type = SecuritySchemeType.ApiKey,
                 Scheme = AppKeyAuthenticationDefaults.AuthenticationScheme
             });
+            options.MapType<SkipTokenValue>(() => new OpenApiSchema { Type = "string" });
+        });
+        services.AddCors(options => {
+            options.AddPolicy(name: CorsAllowSpecificOrigins,
+                builder => {
+                    var origins = new List<string> {
+                        "https://localhost:4200",
+                        "http://localhost:4200"
+                    };
+                    builder.WithOrigins(origins.ToArray()).AllowAnyHeader().AllowAnyMethod();
+                }
+            );
         });
         services.AddHostedService<CartCleanupService>();
         services.AddScoped<IValidator, WebValidator>();

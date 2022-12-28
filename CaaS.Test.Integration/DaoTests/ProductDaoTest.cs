@@ -36,7 +36,7 @@ public class ProductDaoTest : BaseDaoTest {
         pages.TotalPages.Should().Be(2);
         pages.TotalCount.Should().Be(3);
         pages.NextPage!.Reference!.PropertyValues["Name"].Should().Be("LAN cable");
-        pages.PreviousPage!.Reference!.PropertyValues["Name"].Should().Be("HDMI cable");
+        pages.PreviousPage.Should().BeNull();
     }
     
     [Fact]

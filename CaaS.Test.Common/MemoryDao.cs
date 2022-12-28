@@ -29,6 +29,9 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
 
     public IAsyncEnumerable<TValue> FindScalarBy<TValue>(StatementParameters parameters, CancellationToken cancellationToken = default) {
         return FindBy(parameters, cancellationToken).Select(model => {
+            if (parameters.SelectParameters.IsEmpty) {
+                return default!;
+            }
             var propName = parameters.SelectParameters.Properties[0];
             return (TValue)_properties[propName].GetValue(model)!;
         });

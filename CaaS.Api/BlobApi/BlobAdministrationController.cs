@@ -12,7 +12,7 @@ namespace CaaS.Api.BlobApi;
 [Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
 [RequireTenant]
 [ApiController]
-[Route("blob/{**path}")]
+[Route("Blob/{**path}")]
 public class BlobAdministrationController : ControllerBase {
     private readonly IBlobService _blobService;
 

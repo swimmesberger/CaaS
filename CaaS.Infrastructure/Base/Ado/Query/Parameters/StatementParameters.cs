@@ -42,7 +42,7 @@ public record StatementParameters {
             OrderBy = orderBy,
             InsertParameters = InsertParameters.Add(parameters.InsertParameters),
             Update = Update.Add(parameters.Update),
-            Limit = Limit ?? parameters.Limit
+            Limit = Limit == null && parameters.Limit == null ? null : Math.Min(Limit ?? int.MaxValue, parameters.Limit ?? int.MaxValue)
         };
     }
 

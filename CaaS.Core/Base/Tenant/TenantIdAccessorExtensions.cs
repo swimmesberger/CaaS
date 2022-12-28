@@ -11,6 +11,10 @@ public static class TenantIdAccessorExtensions {
     }
     
     public static Guid GetTenantGuid(this ITenantIdAccessor tenantIdAccessor) {
-        return Guid.Parse(tenantIdAccessor.GetTenantId());
+        try {
+            return Guid.Parse(tenantIdAccessor.GetTenantId());
+        } catch (FormatException) {
+            throw new CaasNoTenantException("Can't verify tenant");
+        }
     }
 }

@@ -22,4 +22,12 @@ public static class DaoExtensions {
         }
         return dao.FindBy(StatementParameters.CreateWhere(nameof(IDataModelBase.Id), ids), cancellationToken);
     }
+    
+    public static Task<bool> AnyAsync<T>(this IDao<T> dao, StatementParameters? parameters = null, CancellationToken cancellationToken = default) {
+        parameters ??= new StatementParameters() {
+            SelectParameters = SelectParameters.Empty
+        };
+        parameters = parameters.WithLimit(1);
+        return dao.FindScalarBy<object>(parameters, cancellationToken).AnyAsync(cancellationToken).AsTask();
+    }
 }

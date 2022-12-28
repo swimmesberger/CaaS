@@ -46,7 +46,7 @@ public class ShopRepository : CrudRepository<ShopDataModel, Shop>, IShopReposito
                 new(nameof(ShopDataModel.AppKey), appKey)
             })
         };
-        return Dao.FindScalarBy<string>(parameters, cancellationToken).AnyAsync(cancellationToken).AsTask();
+        return Dao.AnyAsync(parameters, cancellationToken);
     }
 }
 

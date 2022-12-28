@@ -7,6 +7,7 @@ namespace CaaS.Api.ProductApi.Models;
 public class ProductProfile : Profile {
     public ProductProfile() {
         CreateMap<Product, ProductDto>();
+        CreateMap<Product, ProductDetailDto>();
         CreateMap<Product, ProductMinimalDto>();
 
         CreateMap<ProductForCreationDto, Product>();

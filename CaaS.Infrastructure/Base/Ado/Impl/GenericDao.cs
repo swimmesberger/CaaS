@@ -53,16 +53,12 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
         return QueryAsync((record, token) => record.GetValueAsync<TValue>(0, token), parameters, cancellationToken);
     }
 
-    public IAsyncEnumerable<Guid> FindIdsBy(StatementParameters parameters, CancellationToken cancellationToken = default) {
-        return QueryAsync((record, _) => new ValueTask<Guid>(record.GetGuid(0)), parameters, cancellationToken);
-    }
-
     public async Task<long> CountAsync(StatementParameters? parameters = null, CancellationToken cancellationToken = default) {
         parameters ??= StatementParameters.Empty;
         long? count = await QueryScalarAsync(_statementGenerator.CreateCount(parameters), cancellationToken);
         return count ?? throw new InvalidOperationException();
     }
-    
+
     public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default) {
         var changedCount = await ExecuteAsync(_statementGenerator.CreateInsert(entity), cancellationToken);
         if (changedCount == 0) {

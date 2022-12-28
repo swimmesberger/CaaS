@@ -25,9 +25,9 @@ public class ProductController : ControllerBase {
     }
     
     [HttpGet("{productId:guid}")]
-    public async Task<ProductDto?> GetById(Guid productId, CancellationToken cancellationToken = default) {
+    public async Task<ProductDetailDto?> GetById(Guid productId, CancellationToken cancellationToken = default) {
         var result = await _productService.GetByIdAsync(productId, cancellationToken);
-        return _mapper.Map<ProductDto?>(result);
+        return _mapper.Map<ProductDetailDto?>(result);
     }
     
     [HttpGet]

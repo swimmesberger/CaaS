@@ -1,6 +1,6 @@
 ﻿namespace CaaS.Core.Base.Pagination;
 
-public record ParsedPaginationToken(KeysetPaginationDirection Direction = KeysetPaginationDirection.Forward, SkipTokenValue? Reference = null, int? Limit = null) {
+public record ParsedPaginationToken(KeysetPaginationDirection Direction = KeysetPaginationDirection.Forward, SkipTokenValue? Reference = null) {
     public const int DefaultPageLimit = 20;
     public const int MaximumPageLimit = 100;
     

@@ -16,8 +16,12 @@ public static class DataRecordExtensions {
         if (record.IsDBNull(ordinal)) {
             return default;
         }
-        if (typeof(T).IsAssignableFrom(typeof(ReadOnlyMemory<byte>))) {
+        if (typeof(T) == typeof(ReadOnlyMemory<byte>)) {
             ReadOnlyMemory<byte> data = record.GetFieldValue<byte[]>(ordinal);
+            return new ValueTask<T>((T)(object)data);
+        }
+        if (typeof(T) == typeof(Memory<byte>)) {
+            Memory<byte> data = record.GetFieldValue<byte[]>(ordinal);
             return new ValueTask<T>((T)(object)data);
         }
         return new ValueTask<T>(record.GetFieldValue<T>(ordinal));
