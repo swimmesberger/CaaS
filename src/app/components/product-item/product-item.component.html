@@ -1,30 +1,24 @@
 <div class="card product-card">
   <button aria-label="Add to wishlist" class="btn-wishlist btn-sm" data-bs-original-title="Add to wishlist"
           data-bs-placement="left"
-          data-bs-toggle="tooltip" type="button"><i class="ci-heart"></i></button>
+          data-bs-toggle="tooltip" type="button"><i class="bi bi-heart"></i></button>
   <a class="card-img-top d-block overflow-hidden" href="shop-single-v1.html">
-    <img alt="Product" src="img/shop/catalog/01.jpg">
+    <img alt="Product" src="{{product.imageSrc ?? 'https://robohash.org/' + product.id + '.png?size=259x242'}}">
   </a>
   <div class="card-body py-2"><a class="product-meta d-block fs-xs pb-1" href="#">Sneakers &amp; Keds</a>
-    <h3 class="product-title fs-sm"><a href="shop-single-v1.html">Women Colorblock Sneakers</a></h3>
+    <h3 class="product-title fs-sm"><a href="shop-single-v1.html">{{product.name}}</a></h3>
     <div class="d-flex justify-content-between">
-      <div class="product-price"><span class="text-accent">$154.<small>00</small></span></div>
-      <div class="star-rating">
-        <i class="star-rating-icon ci-star-filled active"></i>
-        <i class="star-rating-icon ci-star-filled active"></i>
-        <i class="star-rating-icon ci-star-filled active"></i>
-        <i class="star-rating-icon ci-star-filled active"></i>
-        <i class="star-rating-icon ci-star"></i>
-      </div>
+      <div class="product-price"><span class="text-accent">{{product.price | currency}}</span></div>
+      <app-rating-bar [rating]="4"></app-rating-bar>
     </div>
   </div>
   <div class="card-body card-body-hidden">
     <button class="btn btn-primary btn-sm d-block w-100 mb-2" type="button">
-      <i class="ci-cart fs-sm me-1"></i>Add to Cart
+      <i class="bi bi-cart fs-sm me-1"></i>Add to Cart
     </button>
     <div class="text-center">
       <a class="nav-link-style fs-ms" data-bs-toggle="modal" href="#quick-view">
-        <i class="ci-eye align-middle me-1"></i>Quick view
+        <i class="bi bi-eye align-middle me-1"></i>Quick view
       </a>
     </div>
   </div>

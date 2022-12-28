@@ -1,12 +1,25 @@
-@import '../node_modules/bootstrap/scss/mixins';
-@import '../node_modules/bootstrap/scss/functions';
-@import '../node_modules/bootstrap/scss/variables';
+// Pre-Variables
+$prefix:  bs-;
+$white:    #fff;
+$black:    #000;
+$spacer: 1rem;
+$gray-200: #e9ecef;
+$gray-600: #6c757d;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+$box-shadow:                  0 .5rem 1rem rgba($black, .15);
 
-// Variables
+$primary: #fe696a;
+$warning: #fea569;
+$enable-shadows: true;
+$enable-rounded: true;
 
-$font-family-sans-serif: "Rubik", sans-serif;
-$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+$link-hover-color: #fe3638;
+$headings-color: #373f50;
+$btn-color: $white;
 
+// Fonts
 $font-size-base:              1rem;
 $font-size-xl:                ($font-size-base * 1.625);
 $font-size-lg:                ($font-size-base * 1.125);
@@ -14,8 +27,10 @@ $font-size-md:                ($font-size-base * .9375);
 $font-size-sm:                ($font-size-base * .875);
 $font-size-ms:                ($font-size-base * .8125);
 $font-size-xs:                ($font-size-base * .75);
-
+$font-family-sans-serif: "Rubik", sans-serif;
+$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 $font-weight-medium:          500;
+$h3-font-size:                $font-size-base * 1.75 !default;
 
 // Navbar
 
@@ -91,3 +106,45 @@ $topbar-dark-muted-color:             rgba($white, .45);
 $topbar-dark-hover-color:             $white;
 $topbar-dark-active-color:            $white;
 $topbar-dark-icon-color:              var(--#{$prefix}primary);
+
+// Navs
+
+$nav-link-padding-y:                      .75rem;
+$nav-link-padding-x:                      1.25rem;
+$nav-link-font-weight:                    normal;
+$nav-link-color:                          $gray-700;
+$nav-link-hover-color:                    var(--#{$prefix}primary);
+$nav-link-active-color:                   var(--#{$prefix}primary);
+$nav-link-light-color:                    rgba($white, .65);
+$nav-link-light-hover-color:              $white;
+$nav-link-light-active-color:             $white;
+$nav-link-transition:                     color .25s ease-in-out, background-color .25s ease-in-out, box-shadow .25s ease-in-out, border-color .25s ease-in-out;
+
+// Pagination
+
+$pagination-padding-y:              .3125rem;
+$pagination-padding-y-sm:           .175rem;
+$pagination-padding-y-lg:           .425rem;
+$pagination-padding-x-lg:           1rem;
+
+$pagination-font-size:              $font-size-base * .9375;
+$pagination-font-size-sm:           $font-size-base * .8125;
+$pagination-font-size-lg:           $font-size-base;
+
+$pagination-bg:                     transparent;
+$pagination-color:                  $gray-700;
+$pagination-border-color:           transparent;
+$pagination-transition:             color .25s ease-in-out, border-color .25s ease-in-out, background-color .25s ease-in-out;
+
+$pagination-hover-color:            $gray-700;
+$pagination-hover-bg:               $gray-200;
+$pagination-hover-border-color:     $pagination-hover-bg;
+
+$pagination-active-color:           $white;
+$pagination-active-bg:              var(--#{$prefix}primary);
+$pagination-active-border-color:    transparent;
+$pagination-active-box-shadow:      0 .5rem 1.125rem -.425rem rgba(var(--#{$prefix}primary-rgb), .9);
+
+@import '../node_modules/bootstrap/scss/mixins';
+@import '../node_modules/bootstrap/scss/functions';
+@import '../node_modules/bootstrap/scss/variables';

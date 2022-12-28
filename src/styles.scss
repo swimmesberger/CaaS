@@ -1,10 +1,47 @@
 @import './variables';
+@import '../node_modules/bootstrap-icons/font/bootstrap-icons';
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
 
 html * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+:root {
+  --#{$prefix}accent-rgb: 78, 84, 200;
+}
+
+//
+// Fonts
+// -------------------------------------------------
+
+.fs-xl {
+  font-size: #{$font-size-xl} !important;
+}
+
+.fs-lg {
+  font-size: #{$font-size-lg} !important;
+}
+
+.fs-md {
+  font-size: #{$font-size-md} !important;
+}
+
+.fs-sm {
+  font-size: #{$font-size-sm} !important;
+}
+
+.fs-ms {
+  font-size: #{$font-size-ms} !important;
+}
+
+.fs-xs {
+  font-size: #{$font-size-xs} !important;
+}
+
+//
+// Buttons
+// --------------------------------------------------
 
 @each $color, $value in $theme-colors {
   .btn-outline-#{$color} {
@@ -35,4 +72,80 @@ html * {
   --#{$prefix}gradient: none;
 }
 
+.text-accent {
+  color: rgba(var(--#{$prefix}accent-rgb), 1) !important;
+}
+
+// Navigation links style class
+
+.nav-link-style {
+  color: $nav-link-color;
+  > i {
+    margin-top: -.125rem;
+    vertical-align: middle;
+  }
+  &:hover { color: $nav-link-hover-color; }
+}
+.active > .nav-link-style,
+.nav-link-style.active {
+  color: $nav-link-active-color;
+}
+.nav-link-style.nav-link-light {
+  color: $nav-link-light-color;
+  &:hover { color: $nav-link-light-hover-color; }
+}
+.active > .nav-link-style.nav-link-light,
+.nav-link-style.nav-link-light.active {
+  color: $nav-link-light-active-color;
+}
+
+// pagination style class
+
+.pagination {
+  margin-bottom: 0;
+  user-select: none;
+}
+
+.page-link {
+  position: relative;
+  transition: $pagination-transition;
+  &:focus, &:hover {
+    color: $pagination-color;
+  }
+  &.page-link-static:hover {
+    border-color: transparent;
+    background-color: $pagination-bg;
+    color: $pagination-color;
+  }
+  > i {
+    margin-top: -.125rem;
+    vertical-align: middle;
+  }
+}
+.page-item {
+  margin: .15rem;
+  &.active {
+    position: relative;
+    z-index: 5;
+    cursor: default;
+    > .page-link {
+      @include box-shadow($pagination-active-box-shadow);
+    }
+  }
+}
+
 @import '../node_modules/bootstrap/scss/bootstrap';
+
+// Override solid buttons
+@each $color, $value in $theme-colors {
+  .btn-#{$color} {
+    --#{$prefix}btn-color: #{$btn-color};
+    --#{$prefix}btn-hover-color: #{$btn-color};
+    --#{$prefix}btn-active-color: #{$btn-color};
+    --#{$prefix}btn-hover-bg: #{darken($value, 8%)};
+    --#{$prefix}btn-active-bg: #{darken($value, 8%)};
+    --#{$prefix}btn-hover-border-color: #{darken($value, 8%)};
+    --#{$prefix}btn-active-border-color: #{darken($value, 8%)};
+    --#{$prefix}btn-disabled-color: #{$btn-color};
+  }
+}

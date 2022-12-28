@@ -1,0 +1,22 @@
+@import './src/variables';
+
+$star-size:                           .75rem !default;
+$star-color:                          $gray-500 !default;
+$star-active-color:                   $warning !default;
+
+.star-rating {
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1;
+  vertical-align: middle;
+  .star-rating-icon {
+    display: inline-block;
+    margin-right: .1875rem;
+    color: $star-color;
+    font-size: $star-size;
+    vertical-align: middle;
+    &.active {
+      color: $star-active-color;
+    }
+  }
+}

@@ -3,8 +3,6 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { FontAwesomeModule, FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { faUser, faShoppingCart, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { CheckoutComponent } from './components/checkout/checkout.component';
 import { ProductsComponent } from './components/products/products.component';
 import { HeaderComponent } from './components/header/header.component';
@@ -14,6 +12,8 @@ import {ProductsPageComponent} from "./pages/products/products-page.component";
 import { ProductDetailsComponent } from './components/product-details/product-details.component';
 import { ProductPageComponent } from './pages/product/product-page.component';
 import { ProductItemComponent } from './components/product-item/product-item.component';
+import {HttpClientModule} from "@angular/common/http";
+import { RatingBarComponent } from './components/rating-bar/rating-bar.component';
 
 @NgModule({
   declarations: [
@@ -26,18 +26,17 @@ import { ProductItemComponent } from './components/product-item/product-item.com
     CartPageComponent,
     ProductDetailsComponent,
     ProductPageComponent,
-    ProductItemComponent
+    ProductItemComponent,
+    RatingBarComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FontAwesomeModule
+    HttpClientModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {
-  constructor(library: FaIconLibrary) {
-    library.addIcons(faUser, faShoppingCart, faSearch);
-  }
+  constructor() {  }
 }

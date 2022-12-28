@@ -1,0 +1,5 @@
+<div class="star-rating">
+  <i *ngFor="let _ of [].constructor(numStars); let i = index"
+     [ngClass]="i < rating ? 'bi-star-fill active' : 'bi-star'"
+     class="star-rating-icon bi"></i>
+</div>
