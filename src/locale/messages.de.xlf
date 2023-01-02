@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" datatype="plaintext" original="ng2.template" target-language="de">
+    <body>
+      <trans-unit id="pdNumOfReviews" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="Revie"/> Reviews</source>
+        <target>Bewertungen</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/product-details/product-details.component.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="pdSale" datatype="html">
+        <source>Sale</source>
+        <target>Aktion</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/product-details/product-details.component.html</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="pdAddToCart" datatype="html">
+        <source>Add to Cart</source>
+        <target>Zum Warenkorb hinzufügen</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/product-details/product-details.component.html</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="pdInfo" datatype="html">
+        <source>Product info</source>
+        <target>Produktbeschreibung</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/product-details/product-details.component.html</context>
+          <context context-type="linenumber">48,49</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

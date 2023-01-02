@@ -1,9 +1,9 @@
 <div class="container pb-5 mb-2 mb-md-4">
   <div class="row">
     <!-- Content  -->
-    <section class="col-lg-12">
+    <section *ngIf="$productPage | async as productPage" class="col-lg-12">
       <!-- Products grid-->
-      <div *ngFor="let productRow of productsPerRow | async" class="row mx-n2">
+      <div *ngFor="let productRow of chunkRows(productPage)" class="row mx-n2">
         <div *ngFor="let productItem of productRow" class="col-md-3 col-sm-6 px-2 mb-4">
           <app-product-item [product]="productItem"></app-product-item>
           <hr class="d-sm-none">
@@ -13,10 +13,22 @@
       <!-- Pagination-->
       <nav class="d-flex justify-content-between pt-2" aria-label="Page navigation">
         <ul class="pagination">
-          <li class="page-item"><a class="page-link" href="#"><i class="bi bi-arrow-left me-2"></i>Prev</a></li>
+          <li class="page-item" [ngClass]="productPage.previousPage ? '' : 'disabled'">
+            <a class="page-link"
+               [routerLink]="['/products']"
+               [queryParams]="{ paginationDirection: productPage.previousPage?.direction!, reference: productPage.previousPage?.reference!}">
+              <i class="bi bi-arrow-left me-2"></i>Prev
+            </a>
+          </li>
         </ul>
         <ul class="pagination">
-          <li class="page-item"><a class="page-link" href="#" aria-label="Next">Next<i class="bi bi-arrow-right ms-2"></i></a></li>
+          <li class="page-item" [ngClass]="productPage.nextPage ? '' : 'disabled'">
+            <a class="page-link"
+               [routerLink]="['/products']"
+               [queryParams]="{ paginationDirection: productPage.nextPage?.direction!, reference: productPage.nextPage?.reference!}" aria-label="Next">
+              Next<i class="bi bi-arrow-right ms-2"></i>
+            </a>
+          </li>
         </ul>
       </nav>
     </section>

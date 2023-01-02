@@ -3,8 +3,9 @@ import {HttpClient, HttpParams} from "@angular/common/http";
 import { environment } from 'src/environments/environment';
 import {Observable} from "rxjs";
 import {ProductMinimalDtoPagedResult} from "./models/productMinimalDtoPagedResult";
-import {HttpUtil} from "./http-util";
+import {HttpUtil} from "../http-util";
 import {ParsedPaginationToken} from "./models/parsedPaginationToken";
+import {ProductDetailDto} from "./models/productDetailDto";
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +48,30 @@ export class ProductStoreService {
             'application/problem+json'
           ]
         }
+    });
+  }
+
+  /**
+   * @param productId
+   */
+  public getProductById(productId: string): Observable<ProductDetailDto> {
+    if (productId === null || productId === undefined) {
+      throw new Error('Required parameter productId was null or undefined when calling productProductIdGet.');
+    }
+    let xTenantId = environment.tenantId;
+    if (xTenantId === null || xTenantId === undefined) {
+      throw new Error('Required parameter xTenantId was null or undefined when calling productGet.');
+    }
+
+    return this.httpClient.get<ProductDetailDto>(`${environment.url}/product/${encodeURIComponent(productId)}`, {
+      headers: {
+        'X-tenant-id': xTenantId,
+        'Accept': [
+          'application/json',
+          'text/json',
+          'application/problem+json'
+        ]
+      }
     });
   }
 }

@@ -134,6 +134,16 @@ html * {
   }
 }
 
+.page-title-overlap {
+  padding-bottom: 6.375rem;
+  & + * {
+    margin-top: -4.875rem;
+  }
+  @include media-breakpoint-down(md) {
+    padding-bottom: 5.5rem;
+  }
+}
+
 @import '../node_modules/bootstrap/scss/bootstrap';
 
 // Override solid buttons

@@ -1,0 +1,73 @@
+@import '../../../navbar';
+
+// Topbar
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $topbar-padding-y 0;
+  font-size: $topbar-font-size;
+  > .container,
+  > .container-fluid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-text,
+  .topbar-link {
+    display: inline-block;
+    margin-bottom: 0;
+    text-decoration: none !important;
+    > i {
+      margin-right: .375rem;
+      font-size: 1.15em;
+      vertical-align: middle;
+    }
+  }
+}
+@-moz-document url-prefix() {
+  .topbar .tns-carousel [data-controls] {
+    margin-top: -.875rem;
+  }
+}
+
+// Dark links against a light background
+.topbar-light {
+  .topbar-text,
+  .topbar-link {
+    color: $topbar-light-color;
+    > i { color: $topbar-light-icon-color; }
+    &.text-muted,
+    > .text-muted { color: $topbar-light-muted-color !important; }
+  }
+  .topbar-link {
+    &:hover { color: $topbar-light-hover-color; }
+    &.active { color: $topbar-light-active-color; }
+  }
+  .show .topbar-link { color: $topbar-light-active-color; }
+  .tns-carousel [data-controls] {
+    color: $topbar-light-color;
+    &:hover { color: $topbar-light-hover-color; }
+  }
+}
+
+// White links against a dark background
+.topbar-dark {
+  .topbar-text,
+  .topbar-link {
+    color: $topbar-dark-color;
+    > i { color: $topbar-dark-icon-color; }
+    &.text-muted,
+    > .text-muted { color: $topbar-dark-muted-color !important; }
+  }
+  .topbar-link {
+    &:hover { color: $topbar-dark-hover-color; }
+    &.active { color: $topbar-dark-active-color; }
+  }
+  .show .topbar-link { color: $topbar-dark-active-color; }
+  .tns-carousel [data-controls] {
+    color: $topbar-dark-color;
+    &:hover { color: $topbar-dark-hover-color; }
+  }
+}

@@ -1,0 +1,17 @@
+<div class="product-gallery-preview order-sm-2">
+  <div *ngFor="let item of items; let i = index"
+       [ngClass]="activeIdx === i ? 'active' : ''"
+    class="product-gallery-preview-item" id="first">
+    <!--suppress HtmlUnknownAttribute -->
+    <img class="image-zoom" src="{{item.imageSrc}}" [attr.data-zoom]="item.imageSrc" alt="{{item.imageAlt}}">
+    <div class="image-zoom-pane"></div>
+  </div>
+</div>
+<div class="product-gallery-thumblist order-sm-1">
+  <a *ngFor="let item of items; let i = index"
+     (click)="onThumbnailClick($event, item, i)"
+     [ngClass]="activeIdx === i ? 'active' : ''"
+     class="product-gallery-thumblist-item" href="#">
+    <img src="{{item.thImageSrc}}" alt="{{item.imageAlt}}">
+  </a>
+</div>

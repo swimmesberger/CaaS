@@ -14,15 +14,6 @@ $product-meta-color:                  $gray-600 !default;
 $product-meta-hover-color:            $gray-700 !default;
 $product-meta-transition:             color .25s ease-in-out !default;
 
-// Wishlist button
-$btn-wishlist-size:                   2.75rem !default;
-$btn-wishlist-size-sm:                2rem !default;
-$btn-wishlist-font-size:              1.0625rem !default;
-$btn-wishlist-font-size-sm:           .8125rem !default;
-$btn-wishlist-bg:                     $gray-200 !default;
-$btn-wishlist-color:                  $gray-800 !default;
-$btn-wishlist-hover-color:            var(--#{$prefix}primary) !default;
-
 .product-card {
   padding-bottom: $card-spacer-y;
   border: 0;
@@ -117,37 +108,5 @@ $btn-wishlist-hover-color:            var(--#{$prefix}primary) !default;
   text-decoration: none !important;
   &:hover {
     color: $product-meta-hover-color;
-  }
-}
-
-// Wishlist button
-
-.btn-wishlist {
-  width: $btn-wishlist-size;
-  height: $btn-wishlist-size;
-  padding: 0 !important;
-  transition: $btn-transition;
-  border: 0;
-  border-radius: 50%;
-  background-color: $btn-wishlist-bg;
-  color: $btn-wishlist-color;
-  text-align: center;
-  > i {
-    font-size: $btn-wishlist-font-size;
-    line-height: $btn-wishlist-size;
-    margin-top: 2px;
-    display: inline-block;
-  }
-
-  &:hover { color: $btn-wishlist-hover-color; }
-  &:focus { outline: 0; }
-
-  &.btn-sm {
-    width: $btn-wishlist-size-sm;
-    height: $btn-wishlist-size-sm;
-    > i {
-      font-size: $btn-wishlist-font-size-sm;
-      line-height: $btn-wishlist-size-sm;
-    }
   }
 }

@@ -1,28 +1,46 @@
-import { Component, OnInit } from '@angular/core';
-import { environment } from '../../../environments/environment';
-import {ProductStoreService} from "../../shared/product-store.service";
-import {bufferCount, concatMap, Observable, share, toArray} from "rxjs";
-import {ProductMinimalDtoPagedResult} from "../../shared/models/productMinimalDtoPagedResult";
-import {ProductMinimalDto} from "../../shared/models/productMinimalDto";
+import { Component } from '@angular/core';
+import {ProductStoreService} from "../../shared/product/product-store.service";
+import {Observable, switchMap} from "rxjs";
+import {ProductMinimalDtoPagedResult} from "../../shared/product/models/productMinimalDtoPagedResult";
+import {ProductMinimalDto} from "../../shared/product/models/productMinimalDto";
+import {ActivatedRoute} from "@angular/router";
+import {KeysetPaginationDirection} from "../../shared/product/models/keysetPaginationDirection";
+import {ParsedPaginationToken} from "../../shared/product/models/parsedPaginationToken";
 
 @Component({
   selector: 'app-products',
   templateUrl: './products.component.html',
   styleUrls: ['./products.component.scss']
 })
-export class ProductsComponent implements OnInit {
+export class ProductsComponent {
   private static readonly ProductsPerRow = 4;
+  protected $productPage: Observable<ProductMinimalDtoPagedResult>;
 
-  private environment = environment;
-  protected productsPerRow: Observable<Array<Array<ProductMinimalDto>>>;
-  private productPage: Observable<ProductMinimalDtoPagedResult>;
-
-  constructor(private productStoreService: ProductStoreService) {
-    this.productPage = this.productStoreService.search().pipe(share());
-    this.productsPerRow = this.productPage.pipe(concatMap(p => p.items!), bufferCount(ProductsComponent.ProductsPerRow), toArray());
+  constructor(
+    private route: ActivatedRoute,
+    private productStoreService: ProductStoreService) {
+    this.$productPage = this.route.queryParams.pipe(switchMap(params => {
+      let searchText: string | undefined = params['q'];
+      let keysetPaginationDirection: KeysetPaginationDirection | undefined = params['paginationDirection'];
+      let reference: string | undefined = params['reference'];
+      let paginationToken : ParsedPaginationToken = {
+        direction: keysetPaginationDirection,
+        reference: reference
+      };
+      return this.productStoreService.search(searchText, paginationToken);
+    }));
   }
 
-  ngOnInit(): void {
+  chunkRows(result: ProductMinimalDtoPagedResult): Array<Array<ProductMinimalDto>> {
+    if (!result.items) {
+      return [];
+    }
+    const chunkSize = ProductsComponent.ProductsPerRow;
+    let chunkedArray = [];
+    for (let i = 0; i < result.items.length; i += chunkSize) {
+      const chunk = result.items.slice(i, i + chunkSize);
+      chunkedArray.push(chunk);
+    }
+    return chunkedArray;
   }
-
 }
