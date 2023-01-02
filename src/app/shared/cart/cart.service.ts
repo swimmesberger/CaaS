@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
-  catchError, firstValueFrom, lastValueFrom,
+  catchError, firstValueFrom, lastValueFrom, map,
   Observable,
   of,
   shareReplay,

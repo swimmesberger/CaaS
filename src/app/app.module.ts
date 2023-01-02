@@ -19,6 +19,7 @@ import { WishlistButtonComponent } from './components/wishlist-button/wishlist-b
 import { ProductGalleryComponent } from './components/product-gallery/product-gallery.component';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { HomePageComponent } from './pages/home-page/home-page.component';
+import {ReactiveFormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { HomePageComponent } from './pages/home-page/home-page.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    ReactiveFormsModule,
     HttpClientModule,
   ],
   providers: [],

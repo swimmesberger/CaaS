@@ -1,4 +1,4 @@
-<div *ngIf="$cart | async as cart" class="row">
+<div [formGroup]="cartFormGroup" class="row">
   <!-- List of items-->
   <section class="col-lg-8">
     <div class="d-flex justify-content-between align-items-center pt-3 pb-4 pb-sm-5 mt-1">
@@ -8,31 +8,35 @@
         <ng-container i18n="@@checkoutContinue">Continue shopping</ng-container>
       </a>
     </div>
-    <!-- Item-->
-    <div *ngFor="let cartItem of cart.items; let i = index" class="d-sm-flex justify-content-between align-items-center my-2 pb-3 border-bottom">
-      <div class="d-block d-sm-flex align-items-center text-center text-sm-start">
-        <a class="d-inline-block flex-shrink-0 mx-auto me-sm-4" [routerLink]="['product', cartItem.product?.id]">
-          <img src="{{cartItem.product?.imageSrc ?? 'https://robohash.org/' + cartItem.product?.id + '.png?size=160x160'}}" width="160" alt="Product">
-        </a>
-        <div class="pt-2">
-          <h3 class="product-title fs-base mb-2"><a [routerLink]="['product', cartItem.product?.id]">{{cartItem.product?.name!}}</a></h3>
-          <div class="fs-lg text-secondary pt-2">{{cartItem.product?.price! | currency}}</div>
-        </div>
+    <ng-container formArrayName="items">
+      <!-- Item-->
+      <div *ngFor="let cartItem of cartItemsFormArray.controls; let i=index" class="d-sm-flex justify-content-between align-items-center my-2 pb-3 border-bottom">
+        <ng-container [formGroupName]="i">
+          <div class="d-block d-sm-flex align-items-center text-center text-sm-start">
+            <a class="d-inline-block flex-shrink-0 mx-auto me-sm-4" [routerLink]="['product', cartItem.get('product.id')?.value]">
+              <img src="{{cartItem.get('product.imageSrc')?.value ?? 'https://robohash.org/' + cartItem.get('product.id')?.value + '.png?size=160x160'}}" width="160" alt="Product">
+            </a>
+            <div class="pt-2">
+              <h3 class="product-title fs-base mb-2"><a [routerLink]="['product', cartItem.get('product.id')]">{{cartItem.get('product.name')?.value}}</a></h3>
+              <div class="fs-lg text-secondary pt-2">{{cartItem.get('product.price')?.value | currency}}</div>
+            </div>
+          </div>
+          <div class="pt-2 pt-sm-0 ps-sm-3 mx-auto mx-sm-0 text-center text-sm-start" style="max-width: 9rem;">
+            <label class="form-label" for="quantity-{{i}}" i18n="@@checkoutQuantityLbl">Quantity</label>
+            <input class="form-control" type="number" formControlName="amount" id="quantity-{{i}}">
+            <button class="btn btn-link px-0 text-danger" type="button" (click)="removeCartItem($event, cartItem.get('id')?.value)">
+              <i class="bi bi-x-circle me-2"></i>
+              <span class="fs-sm" i18n="@@checkoutRemoveBtn">Remove</span>
+            </button>
+          </div>
+        </ng-container>
       </div>
-      <div class="pt-2 pt-sm-0 ps-sm-3 mx-auto mx-sm-0 text-center text-sm-start" style="max-width: 9rem;">
-        <label class="form-label" for="{{'quantity-' + i}}" i18n="@@checkoutQuantityLbl">Quantity</label>
-        <input class="form-control" type="number" id="{{'quantity-' + i}}" min="1" value="{{cartItem.amount}}">
-        <button class="btn btn-link px-0 text-danger" type="button">
-          <i class="bi bi-x-circle me-2"></i>
-          <span class="fs-sm" i18n="@@checkoutRemoveBtn">Remove</span>
-        </button>
-      </div>
-    </div>
-    <div *ngIf="!cart.items?.length">
+    </ng-container>
+    <div *ngIf="!cartItemsFormArray.controls.length">
       <h1 i18n="@@checkoutEmptyTitle">Your cart is empty.</h1>
       <ng-container i18n="@@checkoutEmptySubtitle">Check out items on the page and add it to the cart.</ng-container>
     </div>
-    <button class="btn btn-outline-accent d-block w-100 mt-4" type="button">
+    <button [disabled]="isCartRefreshing" (click)="updateCart($event)" class="btn btn-outline-accent d-block w-100 mt-4" type="button">
       <i class="bi bi-arrow-clockwise fs-base me-2"></i>
       <ng-container i18n="@@checkoutUpdateCartBtn">Update cart</ng-container>
     </button>
@@ -43,7 +47,7 @@
       <div class="py-2 px-xl-2">
         <div class="text-center mb-4 pb-3 border-bottom">
           <h2 class="h6 mb-3 pb-1" i18n="@@checkoutSubtotal">Subtotal</h2>
-          <h3 class="fw-normal">{{cart.totalPrice | currency}}</h3>
+          <h3 class="fw-normal">{{cartFormGroup.get('totalPrice')?.value | currency}}</h3>
         </div>
         <div class="mb-3 mb-4">
           <label class="form-label mb-3" for="order-comments">
