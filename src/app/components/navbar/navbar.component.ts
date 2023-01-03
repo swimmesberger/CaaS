@@ -1,7 +1,4 @@
 import {Component, ElementRef, HostListener, ViewChild} from '@angular/core';
-import {CartService} from "../../shared/cart/cart.service";
-import {Observable} from "rxjs";
-import {CartDto} from "../../shared/cart/models/cartDto";
 
 @Component({
   selector: 'app-navbar',
@@ -10,12 +7,6 @@ import {CartDto} from "../../shared/cart/models/cartDto";
 })
 export class NavbarComponent {
   @ViewChild("navbarSticky") private navbar!: ElementRef;
-  protected $cart: Observable<CartDto>;
-
-  constructor(private cartService: CartService) {
-    this.$cart = cartService.$cart;
-  }
-
 
   @HostListener('window:scroll', ['$event']) // for window scroll events
   onScroll() {
@@ -27,13 +18,5 @@ export class NavbarComponent {
       document.body.style.paddingTop = "";
       nativeNavbar.classList.remove("navbar-stuck")
     }
-  }
-
-  getProductCount(cart: CartDto): number {
-    let sum = 0;
-    for (let item of cart.items!) {
-      sum += item?.amount ?? 0;
-    }
-    return sum;
   }
 }

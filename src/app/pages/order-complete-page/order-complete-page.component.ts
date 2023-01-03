@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
-import {Observable, switchMap} from "rxjs";
+import {Observable, of, switchMap} from "rxjs";
 
 @Component({
   selector: 'app-order-complete-page',
@@ -12,7 +12,7 @@ export class OrderCompletePageComponent {
 
   constructor(private route: ActivatedRoute) {
     this.$orderNumber = this.route.queryParams.pipe(switchMap(params => {
-      return <string>params['orderNumber']?.toString() ?? '';
+      return of(params['orderNumber']?.toString() ?? '');
     }));
   }
 }

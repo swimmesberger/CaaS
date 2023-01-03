@@ -18,6 +18,8 @@ import {CustomerDto} from "./models/customerDto";
   providedIn: 'root'
 })
 export class CartService {
+  private static readonly CartIdKey = "cartId";
+
   private _$refreshCart: BehaviorSubject<void>;
   public $cart: Observable<CartDto>;
 
@@ -70,11 +72,21 @@ export class CartService {
     });
   }
 
-  public async updateCart(cart: CartDto): Promise<void> {
-    await lastValueFrom(this._cartStore.updateCart(cart));
-    localStorage.setItem("cartId", cart.id!);
+  public resetCart(): void {
+    localStorage.removeItem(CartService.CartIdKey);
     // refresh cart
     this._$refreshCart.next();
+  }
+
+  public async updateCart(cart: CartDto): Promise<void> {
+    await lastValueFrom(this._cartStore.updateCart(cart));
+    localStorage.setItem(CartService.CartIdKey, cart.id!);
+    // refresh cart
+    this._$refreshCart.next();
+  }
+
+  public get cardId(): string | null {
+    return localStorage.getItem(CartService.CartIdKey);
   }
 
   private emptyCart(): CartDto {
@@ -88,7 +100,7 @@ export class CartService {
   }
 
   private loadCart(): Observable<CartDto> {
-    const cartId = localStorage.getItem("cartId");
+    const cartId = localStorage.getItem(CartService.CartIdKey);
     if (!cartId) {
       return of<CartDto>(this.emptyCart())
     }

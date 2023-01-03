@@ -31,6 +31,8 @@ import { CreditcardComponent } from './components/creditcard/creditcard.componen
 import { CheckoutReviewPageComponent } from './pages/checkout-review-page/checkout-review-page.component';
 import { CheckoutReviewComponent } from './components/checkout-review/checkout-review.component';
 import { OrderCompletePageComponent } from './pages/order-complete-page/order-complete-page.component';
+import { ProductSearchComponent } from './components/product-search/product-search.component';
+import { CartWidgetComponent } from './components/cart-widget/cart-widget.component';
 
 @NgModule({
   declarations: [
@@ -60,7 +62,9 @@ import { OrderCompletePageComponent } from './pages/order-complete-page/order-co
     CreditcardComponent,
     CheckoutReviewPageComponent,
     CheckoutReviewComponent,
-    OrderCompletePageComponent
+    OrderCompletePageComponent,
+    ProductSearchComponent,
+    CartWidgetComponent
   ],
   imports: [
     BrowserModule,

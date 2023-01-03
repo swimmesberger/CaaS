@@ -1,6 +1,6 @@
-import {AfterViewInit, Component, ElementRef, NgZone, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, NgZone, QueryList, ViewChild, ViewChildren} from '@angular/core';
 import {AbstractControl, FormControl, FormGroup, Validators} from "@angular/forms";
-import {CreditCardDataDto} from "./creditCardDataDto";
+import {CreditCardDataDto} from "../../shared/order/models/customerWithAddressDto";
 
 // @ts-ignore
 declare var Card;
@@ -12,6 +12,7 @@ declare var Card;
 })
 export class CreditcardComponent implements AfterViewInit {
   @ViewChild('formElement') formElement!: ElementRef;
+  @ViewChildren('inputElement') inputElements!: QueryList<ElementRef>;
 
   protected creditCardFormGroup: FormGroup<CreditCardForm>;
 
@@ -28,12 +29,20 @@ export class CreditcardComponent implements AfterViewInit {
     return this.creditCardFormGroup.valid;
   }
 
+  @Input()
+  public set creditCardData(data: CreditCardDataDto | null) {
+    // @ts-ignore
+    if (data) {
+      this.creditCardFormGroup.setValue(data);
+    } else {
+      this.creditCardFormGroup.reset();
+    }
+  }
+
   public get creditCardData(): CreditCardDataDto | null {
     if(this.creditCardFormGroup.invalid) return null;
     // @ts-ignore
-    return {
-      ...this.creditCardFormGroup.value
-    };
+    return this.creditCardFormGroup.value;
   }
 
   ngAfterViewInit() {

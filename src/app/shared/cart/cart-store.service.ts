@@ -39,9 +39,7 @@ export class CartStoreService {
       throw new Error('Required parameter xTenantId was null or undefined when calling productGet.');
     }
 
-    let queryParameters = new HttpParams();
     return this.httpClient.post<void>(`${environment.url}/cart/${encodeURIComponent(cart.id!)}`, cart, {
-      params: queryParameters,
       headers: {
         'X-tenant-id': xTenantId,
         'Accept': [

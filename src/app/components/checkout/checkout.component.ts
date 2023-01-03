@@ -1,12 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {Observable} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
 import {CartService} from "../../shared/cart/cart.service";
 import {AbstractControl, FormControl, FormGroup, Validators} from "@angular/forms";
-import {CustomerDto} from "../../shared/cart/models/customerDto";
-import {AddressDto} from "../../shared/order/models/addressDto";
 import { StepInfoDto } from '../checkout-steps/step-info-dto';
 import {OrderService} from "../../shared/order/order.service";
+import {CustomerWithAddressDto} from "../../shared/order/models/customerWithAddressDto";
 
 @Component({
   selector: 'app-checkout',
@@ -16,7 +15,7 @@ import {OrderService} from "../../shared/order/order.service";
     class: 'container pb-5 mb-2 mb-md-4'
   }
 })
-export class CheckoutComponent implements OnInit {
+export class CheckoutComponent {
   public static readonly Steps: Array<StepInfoDto> = [
     {routeLink: "/cart", routeTitle: $localize `:@@cartStepTitle:Cart`, routeIcon: 'cart'},
     {routeLink: "/checkout", routeTitle: $localize `:@@checkoutStepTitle:Details`, routeIcon: 'person-circle'},
@@ -47,9 +46,7 @@ export class CheckoutComponent implements OnInit {
         telephoneNumber: new FormControl<string | null>(null)
       })
     });
-  }
-
-  ngOnInit(): void {
+    this.checkoutFormGroup.setValue(this.convertToForm(this.orderService.customerData));
   }
 
   isInvalid(control: AbstractControl) {
@@ -57,17 +54,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   saveCustomerData(): void {
-    const customer: CustomerDto = {
-      creditCardNumber: null,
-      ...this.checkoutFormGroup.get('customer')?.value
-    }
-    const address: AddressDto = {
-      ...this.checkoutFormGroup.get('address')?.value
-    }
-    this.orderService.customerData = {
-      customer: customer,
-      address: address
-    };
+    this.orderService.customerData = this.convertFromForm();
   }
 
   get firstNameControl() { return this.checkoutFormGroup.get('customer.firstName')!; }
@@ -79,6 +66,37 @@ export class CheckoutComponent implements OnInit {
   get zipCodeControl() { return this.checkoutFormGroup.get('address.zipCode')!; }
   get cityControl() { return this.checkoutFormGroup.get('address.city')!; }
   get streetControl() { return this.checkoutFormGroup.get('address.street')!; }
+
+  private convertToForm(data: CustomerWithAddressDto | undefined) {
+    return {
+      customer: {
+        telephoneNumber: data?.customer?.telephoneNumber ?? null,
+        lastName: data?.customer?.lastName ?? null,
+        firstName: data?.customer?.firstName ?? null,
+        eMail: data?.customer?.eMail ?? null,
+      },
+      address: {
+        zipCode: data?.address?.zipCode ?? null,
+        state: data?.address?.state ?? null,
+        country: data?.address?.country ?? null,
+        street: data?.address?.street ?? null,
+        city: data?.address?.city ?? null,
+      }
+    }
+  }
+
+  private convertFromForm(): CustomerWithAddressDto {
+    return {
+      ...this.orderService.customerData,
+      customer: {
+        creditCardNumber: null,
+        ...this.checkoutFormGroup.get('customer')?.value
+      },
+      address: {
+        ...this.checkoutFormGroup.get('address')?.value
+      }
+    }
+  }
 }
 
 interface CheckoutForm {

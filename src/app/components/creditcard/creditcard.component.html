@@ -1,24 +1,24 @@
 <div class="credit-card-wrapper"></div>
 <form #formElement class="credit-card-form row needs-validation" [formGroup]="creditCardFormGroup">
   <div class="mb-3 col-sm-6">
-    <input formControlName="creditCardNumber"
+    <input #inputElement formControlName="creditCardNumber"
            [ngClass]="isInvalid(creditCardNumberControl) ? 'is-invalid' : ''"
            class="form-control jp-card-invalid" type="text" name="number"
            i18n-placeholder="@@creditCardNumberPh" placeholder="Card Number">
   </div>
   <div class="mb-3 col-sm-6">
-    <input formControlName="fullName"
+    <input #inputElement formControlName="fullName"
            [ngClass]="isInvalid(fullNameControl) ? 'is-invalid' : ''"
            class="form-control jp-card-invalid" type="text" name="name"
            i18n-placeholder="@@creditFullNamePh" placeholder="Full Name">
   </div>
   <div class="mb-3 col-sm-3">
-    <input formControlName="validDate"
+    <input #inputElement formControlName="validDate"
            [ngClass]="isInvalid(validDateControl) ? 'is-invalid' : ''"
            class="form-control jp-card-invalid" type="text" name="expiry" placeholder="MM/YY">
   </div>
   <div class="mb-3 col-sm-3">
-    <input formControlName="cvc"
+    <input #inputElement formControlName="cvc"
            [ngClass]="isInvalid(cvcControl) ? 'is-invalid' : ''"
            class="form-control jp-card-invalid" type="text" name="cvc" placeholder="CVC">
   </div>

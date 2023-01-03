@@ -5,12 +5,7 @@
         <img src="assets/images/logo.svg" width="80" alt="CaaS"></a>
         <a class="navbar-brand d-sm-none flex-shrink-0 me-2" routerLink="/">
         <img src="assets/images/logo.svg" width="40" alt="CaaS"></a>
-        <div class="input-group d-none d-lg-flex mx-4">
-          <input class="form-control rounded-end pe-5" type="text"
-                 i18n-placeholder="@@headerSearchPh"
-                 placeholder="Search for products">
-          <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y text-muted fs-base me-3"></i>
-        </div>
+        <app-product-search></app-product-search>
         <div class="navbar-toolbar d-flex flex-shrink-0 align-items-center">
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"><span
             class="navbar-toggler-icon"></span></button>
@@ -18,15 +13,7 @@
             <span class="navbar-tool-tooltip" i18n="@@headerExpandMenu">Expand menu</span>
             <div class="navbar-tool-icon-box"><i class="navbar-tool-icon bi bi-list"></i></div>
           </a>
-          <div *ngIf="$cart | async as cart" class="navbar-tool ms-3">
-            <a class="navbar-tool-icon-box bg-secondary" routerLink="/cart">
-              <span class="navbar-tool-label">{{getProductCount(cart)}}</span>
-              <i class="navbar-tool-icon bi bi-cart"></i>
-            </a>
-            <a class="navbar-tool-text" routerLink="/cart">
-              <small i18n="@@headerMyCart">My Cart</small>{{cart.totalPrice | currency}}
-            </a>
-          </div>
+          <app-cart-widget></app-cart-widget>
         </div>
       </div>
     </div>
@@ -34,10 +21,7 @@
       <div class="container">
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <!-- Search-->
-          <div class="input-group d-lg-none my-3"><i
-            class="bi bi-search position-absolute top-50 start-0 translate-middle-y text-muted fs-base ms-3"></i>
-            <input class="form-control rounded-start" type="text" placeholder="Search for products">
-          </div>
+          <app-product-search searchBarStyle="small"></app-product-search>
           <!-- Primary menu-->
           <ul class="navbar-nav" >
             <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
