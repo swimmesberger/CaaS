@@ -3,10 +3,10 @@ import {Observable} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
 import {CartService} from "../../shared/cart/cart.service";
 import {AbstractControl, FormControl, FormGroup, Validators} from "@angular/forms";
-import {OrderStoreService} from "../../shared/order/order-store.service";
 import {CustomerDto} from "../../shared/cart/models/customerDto";
 import {AddressDto} from "../../shared/order/models/addressDto";
-import {CartWithAddressDto} from "../../shared/order/models/cartWithAddressDto";
+import { StepInfoDto } from '../checkout-steps/step-info-dto';
+import {OrderService} from "../../shared/order/order.service";
 
 @Component({
   selector: 'app-checkout',
@@ -17,12 +17,19 @@ import {CartWithAddressDto} from "../../shared/order/models/cartWithAddressDto";
   }
 })
 export class CheckoutComponent implements OnInit {
+  public static readonly Steps: Array<StepInfoDto> = [
+    {routeLink: "/cart", routeTitle: $localize `:@@cartStepTitle:Cart`, routeIcon: 'cart'},
+    {routeLink: "/checkout", routeTitle: $localize `:@@checkoutStepTitle:Details`, routeIcon: 'person-circle'},
+    {routeLink: "/checkout/payment", routeTitle: $localize `:@@paymentStepTitle:Payment`, routeIcon: 'credit-card'},
+    {routeLink: "/checkout/review", routeTitle: $localize `:@@reviewStepTitle:Review`, routeIcon: 'check-circle'}
+  ];
   protected $cart: Observable<CartDto>;
   protected $countries: Observable<Array<string>>;
   protected checkoutFormGroup: FormGroup<CheckoutForm>;
+  protected steps: Array<StepInfoDto> = CheckoutComponent.Steps;
 
   constructor(private cartService: CartService,
-              private orderService: OrderStoreService) {
+              private orderService: OrderService) {
     this.$cart = cartService.$cart;
     this.$countries = orderService.getCountries();
     this.checkoutFormGroup = new FormGroup<CheckoutForm>({
@@ -46,23 +53,21 @@ export class CheckoutComponent implements OnInit {
   }
 
   isInvalid(control: AbstractControl) {
-    return control.invalid;
+    return control.invalid && control.touched;
   }
 
-  getCartWithCustomerData(cart: CartDto): CartWithAddressDto {
+  saveCustomerData(): void {
     const customer: CustomerDto = {
+      creditCardNumber: null,
       ...this.checkoutFormGroup.get('customer')?.value
     }
     const address: AddressDto = {
       ...this.checkoutFormGroup.get('address')?.value
     }
-    return {
-      cart: {
-        customer: customer,
-        ...cart
-      },
+    this.orderService.customerData = {
+      customer: customer,
       address: address
-    }
+    };
   }
 
   get firstNameControl() { return this.checkoutFormGroup.get('customer.firstName')!; }
@@ -70,6 +75,7 @@ export class CheckoutComponent implements OnInit {
   get eMailControl() { return this.checkoutFormGroup.get('customer.eMail')!; }
   get telephoneNumberControl() { return this.checkoutFormGroup.get('customer.telephoneNumber')!; }
   get countryControl() { return this.checkoutFormGroup.get('address.country')!; }
+  get stateControl() { return this.checkoutFormGroup.get('address.state')!; }
   get zipCodeControl() { return this.checkoutFormGroup.get('address.zipCode')!; }
   get cityControl() { return this.checkoutFormGroup.get('address.city')!; }
   get streetControl() { return this.checkoutFormGroup.get('address.street')!; }

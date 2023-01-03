@@ -18,13 +18,19 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 import { WishlistButtonComponent } from './components/wishlist-button/wishlist-button.component';
 import { ProductGalleryComponent } from './components/product-gallery/product-gallery.component';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
-import { HomePageComponent } from './pages/home-page/home-page.component';
+import { HomePageComponent } from './pages/home/home-page.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import { CheckoutComponent } from './components/checkout/checkout.component';
 import { CheckoutPageComponent } from './pages/checkout/checkout-page.component';
 import { PromoInputComponent } from './components/promo-input/promo-input.component';
 import { PaymentComponent } from './components/payment/payment.component';
-import { PaymentPageComponent } from './pages/payment-page/payment-page.component';
+import { PaymentPageComponent } from './pages/payment/payment-page.component';
+import { CheckoutStepsComponent } from './components/checkout-steps/checkout-steps.component';
+import { CheckoutSidebarComponent } from './components/checkout-sidebar/checkout-sidebar.component';
+import { CreditcardComponent } from './components/creditcard/creditcard.component';
+import { CheckoutReviewPageComponent } from './pages/checkout-review-page/checkout-review-page.component';
+import { CheckoutReviewComponent } from './components/checkout-review/checkout-review.component';
+import { OrderCompletePageComponent } from './pages/order-complete-page/order-complete-page.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +54,13 @@ import { PaymentPageComponent } from './pages/payment-page/payment-page.componen
     CheckoutPageComponent,
     PromoInputComponent,
     PaymentComponent,
-    PaymentPageComponent
+    PaymentPageComponent,
+    CheckoutStepsComponent,
+    CheckoutSidebarComponent,
+    CreditcardComponent,
+    CheckoutReviewPageComponent,
+    CheckoutReviewComponent,
+    OrderCompletePageComponent
   ],
   imports: [
     BrowserModule,

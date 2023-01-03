@@ -21,6 +21,7 @@
     "@types/uuid": "^9.0.0",
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.10.2",
+    "card": "^2.5.4",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",
     "uuid": "^9.0.0",

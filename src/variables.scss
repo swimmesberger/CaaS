@@ -4,11 +4,16 @@ $white:    #fff;
 $black:    #000;
 $spacer: 1rem;
 $gray-200: #e9ecef;
+$gray-300: #dee2e6;
 $gray-600: #6c757d;
 $gray-700: #495057;
 $gray-800: #343a40;
 $gray-900: #212529;
 $box-shadow:                  0 .5rem 1rem rgba($black, .15);
+$headings-font-weight:        500;
+$border-color:                $gray-300;
+$border-radius-lg:            .5rem;
+$card-spacer-y:               $spacer;
 
 $primary: #fe696a;
 $secondary: $gray-200;
@@ -16,6 +21,7 @@ $warning: #fea569;
 $success: #42d697;
 $dark: rgb(55, 63, 80);
 $accent: #4e54c8;
+$body-color: $gray-700;
 $enable-shadows: true;
 $enable-rounded: true;
 
@@ -92,6 +98,28 @@ $pagination-active-color:           $white;
 $pagination-active-bg:              var(--#{$prefix}primary);
 $pagination-active-border-color:    transparent;
 $pagination-active-box-shadow:      0 .5rem 1.125rem -.425rem rgba(var(--#{$prefix}primary-rgb), .9);
+
+// Accordion
+$accordion-bg:                        transparent;
+$accordion-border-color:              darken($border-color, 2%);
+$accordion-border-radius:             $border-radius-lg;
+$accordion-body-padding-y:            $card-spacer-y;
+
+$accordion-button-padding-y:          .625rem;
+$accordion-button-color:              $headings-color;
+$accordion-button-font-weight:        $headings-font-weight;
+$accordion-button-active-bg:          $accordion-bg;
+$accordion-button-active-color:       $accordion-button-color;
+$accordion-button-focus-border-color: $accordion-border-color;
+
+$accordion-icon-box-size:             2.125rem;
+$accordion-icon-box-bg:               $gray-200;
+$accordion-icon-box-border-radius:    50%;
+$accordion-icon-width:                1rem;
+$accordion-icon-color:                $accordion-button-color;
+$accordion-icon-active-color:         $accordion-icon-color;
+
+$accordion-button-focus-box-shadow: transparent;
 
 @import '../node_modules/bootstrap/scss/mixins';
 @import '../node_modules/bootstrap/scss/functions';

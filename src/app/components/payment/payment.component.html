@@ -1,1 +1,70 @@
-<p>payment works!</p>
+<div class="row">
+  <section class="col-lg-8">
+    <!-- Steps-->
+    <app-checkout-steps [steps]="steps"></app-checkout-steps>
+    <!-- Payment methods accordion-->
+    <h2 class="h6 pb-3 mb-2">Choose payment method</h2>
+    <div class="accordion mb-2" id="payment-method">
+      <div class="accordion-item">
+        <h3 class="accordion-header">
+          <a class="accordion-button" href="#card" data-bs-toggle="collapse">
+            <i class="bi bi-credit-card fs-lg me-2 mt-n1 align-middle"></i>
+            <ng-container i18n="@@checkoutPaymentCreditcard">Pay with Credit Card</ng-container>
+          </a>
+        </h3>
+        <div class="accordion-collapse collapse show" id="card" data-bs-parent="#payment-method">
+          <div class="accordion-body">
+            <p class="fs-sm"><ng-container i18n="@@checkoutPaymentAccept">We accept following credit cards:</ng-container>&nbsp;&nbsp;
+              <!--suppress CheckImageSize -->
+              <img class="d-inline-block align-middle" src="assets/images/cards.png" width="187" alt="Credit Cards">
+            </p>
+            <app-creditcard #creditcardComponent></app-creditcard>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Navigation (desktop)-->
+    <div class="d-none d-lg-flex pt-4">
+      <div class="w-50 pe-3">
+        <a class="btn btn-secondary d-block w-100" routerLink="/checkout">
+          <i class="bi bi-arrow-left mt-sm-0 me-1"></i>
+          <span class="d-none d-sm-inline" i18n="@@checkoutBackAddresses">Back to Addresses</span>
+          <span class="d-inline d-sm-none" i18n="@@checkoutBackPage">Back</span>
+        </a>
+      </div>
+      <div class="w-50 ps-2">
+        <a [ngClass]="creditcardComponent.valid ? '' : 'disabled'"
+          (click)="saveCustomerData()" class="btn btn-primary d-block w-100" routerLink="/checkout/review">
+          <span class="d-none d-sm-inline" i18n="@@checkoutProceedReview">Review your order</span>
+          <span class="d-inline d-sm-none" i18n="@@checkoutProceedReviewShort">Review order</span>
+          <i class="bi bi-arrow-right mt-sm-0 ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+  <!-- Sidebar-->
+  <aside class="col-lg-4 pt-4 pt-lg-0 ps-xl-5">
+    <app-checkout-sidebar></app-checkout-sidebar>
+  </aside>
+</div>
+<!-- Navigation (mobile)-->
+<div class="row d-lg-none">
+  <div class="col-lg-8">
+    <div class="d-flex pt-4 mt-3">
+      <div class="w-50 pe-3">
+        <a class="btn btn-secondary d-block w-100" routerLink="/checkout">
+          <i class="bi bi-arrow-left mt-sm-0 me-1"></i>
+          <span class="d-none d-sm-inline" i18n="@@checkoutBackAddresses">Back to Addresses</span>
+          <span class="d-inline d-sm-none" i18n="@@checkoutBackPage">Back</span></a>
+      </div>
+      <div class="w-50 ps-2">
+        <a [ngClass]="creditcardComponent.valid ? '' : 'disabled'"
+          (click)="saveCustomerData()" class="btn btn-primary d-block w-100" routerLink="/checkout/review">
+          <span class="d-none d-sm-inline" i18n="@@checkoutProceedReview">Review your order</span>
+          <span class="d-inline d-sm-none" i18n="@@checkoutProceedReviewShort">Review order</span>
+          <i class="bi bi-arrow-right mt-sm-0 ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

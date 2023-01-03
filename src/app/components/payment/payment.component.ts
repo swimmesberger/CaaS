@@ -1,25 +1,32 @@
-import { Component, OnInit } from '@angular/core';
-import {Router} from "@angular/router";
-import {CartWithAddressDto} from "../../shared/order/models/cartWithAddressDto";
+import {Component, ViewChild} from '@angular/core';
+import {OrderService} from "../../shared/order/order.service";
+import {StepInfoDto} from "../checkout-steps/step-info-dto";
+import {CheckoutComponent} from "../checkout/checkout.component";
+import {CreditcardComponent} from "../creditcard/creditcard.component";
 
 @Component({
   selector: 'app-payment',
   templateUrl: './payment.component.html',
-  styleUrls: ['./payment.component.scss']
+  styleUrls: ['./payment.component.scss'],
+  host: {
+    class: 'container pb-5 mb-2 mb-md-4'
+  }
 })
-export class PaymentComponent implements OnInit {
-  cartState: CartWithAddressDto;
+export class PaymentComponent {
+  @ViewChild("creditcardComponent") creditcardComponent!: CreditcardComponent;
+  protected steps: Array<StepInfoDto> = CheckoutComponent.Steps;
 
-  constructor(private router: Router) {
-    const cartState: CartWithAddressDto = router.getCurrentNavigation()?.extras.state?.['cartData'];
-    if (!cartState) {
-      // noinspection JSIgnoredPromiseFromCall
-      router.navigate(['/cart']);
-    }
-    this.cartState = cartState;
+  constructor(private orderService: OrderService) { }
+
+  saveCustomerData(): void {
+    const creditCardData = this.creditcardComponent.creditCardData;
+    if(!creditCardData) return;
+    this.orderService.customerData = {
+      ...this.orderService.customerData,
+      customer: {
+        ...this.orderService.customerData?.customer,
+        creditCardNumber: creditCardData.creditCardNumber
+      },
+    };
   }
-
-  ngOnInit(): void {
-  }
-
 }

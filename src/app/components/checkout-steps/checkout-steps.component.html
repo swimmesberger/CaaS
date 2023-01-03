@@ -1,0 +1,14 @@
+<div class="steps steps-light pt-2 pb-3 mb-5">
+  <a *ngFor="let step of steps; let i = index;" class="step-item"
+     [ngClass]="isActive(i) ? 'active' : ''"
+     routerLinkActive="current"
+     [routerLinkActiveOptions]="{exact: true}"
+     (isActiveChange)="onActiveChange(i, $event)"
+     [routerLink]="step.routeLink"
+     [state]="step.routeState?.()">
+    <div class="step-progress"><span class="step-count">{{i+1}}</span></div>
+    <div class="step-label">
+      <!--suppress AllyPlainJsInspection -->
+      <i [class]="'bi bi-'+step.routeIcon"></i>{{step.routeTitle}}</div>
+  </a>
+</div>

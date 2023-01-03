@@ -148,6 +148,10 @@ html * {
   }
 }
 
+.list-unstyled>li {
+  margin-bottom: 0.4rem;
+}
+
 @import '../node_modules/bootstrap/scss/bootstrap';
 
 // Override solid buttons

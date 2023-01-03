@@ -4,9 +4,11 @@ import {ProductsPageComponent} from "./pages/products/products-page.component";
 import {CartPageComponent} from "./pages/cart/cart-page.component";
 import {ProductPageComponent} from "./pages/product/product-page.component";
 import {PageNotFoundComponent} from "./components/page-not-found/page-not-found.component";
-import {HomePageComponent} from "./pages/home-page/home-page.component";
+import {HomePageComponent} from "./pages/home/home-page.component";
 import {CheckoutPageComponent} from "./pages/checkout/checkout-page.component";
-import {PaymentPageComponent} from "./pages/payment-page/payment-page.component";
+import {PaymentPageComponent} from "./pages/payment/payment-page.component";
+import {CheckoutReviewPageComponent} from "./pages/checkout-review-page/checkout-review-page.component";
+import {OrderCompletePageComponent} from "./pages/order-complete-page/order-complete-page.component";
 
 const routes: Routes = [
   {
@@ -41,8 +43,13 @@ const routes: Routes = [
   },
   {
     path: 'checkout/review',
-    component: PaymentPageComponent,
+    component: CheckoutReviewPageComponent,
     title: $localize `:@@checkoutPageTitle:Checkout`
+  },
+  {
+    path: 'checkout/complete',
+    component: OrderCompletePageComponent,
+    title: $localize `:@@checkoutCompletePageTitle:Checkout Complete`
   },
   { path: '**', component: PageNotFoundComponent },  // Wildcard route for a 404 page
 ];
