@@ -7,7 +7,7 @@ namespace CaaS.Api.CartApi.Models;
 public record CartItemDto {
     public Guid Id { get; init; }
     
-    public ProductDetailDto Product { get; init; } = ProductDetailDto.Empty;
+    public ProductDto Product { get; init; } = ProductDto.Empty;
     public Guid ShopId { get; init; }
     public Guid CartId { get; init; } 
     public int Amount { get; init; } 
