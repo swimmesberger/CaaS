@@ -50,6 +50,9 @@ public class CrudReadRepository<TData, TDomain> : IRepository
         return await pagesModels.MapAsync(items => 
             Converter.ConvertToDomain(items.ToAsyncEnumerable(), cancellationToken));
     }
+    
+    public async Task<bool> AnyAsync(StatementParameters? parameters = null, CancellationToken cancellationToken = default)
+        => await Dao.AnyAsync(parameters, cancellationToken: cancellationToken);
 
     public async Task<long> CountAsync(CancellationToken cancellationToken = default)
         => await Dao.CountAsync(cancellationToken: cancellationToken);

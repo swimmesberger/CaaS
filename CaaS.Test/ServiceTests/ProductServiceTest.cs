@@ -14,8 +14,6 @@ public class ProductServiceTest {
     private static readonly Guid TestShopId = new Guid("1AF5037B-16A0-430A-8035-6BCD785CBFB6");
     private static readonly string TestShopName = "TestShop";
     private static readonly Guid TestShopAdminId = new Guid("B0077779-E33B-4DFF-938B-47BA4A10854B");
-    private static readonly Guid CustomerIdA = new Guid("99C91EA1-4CA5-9097-DFDB-CF688F0DA31F");
-    private static readonly Guid CustomerIdB = new Guid("C162AF5D-7474-4A96-B830-E3D4D57B4170");
     private static readonly Guid ProductAId = new Guid("05B7F6AB-4409-4417-9F76-34035AC92AE9");
     private static readonly Guid ProductBId = new Guid("DD7E1EA1-6D85-4596-AADB-A4648F7DA31F");
     private static readonly Guid ProductCId = new Guid("4F9EBA78-26B2-4740-91D9-9A3BCA6A5AB7");
@@ -64,7 +62,7 @@ public class ProductServiceTest {
             Name = "Super duper product"
         };
 
-        var result = await productService.UpdateAsync(oldProduct.Id, updatedProduct);
+        var result = await productService.UpdateAsync(updatedProduct);
         result.Name.Should().Be("Super duper product");
 
         result = await productService.GetByIdAsync(ProductAId);
@@ -76,9 +74,12 @@ public class ProductServiceTest {
         var productService = CreateProductService();
         var product = await productService.GetByIdAsync(ProductAId);
         product!.Price.Should().Be(10);
+        var updatedProduct = product with {
+            Price = 99
+        };
 
-        product = await productService.SetPriceAsync(ProductAId, 99);
-        product!.Price.Should().Be(99);
+        product = await productService.UpdateAsync(updatedProduct);
+        product.Price.Should().Be(99);
     }
     
     [Fact]
@@ -86,15 +87,23 @@ public class ProductServiceTest {
         var productService = CreateProductService();
         var product = await productService.GetByIdAsync(ProductAId);
         product!.Price.Should().Be(10);
+        var updatedProduct = product with {
+            Price = -1
+        };
         
-        Func<Task> act = async () => { await productService.SetPriceAsync(ProductAId, -1); };
+        Func<Task> act = async () => { await productService.UpdateAsync(updatedProduct); };
         await act.Should().ThrowAsync<CaasValidationException>();
     }
     
     [Fact]
     public async Task SetPriceInvalidProduct() {
         var productService = CreateProductService();
-        Func<Task> act = async () => { await productService.SetPriceAsync(Guid.Parse("BE16A432-EDD8-4DDB-8D06-7F53C3DBA7B1"), 100); };
+        var updatedProduct = new Product() {
+            Id = Guid.Parse("BE16A432-EDD8-4DDB-8D06-7F53C3DBA7B1"),
+            Price = 100
+        };
+
+        Func<Task> act = async () => { await productService.UpdateAsync(updatedProduct); };
         await act.Should().ThrowAsync<CaasItemNotFoundException>();
     }
 

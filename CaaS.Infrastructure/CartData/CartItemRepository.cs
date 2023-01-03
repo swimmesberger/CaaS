@@ -22,10 +22,11 @@ internal class CartItemRepository : IRepository {
         if (cartIds.Count.Equals(0)) {
             return new Dictionary<Guid, IReadOnlyList<CartItem>>();
         }
-        
+        var dbParams = StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartIds);
+        dbParams = dbParams.WithOrderBy(Converter.DefaultOrderParameters);
         return (await Converter
                         .ConvertToDomain(Dao
-                        .FindBy(StatementParameters.CreateWhere(nameof(ProductCartDataModel.CartId), cartIds), cancellationToken), cancellationToken))
+                        .FindBy(dbParams, cancellationToken), cancellationToken))
                 .GroupBy(i => i.CartId)
                 .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<CartItem>)grp.ToImmutableArray());
     }

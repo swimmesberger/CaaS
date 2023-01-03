@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using AutoMapper;
+﻿using AutoMapper;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.CartApi.Models;
 using CaaS.Core.CartAggregate;
@@ -25,38 +24,12 @@ public class CartController : ControllerBase {
         var result = await _cartService.GetByIdAsync(cartId, cancellationToken);
         return _mapper.Map<CartDto?>(result);
     }
-
-    [HttpPost("{cartId:guid}/product/{productId:guid}")]
-    public async Task<ActionResult> AddProductToCart(Guid cartId, Guid productId, [Required][FromQuery] int productQuantity, CancellationToken cancellationToken = default) {
-        var result = await _cartService.AddProductToCartAsync(cartId, productId, productQuantity, cancellationToken);
-        
-        return CreatedAtAction(
-            controllerName: "Cart",
-            actionName: nameof(GetById),
-            routeValues: new { cartId = result.Id },
-            value: _mapper.Map<CartDto>(result));
-    }
-
-    [HttpDelete("{cartId:guid}/product/{productId:guid}")]
-    public async Task<ActionResult> RemoveProductFromCart(Guid cartId, Guid productId, CancellationToken cancellationToken = default) {
-        var result = await _cartService.RemoveProductFromCartAsync(cartId, productId, cancellationToken);
-        return CreatedAtAction(
-            controllerName: "Cart",
-            actionName: nameof(GetById),
-            routeValues: new { cartId = result.Id },
-            value: _mapper.Map<CartDto>(result));
-    }
-
-    [HttpPut("{cartId:guid}/product/{productId:guid}")]
-    public async Task<CartDto> SetProductQuantityInCart(Guid cartId, Guid productId, [Required][FromQuery] int productQuantity,
-            CancellationToken cancellationToken = default) {
-        var result = await _cartService.SetProductQuantityInCartAsync(cartId, productId, productQuantity, cancellationToken);
-        return _mapper.Map<CartDto>(result);
-    }
     
-    [HttpPut("{cartId:guid}/coupon/{couponId:guid}")]
-    public async Task<CartDto> AddCouponToCart(Guid cartId, [Required] Guid couponId, CancellationToken cancellationToken = default) {
-        var result = await _cartService.AddCouponToCartAsync(cartId, couponId, cancellationToken);
-        return _mapper.Map<CartDto>(result);
+    [HttpPost("{cartId:guid}")]
+    public async Task<CartDto?> UpdateCart([FromRoute] Guid cartId, [FromBody] CartForUpdateDto cartDto, CancellationToken cancellationToken = default) {
+        var updatedCart = _mapper.Map<Cart>(cartDto);
+        updatedCart = updatedCart with { Id = cartId };
+        var result = await _cartService.UpdateCartAsync(updatedCart, cancellationToken);
+        return _mapper.Map<CartDto?>(result);
     }
 }

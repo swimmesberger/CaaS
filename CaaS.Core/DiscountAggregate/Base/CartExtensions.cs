@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using CaaS.Core.Base;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.DiscountAggregate.Models;
 

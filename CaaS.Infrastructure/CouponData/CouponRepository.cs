@@ -11,10 +11,9 @@ public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICoupon
 
     public CouponRepository(IDao<CouponDataModel> dao): 
                             base(dao, new CouponDomainModelConvert()) { }
-    
+
     public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIdsAsync(IReadOnlyCollection<Guid> orderIds,
         CancellationToken cancellationToken = default) {
-        
         return (await Converter
                 .ConvertToDomain(Dao
                     .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.OrderId), orderIds), cancellationToken), cancellationToken))
@@ -35,20 +34,23 @@ public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICoupon
             .GroupBy(i => i.CartId!.Value) //cartId cant be null because of where statement
             .ToDictionary(grp => grp.Key, grp => (IReadOnlyList<Coupon>)grp.ToList());
     }
-    
-    public async Task<IReadOnlyList<Coupon>> FindByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default) {
+
+    public async Task<IReadOnlyList<Coupon>> FindByAsync(CouponQuery couponQuery, CancellationToken cancellationToken = default) {
+        var whereParameters = new List<QueryParameter>();
+        if (couponQuery.CartId != null) {
+            whereParameters.Add(new QueryParameter(nameof(CouponDataModel.CartId), couponQuery.CartId));
+        }
+        if (couponQuery.OrderId != null) {
+            whereParameters.Add(new QueryParameter(nameof(CouponDataModel.OrderId), couponQuery.OrderId));
+        }
+        if (couponQuery.CustomerId != null) {
+            whereParameters.Add(new QueryParameter(nameof(CouponDataModel.CustomerId), couponQuery.CustomerId));
+        }
+        if (couponQuery.Code != null) {
+            whereParameters.Add(new QueryParameter(nameof(CouponDataModel.Code), couponQuery.Code));
+        }
         return (await Converter.ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.CustomerId), customerId), cancellationToken), cancellationToken))
-            .ToList();
-    }
-    public async Task<IReadOnlyList<Coupon>> FindByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default) {
-        return (await Converter.ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.OrderId), orderId), cancellationToken), cancellationToken))
-            .ToList();
-    }
-    public async Task<IReadOnlyList<Coupon>> FindByCartIdAsync(Guid cartId, CancellationToken cancellationToken = default) {
-        return (await Converter.ConvertToDomain(Dao
-                .FindBy(StatementParameters.CreateWhere(nameof(CouponDataModel.CartId), cartId), cancellationToken), cancellationToken))
+                .FindBy(new StatementParameters(){ Where = whereParameters }, cancellationToken), cancellationToken))
             .ToList();
     }
 
@@ -81,6 +83,7 @@ internal class CouponDomainModelConvert : IDomainModelConverter<CouponDataModel,
         return new CouponDataModel {
             Id = domainModel.Id,
             ShopId = domainModel.ShopId,
+            Code = domainModel.Code,
             Value = domainModel.Value,
             OrderId = domainModel.OrderId,
             CartId = domainModel.CartId,
@@ -101,6 +104,7 @@ internal class CouponDomainModelConvert : IDomainModelConverter<CouponDataModel,
         return dataModels.Select(dataModel => new Coupon() {
                 Id = dataModel.Id,
                 ShopId = dataModel.ShopId,
+                Code = dataModel.Code,
                 Value = dataModel.Value,
                 OrderId = dataModel.OrderId,
                 CartId = dataModel.CartId,

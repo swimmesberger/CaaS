@@ -22,7 +22,6 @@ using Microsoft.Extensions.Options;
 using Moq;
 using SwKo.Pay;
 using SwKo.Pay.Api;
-using SwKo.Pay.Api.Exceptions;
 using Customer = CaaS.Core.CustomerAggregate.Customer;
 
 namespace CaaS.Test.ServiceTests; 
@@ -238,10 +237,9 @@ public class OrderServiceTest {
         var discountSettingsRepository = new DiscountSettingsRepository(discountSettingsDao, jsonConverter);
         var uowManager = new MockUnitOfWorkManager();
         var discountService = new DiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator, uowManager);
+        var couponService = new CouponService(couponRepository, uowManager, tenantIdAccessor);
 
-
-
-        var cartService = new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
+        var cartService = new CartService(cartRepository, productRepository, shopRepository, discountService, couponService,
             uowManager, tenantIdAccessor, SystemClock.Instance);
         return new OrderService(orderRepository, customerRepository, cartService, couponRepository, tenantIdAccessor, uowManager, paymentService);
     }

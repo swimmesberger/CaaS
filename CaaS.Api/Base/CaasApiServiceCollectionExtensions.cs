@@ -38,7 +38,7 @@ public static class CaasApiServiceCollectionExtensions {
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.Converters.Add(new OpenApiReferenceJsonConverter());
-        });
+        }).Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
         // OpenId Azure AD Auth
         // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         //         .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));

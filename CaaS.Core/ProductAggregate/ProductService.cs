@@ -53,11 +53,14 @@ public class ProductService : IProductService {
         return product;
     }
     
-    public async Task<Product> UpdateAsync(Guid productId, Product updatedProduct, CancellationToken cancellationToken = default) {
+    public async Task<Product> UpdateAsync(Product updatedProduct, CancellationToken cancellationToken = default) {
+        if (updatedProduct.Price <= 0) {
+            throw new CaasValidationException(new ValidationFailure(nameof(updatedProduct.Price), "Invalid price"));
+        }
         await using var uow = _unitOfWorkManager.Begin();
-        var oldProduct = await _productRepository.FindByIdAsync(productId, cancellationToken);
+        var oldProduct = await _productRepository.FindByIdAsync(updatedProduct.Id, cancellationToken);
         if (oldProduct == null) {
-            throw new CaasItemNotFoundException($"Product '{productId}' not found");
+            throw new CaasItemNotFoundException($"Product '{updatedProduct.Id}' not found");
         }
         
         var shop =  await _shopRepository.FindByIdAsync(_tenantIdAccessor.GetTenantGuid(), cancellationToken);
@@ -66,29 +69,10 @@ public class ProductService : IProductService {
         }
         
         updatedProduct = updatedProduct with {
-            Id = productId,
             Shop = shop
         };
 
         updatedProduct = await _productRepository.UpdateAsync(oldProduct, updatedProduct, cancellationToken);
-        await uow.CompleteAsync(cancellationToken);
-        return updatedProduct;
-    }
-    
-    public async Task<Product> SetPriceAsync(Guid productId, decimal price, CancellationToken cancellationToken = default) {
-        if (price <= 0) {
-            throw new CaasValidationException(new ValidationFailure(nameof(price), "Invalid price"));
-        }
-        await using var uow = _unitOfWorkManager.Begin();
-        var product = await _productRepository.FindByIdAsync(productId, cancellationToken);
-        if (product == null) {
-            throw new CaasItemNotFoundException();
-        }
-        
-        var updatedProduct = product with {
-            Price = price
-        };
-        updatedProduct = await _productRepository.UpdateAsync(product, updatedProduct, cancellationToken);
         await uow.CompleteAsync(cancellationToken);
         return updatedProduct;
     }

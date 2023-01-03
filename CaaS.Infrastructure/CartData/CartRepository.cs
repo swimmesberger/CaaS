@@ -18,7 +18,13 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
             IProductRepository productRepository, ICustomerRepository customerRepository, ICouponRepository couponRepository, ISystemClock timeProvider) : 
             base(dao, new CartDomainModelConvert(cartItemDao, productRepository, customerRepository, timeProvider, couponRepository)) {
     }
-    
+
+    public Task<bool> AnyAsync(Guid id, CancellationToken cancellationToken = default) {
+        return AnyAsync(new StatementParameters() {
+            Where = new QueryParameter[]{new(nameof(CartDataModel.Id), id)}
+        }, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Cart>> FindExpiredCartsAsync(int lifeTimeMinutes, CancellationToken cancellationToken = default) {
         var parameters = new List<QueryParameter> {
             new(nameof(Cart.LastAccess), WhereComparator.Less, Converter.TimeProvider.UtcNow.Subtract(TimeSpan.FromMinutes(lifeTimeMinutes))),
@@ -28,9 +34,9 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     }
 
     public async Task<Cart> AddAsync(Cart entity, CancellationToken cancellationToken = default) {
-        await Converter.CartItemRepository.AddAsync(entity.Items, cancellationToken);
         var dataModel = Converter.ConvertFromDomain(entity);
         dataModel = await Dao.AddAsync(dataModel, cancellationToken);
+        await Converter.CartItemRepository.AddAsync(entity.Items, cancellationToken);
         entity = Converter.ApplyDataModel(entity, dataModel);
         return entity;
     }
@@ -52,8 +58,6 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     }
     
     private class CartDomainModelConvert : IDomainReadModelConverter<CartDataModel, Cart> {
-        public IEnumerable<OrderParameter>? DefaultOrderParameters => null;
-
         internal CartItemRepository CartItemRepository { get; }
         internal ICouponRepository CouponRepository { get; }
         private ICustomerRepository CustomerRepository { get; }

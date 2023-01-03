@@ -39,17 +39,13 @@ public class ProductAdministrationController : ControllerBase {
             value: _mapper.Map<ProductDto>(result));
     }
     
-    [HttpPut("setPrice/{productId:guid}")]
-    public async Task<ProductDto> SetPriceOfProduct(Guid productId, [FromQuery][Required] decimal price,
-        CancellationToken cancellationToken = default) {
-        var result = await _productService.SetPriceAsync(productId, price, cancellationToken);
-        return _mapper.Map<ProductDto>(result);
-    }
-    
     [HttpPut("{productId:guid}")]
-    public async Task<ProductDto> UpdateCoupon(Guid productId, [FromBody] ProductForUpdateDto productDto, CancellationToken cancellationToken = default) {
-        var updatedCoupon = _mapper.Map<Product>(productDto);
-        var result = await _productService.UpdateAsync(productId, updatedCoupon, cancellationToken);
+    public async Task<ProductDto> UpdateProduct(Guid productId, [FromBody] ProductForUpdateDto productDto, CancellationToken cancellationToken = default) {
+        var updatedProduct = _mapper.Map<Product>(productDto);
+        updatedProduct = updatedProduct with {
+            Id = productId
+        };
+        var result = await _productService.UpdateAsync(updatedProduct, cancellationToken);
         return _mapper.Map<ProductDto>(result);
     }
     

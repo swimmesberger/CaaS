@@ -14,37 +14,39 @@ public class CouponService : ICouponService {
         _unitOfWorkManager = unitOfWorkManager;
         _tenantIdAccessor = tenantIdAccessor;
     }
+    
     public async Task<Coupon?> GetByIdAsync(Guid couponId, CancellationToken cancellationToken = default) {
         return await _couponRepository.FindByIdAsync(couponId, cancellationToken);
     }
-    
-    public async Task<CountedResult<Coupon>> GetByCartIdAsync(Guid cartId, CancellationToken cancellationToken = default) {
-        var items = await _couponRepository.FindByCartIdAsync(cartId, cancellationToken);
-        return new CountedResult<Coupon>() { Items = items, TotalCount = await _couponRepository.CountAsync(cancellationToken) };
-    }
-    
-    public async Task<CountedResult<Coupon>> GetByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default) {
-        var items = await _couponRepository.FindByOrderIdAsync(orderId, cancellationToken);
-        return new CountedResult<Coupon>() { Items = items, TotalCount = await _couponRepository.CountAsync(cancellationToken) };
-    }
-    
-    public async Task<CountedResult<Coupon>> GetByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default) {
-        var items = await _couponRepository.FindByCustomerIdAsync(customerId, cancellationToken);
-        return new CountedResult<Coupon>() { Items = items, TotalCount = await _couponRepository.CountAsync(cancellationToken) };
-    }
-    
-    public async Task<Coupon> UpdateAsync(Guid couponId, Coupon updatedCoupon, CancellationToken cancellationToken = default) {
-        await using var uow = _unitOfWorkManager.Begin();
-        var oldCoupon = await _couponRepository.FindByIdAsync(couponId, cancellationToken);
-        if (oldCoupon == null) {
-            throw new CaasItemNotFoundException($"CouponId {couponId} not found");
-        }
 
-        updatedCoupon = updatedCoupon with {
-            Id = couponId,
-            ShopId = _tenantIdAccessor.GetTenantGuid()
+    public async Task<Coupon?> GetByCodeAsync(string couponCode, CancellationToken cancellationToken = default) {
+        return await _couponRepository.FindByCodeAsync(couponCode, cancellationToken);
+    }
+
+    public async Task<CountedResult<Coupon>> GetByAsync(CouponQuery couponQuery, CancellationToken cancellationToken = default) {
+        var items = await _couponRepository.FindByAsync(couponQuery, cancellationToken);
+        return new CountedResult<Coupon>() { Items = items, TotalCount = await _couponRepository.CountAsync(cancellationToken) };
+    }
+
+    public async Task<Coupon> UpdateAsync(Coupon updatedCoupon, CancellationToken cancellationToken = default) {
+        await using var uow = _unitOfWorkManager.Begin();
+        var oldCoupon = await _couponRepository.FindByIdAsync(updatedCoupon.Id, cancellationToken);
+        if (oldCoupon == null) {
+            throw new CaasItemNotFoundException($"CouponId {updatedCoupon.Id} not found");
+        }
+        if(oldCoupon.Value != updatedCoupon.Value && (oldCoupon.OrderId != null || oldCoupon.CartId != null)) {
+            throw new CaasValidationException("Value of a redeemed coupon cannot be changed");
+        }
+        if(oldCoupon.Code != updatedCoupon.Code && (oldCoupon.OrderId != null || oldCoupon.CartId != null)) {
+            throw new CaasValidationException("Code of a redeemed coupon cannot be changed");
+        }
+        updatedCoupon = oldCoupon with {
+            Code = updatedCoupon.Code,
+            Value = updatedCoupon.Value,
+            OrderId = updatedCoupon.OrderId,
+            CartId = updatedCoupon.CartId,
+            CustomerId = updatedCoupon.CustomerId
         };
-        
         updatedCoupon = await _couponRepository.UpdateAsync(oldCoupon, updatedCoupon, cancellationToken);
         await uow.CompleteAsync(cancellationToken);
         return updatedCoupon;
@@ -77,24 +79,63 @@ public class CouponService : ICouponService {
         await _couponRepository.DeleteAsync(coupon, cancellationToken);
         await uow.CompleteAsync(cancellationToken);
     }
-    public async Task<Coupon> SetValueOfCouponAsync(Guid couponId, decimal value, CancellationToken cancellationToken = default) {
-        await using var uow = _unitOfWorkManager.Begin();
-        var coupon = await _couponRepository.FindByIdAsync(couponId, cancellationToken);
-        if (coupon == null) {
-            throw new CaasItemNotFoundException($"CouponId {couponId} not found");
+    
+    public async Task<IReadOnlyList<Coupon>> RedeemCouponsAsync(IEnumerable<Coupon> oldDomainModels, IReadOnlyCollection<Coupon> newDomainModels, 
+        Guid cartId, Guid? customerId = null, CancellationToken cancellationToken = default) {
+        var changeTracker = ChangeTracker.CreateDiff(oldDomainModels, newDomainModels);
+        var currentCoupons = new List<Coupon>();
+        foreach (var addedCoupon in changeTracker.AddedItems) {
+            currentCoupons.Add(await ApplyCouponAsync(addedCoupon, cartId, customerId, cancellationToken));
         }
-        
-        if(coupon.OrderId != null || coupon.CartId != null)
-        {
-            throw new CaasValidationException("Value of a redeemed coupon cannot be changed");
+        foreach (var removedCoupon in changeTracker.RemovedItems) {
+            await UnapplyCouponAsync(removedCoupon, cartId, cancellationToken);
+        }
+        return currentCoupons;
+    }
+
+    private async Task<Coupon> ApplyCouponAsync(Coupon userCoupon, Guid cartId, Guid? customerId = null, CancellationToken cancellationToken = default) {
+        var coupon = await FindUserCoupon(userCoupon, cancellationToken);
+        if (coupon.OrderId != null) {
+            throw new CaasValidationException($"Coupon '{userCoupon.Code}' was already redeemed by order '{coupon.OrderId}'");
         }
 
         var updatedCoupon = coupon with {
-            Value = value
+            CartId = cartId,
+            CustomerId = customerId
         };
+        return await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
+    }
 
-        updatedCoupon = await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
-        await uow.CompleteAsync(cancellationToken);
-        return updatedCoupon;
+    private async Task<Coupon> UnapplyCouponAsync(Coupon userCoupon, Guid cartId, CancellationToken cancellationToken = default) {
+        var coupon = await FindUserCoupon(userCoupon, cancellationToken);
+        if (coupon.OrderId != null) {
+            throw new CaasValidationException($"Coupon '{userCoupon.Code}' was already redeemed by order '{coupon.OrderId}'");
+        }
+        if (!coupon.CartId.Equals(cartId)) {
+            throw new CaasValidationException($"Can't unapply '{userCoupon.Code}'");
+        }
+        var updatedCoupon = coupon with {
+            CartId = null,
+            CustomerId = null
+        };
+        return await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
+    }
+
+    private async Task<Coupon> FindUserCoupon(Coupon userCoupon, CancellationToken cancellationToken = default) {
+        Coupon? coupon;
+        if (userCoupon.Id != Guid.Empty) {
+            coupon = await _couponRepository.FindByIdAsync(userCoupon.Id, cancellationToken);
+            if (coupon == null) {
+                throw new CaasItemNotFoundException($"Coupon {userCoupon.Id} not found");
+            }
+        } else if(!string.IsNullOrEmpty(userCoupon.Code)) {
+            coupon = await _couponRepository.FindByCodeAsync(userCoupon.Code, cancellationToken);
+            if (coupon == null) {
+                throw new CaasItemNotFoundException($"Coupon {userCoupon.Code} not found");
+            }
+        } else {
+            throw new CaasValidationException("Invalid coupon passed");
+        }
+        return coupon;
     }
 }

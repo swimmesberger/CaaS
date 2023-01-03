@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.Base.Mapping;
@@ -92,6 +93,9 @@ public class MemoryDao<T> : IDao<T>, IHasMetadataProvider where T: IDataModelBas
 
     public Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
         var dIdx = _data.FindIndex(d => d.Id == entity.Id);
+        if (dIdx < 0) {
+            throw new CaasDeleteDbException($"Can't find item {typeof(T)} with id {entity.Id}");
+        }
         _data.RemoveAt(dIdx);
         return Task.CompletedTask;
     }

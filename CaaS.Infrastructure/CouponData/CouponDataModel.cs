@@ -7,6 +7,7 @@ namespace CaaS.Infrastructure.CouponData;
 public record CouponDataModel : DataModel {
     [TenantIdColumn]
     public Guid ShopId { get; init; }
+    public string Code { get; init; }
     public decimal Value { get; init; }
     public Guid? OrderId { get; init; }
     public Guid? CartId { get; init; }

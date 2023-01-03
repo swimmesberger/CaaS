@@ -60,11 +60,11 @@ INSERT INTO product_cart(id,row_version,creation_time,last_modification_time,sho
     VALUES ('77894ac7-e360-44b2-a873-2710b3114fdf',5,'2022-07-07 03:28:09','2022-10-05 17:00:06','a468d796-db09-496d-9794-f6b42f8c7c0b',
             'ff66c1f5-d79e-4797-a03c-a665ae26b171','b4cf2977-13fc-44dd-89cf-0dbfdae04fce',4);
 
-INSERT INTO coupon(id,row_version,creation_time,last_modification_time,shop_id,value,order_id,cart_id,customer_id) 
-    VALUES ('bbf7b266-2485-4cd8-a0a4-822a692fab10',4,'2021-11-15 18:20:52','2022-09-14 14:12:15','a468d796-db09-496d-9794-f6b42f8c7c0b',10,
+INSERT INTO coupon(id,row_version,creation_time,last_modification_time,shop_id,code,value,order_id,cart_id,customer_id) 
+    VALUES ('bbf7b266-2485-4cd8-a0a4-822a692fab10',4,'2021-11-15 18:20:52','2022-09-14 14:12:15','a468d796-db09-496d-9794-f6b42f8c7c0b','SUMMER1234',10,
             '41b1fa55-fd34-4611-bda0-f3821f6db52b',NULL,'703111b0-c3fd-4bf1-9d1a-12cd3852c182');
-INSERT INTO coupon(id,row_version,creation_time,last_modification_time,shop_id,value,order_id,cart_id,customer_id) 
-    VALUES ('aff66783-ed9c-4838-9642-72042883fffe',3,'2022-04-30 07:25:07','2022-09-13 10:43:50','a468d796-db09-496d-9794-f6b42f8c7c0b',7,
+INSERT INTO coupon(id,row_version,creation_time,last_modification_time,shop_id,code,value,order_id,cart_id,customer_id) 
+    VALUES ('aff66783-ed9c-4838-9642-72042883fffe',3,'2022-04-30 07:25:07','2022-09-13 10:43:50','a468d796-db09-496d-9794-f6b42f8c7c0b','SUMMER1235',7,
             NULL,'b4cf2977-13fc-44dd-89cf-0dbfdae04fce','703111b0-c3fd-4bf1-9d1a-12cd3852c182');
 
 INSERT INTO discount_setting(id,row_version,creation_time,last_modification_time,shop_id,name,rule_id,action_id,rule_parameters,action_parameters) 

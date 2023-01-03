@@ -237,6 +237,7 @@ CREATE TABLE "coupon" (
     "creation_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "last_modification_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "shop_id" uuid NOT NULL,
+    "code" varchar(255) NOT NULL,
     "value" decimal NOT NULL,
     "order_id" uuid,
     "cart_id" uuid,
@@ -249,7 +250,8 @@ CREATE TABLE "coupon" (
           REFERENCES "cart"("id") ON DELETE SET NULL,
     CONSTRAINT "FK_coupon.order_id"
       FOREIGN KEY ("order_id")
-          REFERENCES "order"("id") ON DELETE SET NULL
+          REFERENCES "order"("id") ON DELETE SET NULL,
+    CONSTRAINT  "UNIQUE_code_shop_id" UNIQUE (code, shop_id)
 );
 
 CREATE TABLE "product_order_discount" (

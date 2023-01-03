@@ -1,6 +1,4 @@
-﻿using CaaS.Core.Base;
-
-namespace CaaS.Infrastructure.Base.Repository;
+﻿namespace CaaS.Core.Base;
 
 public static class ChangeTracker {
     public static ChangeTracker<T> CreateDiff<T>(IEnumerable<T> oldItems, IReadOnlyCollection<T> newItems) where T: IHasId {

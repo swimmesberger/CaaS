@@ -1,16 +1,13 @@
 ﻿using System.Collections.Immutable;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
-using CaaS.Core.Base.Tenant;
 using CaaS.Core.Base.Url;
 using CaaS.Core.CartAggregate;
 using CaaS.Core.CouponAggregate;
-using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Impl;
 using CaaS.Core.ProductAggregate;
-using CaaS.Core.ShopAggregate;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
@@ -42,7 +39,15 @@ public class CartServiceTest {
 
         var newCartId = new Guid("397CB87F-9694-4EAD-A549-E3089D61B131");
         var curTime = SystemClock.GetNow();
-        var createdCart = await cartService.AddProductToCartAsync(newCartId, ProductAId, 1);
+        var createdCart = await cartService.UpdateCartAsync(new Cart() {
+            Id = newCartId,
+            Items = ImmutableArray.Create(
+                new CartItem() {
+                    Product = new Product(){Id = ProductAId},
+                    Amount = 1
+                }
+            )
+        });
         createdCart.Should().NotBeNull();
         createdCart.ShopId.Should().Be(TestShopId);
         createdCart.Items.Should().HaveCount(1);
@@ -57,7 +62,13 @@ public class CartServiceTest {
         var cartService = CreateCartService(SystemClock.Instance);
 
         var curTime = SystemClock.GetNow();
-        var updatedCart = await cartService.AddProductToCartAsync(ExistingCartId, ProductAId, 2);
+        var updatedCart = await cartService.UpdateCartAsync(new Cart() {
+            Id = ExistingCartId,
+            Items = ImmutableArray.Create(new CartItem() {
+                Product = new Product(){Id = ProductAId},
+                Amount = 4
+            })
+        });
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
         updatedCart.Items.Should().HaveCount(1);
@@ -70,9 +81,18 @@ public class CartServiceTest {
     [Fact]
     public async Task AddProductToCartWhenProductNotExistingOptimistic() {
         var cartService = CreateCartService(SystemClock.Instance);
-
         var curTime = SystemClock.GetNow();
-        var updatedCart = await cartService.AddProductToCartAsync(ExistingCartId, ProductBId, 2);
+        
+        var cart = await cartService.GetByIdAsync(ExistingCartId);
+        var updatedCart = await cartService.UpdateCartAsync(cart! with {
+            Id = ExistingCartId,
+            Items = cart.Items.Add(
+                new CartItem() {
+                    Product = new Product(){Id = ProductBId},
+                    Amount = 2
+                }
+            )
+        });
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
         updatedCart.Items.Should().HaveCount(2);
@@ -90,7 +110,10 @@ public class CartServiceTest {
         var cartService = CreateCartService(SystemClock.Instance);
 
         var curTime = SystemClock.GetNow();
-        var updatedCart = await cartService.RemoveProductFromCartAsync(ExistingCartId, ProductAId);
+        var updatedCart = await cartService.UpdateCartAsync(new Cart() {
+            Id = ExistingCartId,
+            Items = ImmutableArray<CartItem>.Empty
+        });
         updatedCart.Should().NotBeNull();
         updatedCart.ShopId.Should().Be(TestShopId);
         updatedCart.Items.Should().BeEmpty();
@@ -116,8 +139,13 @@ public class CartServiceTest {
         var cartService = CreateCartService(staticClock);
         var cart = await cartService.GetByIdAsync(ExistingCartId);
         cart!.Coupons.Count().Should().Be(1);
-        cart = await cartService.AddCouponToCartAsync(ExistingCartId, CouponIdB);
-        cart!.Coupons.Count().Should().Be(2);
+        cart = await cartService.UpdateCartAsync(cart with {
+            Coupons = cart.Coupons.Add(new Coupon() {
+                Id = CouponIdB
+            })
+        });
+        
+        cart.Coupons.Count().Should().Be(2);
     }
     
     [Fact]
@@ -127,7 +155,13 @@ public class CartServiceTest {
         var cartService = CreateCartService(staticClock);
         var cart = await cartService.GetByIdAsync(ExistingCartId);
         cart!.Coupons.Count().Should().Be(1);
-        Func<Task> act = async () => { await cartService.AddCouponToCartAsync(ExistingCartId, CouponIdC); };
+        Func<Task> act = async () => {   
+            cart = await cartService.UpdateCartAsync(cart with {
+                Coupons = cart.Coupons.Add(new Coupon() {
+                    Id = CouponIdC
+                })
+            }); 
+        };
         await act.Should().ThrowAsync<CaasValidationException>();
     }
 
@@ -140,7 +174,15 @@ public class CartServiceTest {
         cart!.Items.Count().Should().Be(1);
         cart.Items[0].Amount.Should().Be(2);
         
-        cart = await cartService.SetProductQuantityInCartAsync(ExistingCartId, ProductAId, 7);
+        cart = await cartService.UpdateCartAsync(new Cart() {
+            Id = ExistingCartId,
+            Items = ImmutableArray.Create(
+                new CartItem() {
+                    Product = new Product(){Id = ProductAId},
+                    Amount = 7
+                }
+            )
+        });
         cart.Items[0].Amount.Should().Be(7);
     }
     
@@ -153,21 +195,39 @@ public class CartServiceTest {
         cart!.Items.Count().Should().Be(1);
         cart.Items[0].Amount.Should().Be(2);
 
-        Func<Task> act = async () => { await cartService.SetProductQuantityInCartAsync(ExistingCartId, ProductAId, -1); };
+        Func<Task> act = async () => {
+            await cartService.UpdateCartAsync(new Cart() {
+                Id = ExistingCartId,
+                Items = ImmutableArray.Create(
+                    new CartItem() {
+                        Product = new Product(){Id = ProductAId},
+                        Amount = -1
+                    }
+                )
+            });
+        };
         await act.Should().ThrowAsync<CaasValidationException>();
     }
     
     [Fact]
-    public async Task AddProductQuantityInvalidCart() {
+    public async Task AddProductQuantityNotExistingCart() {
         var currentTime = AsUtc(new DateTime(2022, 12, 18, 20, 0, 0, DateTimeKind.Local));
         var staticClock = new StaticSystemClock(currentTime);
         var cartService = CreateCartService(staticClock);
-        var cart = await cartService.GetByIdAsync(ExistingCartId);
-        cart!.Items.Count().Should().Be(1);
-        cart.Items[0].Amount.Should().Be(2);
 
-        Func<Task> act = async () => { await cartService.SetProductQuantityInCartAsync(CouponIdA, ProductAId, 5); };
-        await act.Should().ThrowAsync<CaasItemNotFoundException>();
+        var cart = await cartService.UpdateCartAsync(new Cart() {
+            Id = CouponIdA,
+            Items = ImmutableArray.Create(
+                new CartItem() {
+                    Product = new Product(){Id = ProductAId},
+                    Amount = 5
+                }
+            )
+        });
+        cart.Id.Should().Be(CouponIdA);
+        cart.Items.Should().HaveCount(1);
+        cart.Items[0].Product.Id.Should().Be(ProductAId);
+        cart.Items[0].Amount.Should().Be(5);
     }
     
     [Fact]
@@ -179,8 +239,17 @@ public class CartServiceTest {
         cart!.Items.Count().Should().Be(1);
         cart.Items[0].Amount.Should().Be(2);
 
-        Func<Task> act = async () => { await cartService.SetProductQuantityInCartAsync(ExistingCartId, ProductBId, 5); };
-        await act.Should().ThrowAsync<CaasItemNotFoundException>();
+        cart = await cartService.UpdateCartAsync(cart with {
+            Items = cart.Items.Add(new CartItem() {
+                Product = new Product(){ Id = ProductBId },
+                Amount = 5
+            })
+        });
+        cart.Items.Count().Should().Be(2);
+        cart.Items[0].Product.Id.Should().Be(ProductAId);
+        cart.Items[0].Amount.Should().Be(2);
+        cart.Items[1].Product.Id.Should().Be(ProductBId);
+        cart.Items[1].Amount.Should().Be(5);
     }
 
 
@@ -224,8 +293,9 @@ public class CartServiceTest {
         var validator = new MockValidator();
         var uowManager = new MockUnitOfWorkManager();
         var discountService = new DiscountService(discountSettingsRepository, componentFactory, tenantIdAccessor, jsonConverter, validator, uowManager);
+        var couponService = new CouponService(couponRepository, uowManager, tenantIdAccessor);
         
-        return new CartService(cartRepository, customerRepository, productRepository, shopRepository, discountService, couponRepository,
+        return new CartService(cartRepository, productRepository, shopRepository, discountService, couponService,
             uowManager, tenantIdAccessor, clock);
     }
 

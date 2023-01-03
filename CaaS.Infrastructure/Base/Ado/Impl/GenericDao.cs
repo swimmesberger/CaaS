@@ -110,7 +110,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
     public async Task DeleteAsync(T entity, CancellationToken cancellationToken = default) {
         var changedCount = await ExecuteAsync(_statementGenerator.CreateDelete(entity), cancellationToken);
         if (changedCount == 0) {
-            throw new CaasInsertDbException();
+            throw new CaasDeleteDbException();
         }
     }
 
@@ -118,7 +118,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
         if (entities.Count == 0) return;
         var changedCount = await ExecuteAsync(_statementGenerator.CreateDelete(entities), cancellationToken);
         if (changedCount == 0) {
-            throw new CaasInsertDbException();
+            throw new CaasDeleteDbException();
         }
     }
 

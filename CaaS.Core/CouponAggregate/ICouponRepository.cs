@@ -4,9 +4,7 @@ namespace CaaS.Core.CouponAggregate;
 
 public interface ICouponRepository : IRepository {
     Task<Coupon?> FindByIdAsync(Guid couponId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<Coupon>> FindByCustomerIdAsync(Guid customerId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<Coupon>> FindByOrderIdAsync(Guid orderId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<Coupon>> FindByCartIdAsync(Guid cartId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Coupon>> FindByAsync(CouponQuery couponQuery, CancellationToken cancellationToken = default);
 
     Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIdsAsync(IReadOnlyCollection<Guid> orderIds, CancellationToken cancellationToken = default);
     Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByCartIdsAsync(IReadOnlyCollection<Guid> cartIds, CancellationToken cancellationToken = default);

@@ -12,7 +12,7 @@ public record CartItem : IEntityBase {
     public Guid ShopId { get; init; } = default;
     public Guid CartId { get; init; } = default;
     public int Amount { get; init; } = 0;
-    public IImmutableList<Discount> CartItemDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
+    public IReadOnlyList<Discount> CartItemDiscounts { get; init; } = ImmutableArray<Discount>.Empty;
     public string ConcurrencyToken { get; init; } = string.Empty;
 
     public decimal TotalPrice {
