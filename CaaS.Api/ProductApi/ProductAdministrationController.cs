@@ -47,9 +47,9 @@ public class ProductAdministrationController : ControllerBase {
     }
     
     [HttpPut("{productId:guid}")]
-    public async Task<ProductDto> UpdateCoupon(Guid productId, [FromBody] ProductForUpdateDto productDto, CancellationToken cancellationToken = default) {
-        var updatedCoupon = _mapper.Map<Product>(productDto);
-        var result = await _productService.UpdateAsync(productId, updatedCoupon, cancellationToken);
+    public async Task<ProductDto> UpdateProduct(Guid productId, [FromBody] ProductForUpdateDto productDto, CancellationToken cancellationToken = default) {
+        var updatedProduct = _mapper.Map<Product>(productDto);
+        var result = await _productService.UpdateAsync(productId, updatedProduct, cancellationToken);
         return _mapper.Map<ProductDto>(result);
     }
     
