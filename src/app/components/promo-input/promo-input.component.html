@@ -1,0 +1,28 @@
+<form [formGroup]="couponFormGroup" *ngIf="!hasValidPromoCode"
+      (ngSubmit)="applyCoupon()" class="accordion-body needs-validation" method="post">
+  <div class="mb-3">
+    <input [ngClass]="promoCodeControl.touched && promoCodeControl.invalid ? 'is-invalid' : ''"
+           formControlName="promoCode" class="form-control" type="text"
+           i18n-placeholder="@@checkoutPromoCodeFeld"
+           placeholder="Promo code">
+    <div *ngIf="promoCodeControl.touched && promoCodeControl.errors?.['required']"
+         class="invalid-feedback" i18n="@@checkoutNoPromoCode">
+      Please provide promo code.
+    </div>
+    <div *ngIf="promoCodeControl.touched && promoCodeControl.errors?.['invalid-code']"
+         class="invalid-feedback" i18n="@@checkoutInvalidPromoCode">
+      Invalid promo code.
+    </div>
+  </div>
+  <button [disabled]="isLoading || !promoCodeControl.valid" class="btn btn-outline-primary d-block w-100" type="submit" i18n="@@checkoutApplyPromoBtn">
+    Apply promo code
+  </button>
+</form>
+<form *ngIf="hasValidPromoCode" class="accordion-body needs-validation">
+  <div class="mb-3">
+    <input readonly class="form-control is-valid bg-success" type="text" value="{{promoCode}}">
+  </div>
+  <button (click)="removeCoupon($event)" class="btn btn-outline-primary d-block w-100" type="submit" i18n="@@checkoutRemovePromoBtn">
+    Remove promo code
+  </button>
+</form>

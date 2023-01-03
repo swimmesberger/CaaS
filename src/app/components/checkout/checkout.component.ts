@@ -1,8 +1,12 @@
-import {Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren} from '@angular/core';
-import {CartService} from "../../shared/cart/cart.service";
-import {Observable, Subscription} from "rxjs";
+import { Component, OnInit } from '@angular/core';
+import {Observable} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
-import {FormArray, FormControl, FormGroup} from "@angular/forms";
+import {CartService} from "../../shared/cart/cart.service";
+import {AbstractControl, FormControl, FormGroup, Validators} from "@angular/forms";
+import {OrderStoreService} from "../../shared/order/order-store.service";
+import {CustomerDto} from "../../shared/cart/models/customerDto";
+import {AddressDto} from "../../shared/order/models/addressDto";
+import {CartWithAddressDto} from "../../shared/order/models/cartWithAddressDto";
 
 @Component({
   selector: 'app-checkout',
@@ -12,89 +16,81 @@ import {FormArray, FormControl, FormGroup} from "@angular/forms";
     class: 'container pb-5 mb-2 mb-md-4'
   }
 })
-export class CheckoutComponent implements OnInit, OnDestroy {
-  private cartSub: Subscription | undefined;
-  @ViewChildren("cartItemQuantity") cartItemQuantities!: QueryList<ElementRef>;
+export class CheckoutComponent implements OnInit {
   protected $cart: Observable<CartDto>;
-  protected cartFormGroup: FormGroup<CartForm>;
-  protected cartItemsFormArray: FormArray<FormGroup<CartItemForm>>;
-  protected isCartRefreshing: boolean = false;
+  protected $countries: Observable<Array<string>>;
+  protected checkoutFormGroup: FormGroup<CheckoutForm>;
 
-  constructor(private cartService: CartService) {
+  constructor(private cartService: CartService,
+              private orderService: OrderStoreService) {
     this.$cart = cartService.$cart;
-    this.cartItemsFormArray = new FormArray<FormGroup<CartItemForm>>([]);
-    this.cartFormGroup = new FormGroup<CartForm>({
-      id: new FormControl<string | null>(null),
-      totalPrice: new FormControl<number | null>(null),
-      items: this.cartItemsFormArray
-    })
+    this.$countries = orderService.getCountries();
+    this.checkoutFormGroup = new FormGroup<CheckoutForm>({
+      address: new FormGroup<CheckoutAddressForm>({
+        city: new FormControl<string | null>(null, Validators.required),
+        country: new FormControl<string | null>('', Validators.required),
+        state: new FormControl<string | null>(null, Validators.required),
+        street: new FormControl<string | null>(null, Validators.required),
+        zipCode: new FormControl<string | null>(null, Validators.required)
+      }),
+      customer: new FormGroup<CheckoutCustomerForm>({
+        eMail: new FormControl<string | null>(null, Validators.compose([Validators.required, Validators.email])),
+        firstName: new FormControl<string | null>(null, Validators.required),
+        lastName: new FormControl<string | null>(null, Validators.required),
+        telephoneNumber: new FormControl<string | null>(null)
+      })
+    });
   }
 
   ngOnInit(): void {
-    this.cartSub = this.$cart.subscribe(this.onCartChanged.bind(this));
   }
 
-  ngOnDestroy() {
-    this.cartSub?.unsubscribe();
+  isInvalid(control: AbstractControl) {
+    return control.invalid;
   }
 
-  onCartChanged(cart: CartDto): void {
-    this.cartItemsFormArray.clear();
-    for (const cartItem of cart.items!) {
-      this.cartItemsFormArray.push(this.createCartItemForm());
+  getCartWithCustomerData(cart: CartDto): CartWithAddressDto {
+    const customer: CustomerDto = {
+      ...this.checkoutFormGroup.get('customer')?.value
     }
-    // @ts-ignore
-    this.cartFormGroup.patchValue(cart!);
-  }
-
-  removeCartItem(e: MouseEvent, cartItemId: string | null | undefined): void {
-    if (!cartItemId) return;
-    const cartItemIdx = this.cartItemsFormArray.controls.findIndex(c => c.controls.id.value === cartItemId);
-    if(cartItemIdx < 0) return;
-    this.cartItemsFormArray.removeAt(cartItemIdx);
-  }
-
-  async updateCart(e: MouseEvent): Promise<void> {
-    this.isCartRefreshing = true;
-    try {
-      // @ts-ignore
-      const cartDto: CartDto = {...this.cartFormGroup.getRawValue()};
-      await this.cartService.updateCart(cartDto);
-    } finally {
-      this.isCartRefreshing = false;
+    const address: AddressDto = {
+      ...this.checkoutFormGroup.get('address')?.value
+    }
+    return {
+      cart: {
+        customer: customer,
+        ...cart
+      },
+      address: address
     }
   }
 
-  private createCartItemForm(): FormGroup<CartItemForm> {
-    return new FormGroup<CartItemForm>({
-      id: new FormControl<string | null>(null),
-      product: new FormGroup<CartItemProductForm>({
-        id: new FormControl<string | null>(null),
-        price: new FormControl<number | null>(null),
-        name: new FormControl<string | null>(null),
-        imageSrc: new FormControl<string | null>(null)
-      }),
-      amount: new FormControl<number | null>(null)
-    });
-  }
+  get firstNameControl() { return this.checkoutFormGroup.get('customer.firstName')!; }
+  get lastNameControl() { return this.checkoutFormGroup.get('customer.lastName')!; }
+  get eMailControl() { return this.checkoutFormGroup.get('customer.eMail')!; }
+  get telephoneNumberControl() { return this.checkoutFormGroup.get('customer.telephoneNumber')!; }
+  get countryControl() { return this.checkoutFormGroup.get('address.country')!; }
+  get zipCodeControl() { return this.checkoutFormGroup.get('address.zipCode')!; }
+  get cityControl() { return this.checkoutFormGroup.get('address.city')!; }
+  get streetControl() { return this.checkoutFormGroup.get('address.street')!; }
 }
 
-interface CartItemForm {
-  id: FormControl<string|null>,
-  product: FormGroup<CartItemProductForm>;
-  amount: FormControl<number|null>;
+interface CheckoutForm {
+  customer: FormGroup<CheckoutCustomerForm>,
+  address: FormGroup<CheckoutAddressForm>
 }
 
-interface CartItemProductForm {
-  id: FormControl<string|null>,
-  name: FormControl<string|null>,
-  price: FormControl<number|null>,
-  imageSrc: FormControl<string|null>,
+interface CheckoutCustomerForm {
+  firstName: FormControl<string|null>,
+  lastName: FormControl<string|null>,
+  eMail: FormControl<string|null>,
+  telephoneNumber: FormControl<string|null>
 }
 
-interface CartForm {
-  id: FormControl<string|null>,
-  items: FormArray<FormGroup<CartItemForm>>,
-  totalPrice: FormControl<number|null>,
+interface CheckoutAddressForm {
+  street: FormControl<string|null>,
+  city: FormControl<string|null>,
+  state: FormControl<string|null>,
+  country: FormControl<string|null>,
+  zipCode: FormControl<string|null>
 }
-

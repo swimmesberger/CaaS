@@ -12,6 +12,8 @@ export interface CartDto {
     coupons?: Array<CouponDto> | null;
     cartDiscounts?: Array<DiscountDto> | null;
     lastAccess?: string;
+    basePrice?: number;
+    discountValue?: number;
     totalPrice?: number;
     concurrencyToken?: string | null;
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
-  catchError, firstValueFrom, lastValueFrom, map,
+  catchError, firstValueFrom, lastValueFrom,
   Observable,
   of,
   shareReplay,
@@ -11,7 +11,8 @@ import {
 import {CartDto} from "./models/cartDto";
 import {CartStoreService} from "./cart-store.service";
 import { v4 as uuidv4 } from 'uuid';
-import {CartItemDto} from "./models/cartItemDto";
+import {CouponDto} from "./models/couponDto";
+import {CustomerDto} from "./models/customerDto";
 
 @Injectable({
   providedIn: 'root'
@@ -49,6 +50,26 @@ export class CartService {
     });
   }
 
+  public async setCouponOfCart(couponCode: string | null): Promise<void> {
+    const curCart = await firstValueFrom(this.$cart);
+    const coupons: Array<CouponDto> = [];
+    if (couponCode) {
+      coupons.push({code: couponCode});
+    }
+    await this.updateCart({
+      ...curCart,
+      coupons: coupons
+    });
+  }
+
+  public async setCustomerOfCart(customer: CustomerDto | null): Promise<void> {
+    const curCart = await firstValueFrom(this.$cart);
+    await this.updateCart({
+      ...curCart,
+      customer: customer ?? undefined
+    });
+  }
+
   public async updateCart(cart: CartDto): Promise<void> {
     await lastValueFrom(this._cartStore.updateCart(cart));
     localStorage.setItem("cartId", cart.id!);
@@ -64,15 +85,6 @@ export class CartService {
       cartDiscounts: [],
       coupons: []
     };
-  }
-
-  private getOrInitCartId(): string {
-    let cartId = localStorage.getItem("cartId");
-    if (!cartId) {
-      cartId = uuidv4();
-      localStorage.setItem("cartId", cartId);
-    }
-    return cartId;
   }
 
   private loadCart(): Observable<CartDto> {

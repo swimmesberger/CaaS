@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { CheckoutComponent } from './components/checkout/checkout.component';
+import { CartComponent } from './components/cart/cart.component';
 import { ProductsComponent } from './components/products/products.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { PageHeaderComponent } from './components/page-header/page-header.component';
@@ -20,11 +20,16 @@ import { ProductGalleryComponent } from './components/product-gallery/product-ga
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { HomePageComponent } from './pages/home-page/home-page.component';
 import {ReactiveFormsModule} from "@angular/forms";
+import { CheckoutComponent } from './components/checkout/checkout.component';
+import { CheckoutPageComponent } from './pages/checkout/checkout-page.component';
+import { PromoInputComponent } from './components/promo-input/promo-input.component';
+import { PaymentComponent } from './components/payment/payment.component';
+import { PaymentPageComponent } from './pages/payment-page/payment-page.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    CheckoutComponent,
+    CartComponent,
     ProductsComponent,
     NavbarComponent,
     PageHeaderComponent,
@@ -38,7 +43,12 @@ import {ReactiveFormsModule} from "@angular/forms";
     WishlistButtonComponent,
     ProductGalleryComponent,
     BreadcrumbComponent,
-    HomePageComponent
+    HomePageComponent,
+    CheckoutComponent,
+    CheckoutPageComponent,
+    PromoInputComponent,
+    PaymentComponent,
+    PaymentPageComponent
   ],
   imports: [
     BrowserModule,
