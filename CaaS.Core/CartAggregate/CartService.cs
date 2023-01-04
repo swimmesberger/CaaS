@@ -69,17 +69,12 @@ public class CartService : ICartService {
                 });
             }
         }
-        var coupons = await _couponService
-            .RedeemCouponsAsync(oldCart?.Coupons ?? ImmutableArray<Coupon>.Empty, userCart.Coupons, userCart.Id, 
-                userCart.Customer?.Id, cancellationToken);
-
         // init empty cart
         var cart = new Cart() {
             Id = userCart.Id,
             ShopId = _tenantIdAccessor.GetTenantGuid(),
             Customer = userCart.Customer,
             Items = cartItems.ToImmutableList(),
-            Coupons = coupons,
             LastAccess = _timeProvider.UtcNow,
             ConcurrencyToken = oldCart?.ConcurrencyToken ?? string.Empty
         };
@@ -89,6 +84,8 @@ public class CartService : ICartService {
             } else {
                 cart = await _cartRepository.UpdateAsync(oldCart, cart, cancellationToken);
             }
+            await _couponService.RedeemCouponsAsync(oldCart?.Coupons ?? ImmutableArray<Coupon>.Empty, userCart.Coupons, userCart.Id, 
+                    userCart.Customer?.Id, cancellationToken);
             cart = (await _cartRepository.FindByIdAsync(cart.Id, cancellationToken))!;
             cart = await PostProcessCart(cart, cancellationToken);
             if (cart.TotalPrice < 0) {

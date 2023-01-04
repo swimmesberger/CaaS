@@ -82,6 +82,7 @@ public class CouponService : ICouponService {
     
     public async Task<IReadOnlyList<Coupon>> RedeemCouponsAsync(IEnumerable<Coupon> oldDomainModels, IReadOnlyCollection<Coupon> newDomainModels, 
         Guid cartId, Guid? customerId = null, CancellationToken cancellationToken = default) {
+        newDomainModels = await FindUserCoupons(newDomainModels, cancellationToken);
         var changeTracker = ChangeTracker.CreateDiff(oldDomainModels, newDomainModels);
         var currentCoupons = new List<Coupon>();
         foreach (var addedCoupon in changeTracker.AddedItems) {
@@ -93,10 +94,9 @@ public class CouponService : ICouponService {
         return currentCoupons;
     }
 
-    private async Task<Coupon> ApplyCouponAsync(Coupon userCoupon, Guid cartId, Guid? customerId = null, CancellationToken cancellationToken = default) {
-        var coupon = await FindUserCoupon(userCoupon, cancellationToken);
+    private async Task<Coupon> ApplyCouponAsync(Coupon coupon, Guid cartId, Guid? customerId = null, CancellationToken cancellationToken = default) {
         if (coupon.OrderId != null) {
-            throw new CaasValidationException($"Coupon '{userCoupon.Code}' was already redeemed by order '{coupon.OrderId}'");
+            throw new CaasValidationException($"Coupon '{coupon.Code}' was already redeemed by order '{coupon.OrderId}'");
         }
 
         var updatedCoupon = coupon with {
@@ -106,19 +106,26 @@ public class CouponService : ICouponService {
         return await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
     }
 
-    private async Task<Coupon> UnapplyCouponAsync(Coupon userCoupon, Guid cartId, CancellationToken cancellationToken = default) {
-        var coupon = await FindUserCoupon(userCoupon, cancellationToken);
+    private async Task<Coupon> UnapplyCouponAsync(Coupon coupon, Guid cartId, CancellationToken cancellationToken = default) {
         if (coupon.OrderId != null) {
-            throw new CaasValidationException($"Coupon '{userCoupon.Code}' was already redeemed by order '{coupon.OrderId}'");
+            throw new CaasValidationException($"Coupon '{coupon.Code}' was already redeemed by order '{coupon.OrderId}'");
         }
         if (!coupon.CartId.Equals(cartId)) {
-            throw new CaasValidationException($"Can't unapply '{userCoupon.Code}'");
+            throw new CaasValidationException($"Can't unapply '{coupon.Code}'");
         }
         var updatedCoupon = coupon with {
             CartId = null,
             CustomerId = null
         };
         return await _couponRepository.UpdateAsync(coupon, updatedCoupon, cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<Coupon>> FindUserCoupons(IReadOnlyCollection<Coupon> userCoupons, CancellationToken cancellationToken = default) {
+        var foundCoupons = new List<Coupon>(userCoupons.Count);
+        foreach (var userCoupon in userCoupons) {
+            foundCoupons.Add(await FindUserCoupon(userCoupon, cancellationToken));
+        }
+        return foundCoupons;
     }
 
     private async Task<Coupon> FindUserCoupon(Coupon userCoupon, CancellationToken cancellationToken = default) {

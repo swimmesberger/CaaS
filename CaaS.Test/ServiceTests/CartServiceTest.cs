@@ -31,6 +31,7 @@ public class CartServiceTest {
     private static readonly Guid CouponIdA = new Guid("BB791EA1-3CA5-9097-DFDB-CF648F7DA31F");
     private static readonly Guid CouponIdB = new Guid("3EC1A6BE-BBE7-4F62-8C85-601031D644B6");
     private static readonly Guid CouponIdC = new Guid("B552FAF6-D8A8-4F20-9943-C6D19CBE89A6");
+    private static readonly Guid CouponIdD = new Guid("5b3418f1-72db-4983-8ed9-ff2c5a62976a");
     private static readonly Guid CartItem1Id = new Guid("82E369D6-3CC2-4468-9621-783E376E7E72");
 
     [Fact]
@@ -252,6 +253,48 @@ public class CartServiceTest {
         cart.Items[1].Amount.Should().Be(5);
     }
 
+    [Fact]
+    public async Task AddCouponsOptimistic() {
+        var currentTime = AsUtc(new DateTime(2022, 12, 18, 20, 0, 0, DateTimeKind.Local));
+        var staticClock = new StaticSystemClock(currentTime);
+        var cartService = CreateCartService(staticClock);
+        var cart = await cartService.GetByIdAsync(ExistingCartId);
+        cart!.Coupons.Should().HaveCount(1);
+        cart.Coupons[0].Code.Should().Be("SUMMER1234");
+        
+        cart = await cartService.UpdateCartAsync(cart with {
+            Coupons = cart.Coupons.AddRange(new Coupon[] {
+                new Coupon() { Id = Guid.Empty, Code = "SUMMER1235" },
+                new Coupon() { Id = Guid.Empty, Code = "SUMMER1237" }
+            })
+        });
+        cart.Coupons.Should().HaveCount(3);
+        cart.Coupons[1].Code.Should().Be("SUMMER1235");
+        cart.Coupons[2].Code.Should().Be("SUMMER1237");
+    }
+    
+    [Fact]
+    public async Task RemoveSingleCouponOptimistic() {
+        var currentTime = AsUtc(new DateTime(2022, 12, 18, 20, 0, 0, DateTimeKind.Local));
+        var staticClock = new StaticSystemClock(currentTime);
+        var cartService = CreateCartService(staticClock);
+        var cart = await cartService.GetByIdAsync(ExistingCartId);
+        cart!.Coupons.Should().HaveCount(1);
+        cart.Coupons[0].Code.Should().Be("SUMMER1234");
+        
+        cart = await cartService.UpdateCartAsync(cart with {
+            Coupons = cart.Coupons.AddRange(new Coupon[] {
+                new Coupon() { Id = Guid.Empty, Code = "SUMMER1235" }
+            })
+        });
+        cart = await cartService.UpdateCartAsync(cart with {
+            Coupons = new Coupon[] {
+                new Coupon() { Id = Guid.Empty, Code = "SUMMER1234" }
+            }
+        });
+        cart.Coupons.Should().HaveCount(1);
+        cart.Coupons[0].Code.Should().Be("SUMMER1234");
+    }
 
     private ICartService CreateCartService(ISystemClock clock) {
         var shopDao = new MemoryDao<ShopDataModel>(new List<ShopDataModel>() {
@@ -274,9 +317,10 @@ public class CartServiceTest {
             new ProductCartDataModel() { Id = CartItem1Id, Amount = 2, CartId = ExistingCartId, ProductId = ProductAId }
         });
         var couponDao = new MemoryDao<CouponDataModel>(new List<CouponDataModel>() {
-            new CouponDataModel { Id = CouponIdA, ShopId = TestShopId, Value = 4, OrderId = null, CartId = ExistingCartId, CustomerId = null},
-            new CouponDataModel { Id = CouponIdB, ShopId = TestShopId, Value = 2, OrderId = null, CartId = null, CustomerId = null},
-            new CouponDataModel { Id = CouponIdC, ShopId = TestShopId, Value = 1000, OrderId = null, CartId = null, CustomerId = null}
+            new CouponDataModel { Id = CouponIdA, ShopId = TestShopId, Code = "SUMMER1234", Value = 4, OrderId = null, CartId = ExistingCartId, CustomerId = null},
+            new CouponDataModel { Id = CouponIdB, ShopId = TestShopId, Code = "SUMMER1235", Value = 2, OrderId = null, CartId = null, CustomerId = null},
+            new CouponDataModel { Id = CouponIdC, ShopId = TestShopId, Code = "SUMMER1236", Value = 1000, OrderId = null, CartId = null, CustomerId = null},
+            new CouponDataModel { Id = CouponIdD, ShopId = TestShopId, Code = "SUMMER1237", Value = 1, OrderId = null, CartId = null, CustomerId = null},
         });
         var discountSettingsDao = new MemoryDao<DiscountSettingDataModel>(new List<DiscountSettingDataModel>());
         
