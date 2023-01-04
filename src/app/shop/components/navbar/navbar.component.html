@@ -25,10 +25,13 @@
           <!-- Primary menu-->
           <ul class="navbar-nav" >
             <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
-              <a class="nav-link" routerLink="./">Home</a>
+              <a class="nav-link" [routerLink]="tenantService.baseUrl + '/'">Home</a>
             </li>
             <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
-              <a class="nav-link" routerLink="./products">Shop</a>
+              <a class="nav-link" [routerLink]="tenantService.tenantUrl + '/products'">Shop</a>
+            </li>
+            <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+              <a class="nav-link" [routerLink]="tenantService.baseUrl + '/admin'">Admin</a>
             </li>
           </ul>
         </div>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
-  catchError, firstValueFrom, lastValueFrom,
+  catchError, firstValueFrom, lastValueFrom, merge,
   Observable,
   of,
   shareReplay,
@@ -12,9 +12,7 @@ import {CartDto} from "./models/cartDto";
 import {CartStoreService} from "./cart-store.service";
 import { v4 as uuidv4 } from 'uuid';
 import {CouponDto} from "./models/couponDto";
-import {HttpErrorResponse} from "@angular/common/http";
-import {ProblemDetailsDto} from "../problemDetailsDto";
-import {CaasDuplicateCustomerEmailError} from "../errors/caasDuplicateCustomerEmailError";
+import {TenantIdService} from "../shop/tenant-id.service";
 
 @Injectable({
   providedIn: 'root'
@@ -25,9 +23,10 @@ export class CartService {
   private _$refreshCart: BehaviorSubject<void>;
   public $cart: Observable<CartDto>;
 
-  constructor(private _cartStore: CartStoreService) {
+  constructor(private _cartStore: CartStoreService,
+              private _tenantIdService: TenantIdService) {
     this._$refreshCart = new BehaviorSubject<void>(undefined);
-    this.$cart = this._$refreshCart.pipe(
+    this.$cart = merge(this._$refreshCart, _tenantIdService.$tenantId).pipe(
       switchMap(this.loadCart.bind(this)),
       shareReplay(1)
     )
@@ -67,32 +66,23 @@ export class CartService {
   }
 
   public resetCart(): void {
-    localStorage.removeItem(CartService.CartIdKey);
+    localStorage.removeItem(this.cartIdKey);
     // refresh cart
     this._$refreshCart.next();
   }
 
   public async updateCart(cart: CartDto): Promise<void> {
     await lastValueFrom(this._cartStore.updateCart(cart).pipe(catchError(this.handleUpdateCartError.bind(this))));
-    localStorage.setItem(CartService.CartIdKey, cart.id!);
+    localStorage.setItem(this.cartIdKey, cart.id!);
     // refresh cart
     this._$refreshCart.next();
   }
 
   public get cardId(): string | null {
-    return localStorage.getItem(CartService.CartIdKey);
+    return localStorage.getItem(this.cartIdKey);
   }
 
   private handleUpdateCartError(error: any) : Observable<any> {
-    if (error instanceof HttpErrorResponse) {
-      if (error.status === 422) {
-        const problemDetails : ProblemDetailsDto = error.error;
-        if (problemDetails.type === 'customer_e_mail_key') {
-          throw new CaasDuplicateCustomerEmailError(problemDetails.title ?? '');
-        }
-      }
-    }
-
     return throwError(() => error);
   }
 
@@ -106,8 +96,12 @@ export class CartService {
     };
   }
 
+  private get cartIdKey() {
+    return `${this._tenantIdService.tenantId}_${CartService.CartIdKey}`
+  }
+
   private loadCart(): Observable<CartDto> {
-    const cartId = localStorage.getItem(CartService.CartIdKey);
+    const cartId = localStorage.getItem(this.cartIdKey);
     if (!cartId) {
       return of<CartDto>(this.emptyCart())
     }

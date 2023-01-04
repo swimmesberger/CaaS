@@ -137,7 +137,7 @@
       <!-- Navigation (desktop)-->
       <div class="d-none d-lg-flex pt-4 mt-3">
         <div class="w-50 pe-3">
-          <a class="btn btn-secondary d-block w-100" routerLink="../cart">
+          <a class="btn btn-secondary d-block w-100" [routerLink]="tenantService.tenantUrl + '/cart'">
             <i class="bi bi-arrow-left mt-sm-0 me-1"></i>
             <span class="d-none d-sm-inline" i18n="@@checkoutBackCart">Back to Cart</span>
             <span class="d-inline d-sm-none" i18n="@@checkoutBackPage">Back</span>
@@ -146,7 +146,7 @@
         <div class="w-50 ps-2">
           <a [ngClass]="checkoutFormGroup.invalid ? 'disabled' : ''"
              (click)="saveCustomerData()"
-             routerLink="./payment"
+             [routerLink]="tenantService.tenantUrl + '/checkout/payment'"
              class="btn btn-primary d-block w-100">
             <span class="d-none d-sm-inline" i18n="@@checkoutProceedPayment">Proceed to Payment</span>
             <span class="d-inline d-sm-none" i18n="@@checkoutNextPage">Next</span>

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import {Observable} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
 import {CartService} from "../../shared/cart/cart.service";
+import {TenantIdService} from "../../shared/shop/tenant-id.service";
 
 @Component({
   selector: 'app-cart-widget',
@@ -14,7 +15,8 @@ import {CartService} from "../../shared/cart/cart.service";
 export class CartWidgetComponent {
   protected $cart: Observable<CartDto>;
 
-  constructor(private cartService: CartService) {
+  constructor(private cartService: CartService,
+              protected tenantService: TenantIdService) {
     this.$cart = cartService.$cart;
   }
 

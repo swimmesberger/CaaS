@@ -4,6 +4,7 @@ import {Observable, Subscription} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
 import {FormArray, FormControl, FormGroup, Validators} from "@angular/forms";
 import {ProductService} from "../../shared/product/product.service";
+import {TenantIdService} from "../../shared/shop/tenant-id.service";
 
 @Component({
   selector: 'app-cart',
@@ -23,7 +24,8 @@ export class CartComponent implements OnInit, OnDestroy {
 
 
   constructor(private cartService: CartService,
-              private productService: ProductService) {
+              private productService: ProductService,
+              protected tenantService: TenantIdService) {
     this.$cart = cartService.$cart;
     this.cartItemsFormArray = new FormArray<FormGroup<CartItemForm>>([]);
     this.cartFormGroup = new FormGroup<CartForm>({

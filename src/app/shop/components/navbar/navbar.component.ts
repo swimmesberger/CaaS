@@ -1,4 +1,5 @@
 import {Component, ElementRef, HostListener, ViewChild} from '@angular/core';
+import {TenantIdService} from "../../shared/shop/tenant-id.service";
 
 @Component({
   selector: 'app-navbar',
@@ -7,6 +8,9 @@ import {Component, ElementRef, HostListener, ViewChild} from '@angular/core';
 })
 export class NavbarComponent {
   @ViewChild("navbarSticky") private navbar!: ElementRef;
+
+  constructor(protected tenantService: TenantIdService) {
+  }
 
   @HostListener('window:scroll', ['$event']) // for window scroll events
   onScroll() {

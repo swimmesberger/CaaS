@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {catchError, lastValueFrom, Observable, throwError} from "rxjs";
+import {BehaviorSubject, catchError, lastValueFrom, map, Observable, throwError} from "rxjs";
 import {OrderStoreService} from "./order-store.service";
 import {CustomerWithAddressDto} from "./models/customerWithAddressDto";
 import {CartService} from "../cart/cart.service";
@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 import {HttpErrorResponse} from "@angular/common/http";
 import {ProblemDetailsDto} from "../problemDetailsDto";
 import {CaasPaymentError} from "../errors/caasPaymentError";
+import {TenantIdService} from "../shop/tenant-id.service";
+import {CaasDuplicateCustomerEmailError} from "../errors/caasDuplicateCustomerEmailError";
 
 @Injectable({
   providedIn: 'root'
@@ -15,10 +17,23 @@ import {CaasPaymentError} from "../errors/caasPaymentError";
 export class OrderService {
   private static readonly CustomerDataKey = "customerData";
 
-  private _customerData?: CustomerWithAddressDto;
+  private readonly _$customerData: BehaviorSubject<CustomerWithAddressDto | null>;
+  private readonly _$customerDataOb: Observable<CustomerWithAddressDto | null>;
 
   constructor(private orderStoreService: OrderStoreService,
-              private cartService: CartService) { }
+              private cartService: CartService,
+              private tenantIdService: TenantIdService) {
+    this._$customerData = new BehaviorSubject<CustomerWithAddressDto | null>(null);
+    this.tenantIdService.$tenantId.pipe(map(tenantId => {
+      if (tenantId == null) return null;
+      const customerDataJson = localStorage.getItem(this.getCustomerDataKey(tenantId));
+      if (customerDataJson) {
+        return JSON.parse(customerDataJson);
+      }
+      return null;
+    })).subscribe(this._$customerData);
+    this._$customerDataOb = this._$customerData.asObservable();
+  }
 
   public async createOrder(billingData: CustomerWithAddressDto): Promise<OrderDto> {
     if (!this.cartService.cardId || !billingData.address) {
@@ -29,7 +44,7 @@ export class OrderService {
     }
     const order = await this.addOrder(billingData);
     this.cartService.resetCart()
-    localStorage.removeItem(OrderService.CustomerDataKey);
+    localStorage.removeItem(this.customerDataKey);
     return order;
   }
 
@@ -47,18 +62,25 @@ export class OrderService {
         }
       }
     }
-    this._customerData = data;
-    localStorage.setItem(OrderService.CustomerDataKey, JSON.stringify(this._customerData));
+    localStorage.setItem(this.customerDataKey, JSON.stringify(data));
+    this._$customerData.next(data ?? null);
+  }
+
+  get $customerData(): Observable<CustomerWithAddressDto | null> {
+    return this._$customerDataOb;
   }
 
   get customerData(): CustomerWithAddressDto | undefined {
-    if (!this._customerData) {
-      const customerDataJson = localStorage.getItem(OrderService.CustomerDataKey);
-      if (customerDataJson) {
-        this._customerData = JSON.parse(customerDataJson);
-      }
-    }
-    return this._customerData;
+    const customerData = this._$customerData.value;
+    return customerData ?? undefined;
+  }
+
+  private get customerDataKey() {
+    return this.getCustomerDataKey(this.tenantIdService.tenantId);
+  }
+
+  private getCustomerDataKey(tenantId: string | null) {
+    return `${tenantId}_${OrderService.CustomerDataKey}`
   }
 
   private async addOrder(billingData: CustomerWithAddressDto): Promise<OrderDto> {
@@ -89,6 +111,9 @@ export class OrderService {
         const problemDetails : ProblemDetailsDto = error.error;
         if (problemDetails.type?.startsWith('payment_')) {
           throw new CaasPaymentError(problemDetails.title ?? '');
+        }
+        if (problemDetails.type === 'customer_e_mail_key') {
+          throw new CaasDuplicateCustomerEmailError(problemDetails.title ?? '');
         }
       }
     }

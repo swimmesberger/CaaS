@@ -3,7 +3,7 @@
     <span class="navbar-tool-label">{{getProductCount(cart)}}</span>
     <i class="navbar-tool-icon bi bi-cart"></i>
   </a>
-  <a class="navbar-tool-text" routerLink="./cart">
+  <a class="navbar-tool-text" [routerLink]="tenantService.tenantUrl + '/cart'">
     <small i18n="@@headerMyCart">My Cart</small>{{cart.totalPrice | currency}}
   </a>
 </ng-container>

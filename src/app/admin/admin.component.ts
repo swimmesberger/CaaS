@@ -1,8 +1,16 @@
-import { Component } from '@angular/core';
+import {Component, ViewEncapsulation} from '@angular/core';
+import { iconSubset } from './icons/icon-subset';
+import {IconSetService} from "@coreui/icons-angular";
 
 @Component({
   selector: 'app-admin',
-  templateUrl: './admin.component.html',
-  styleUrls: ['./admin.component.scss']
+  template: '<router-outlet></router-outlet>',
+  styleUrls: ['admin.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
-export class AdminComponent {}
+export class AdminComponent {
+  constructor(private iconSetService: IconSetService) {
+    // iconSet singleton
+    iconSetService.icons = { ...iconSubset };
+  }
+}

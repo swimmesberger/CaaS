@@ -7,6 +7,7 @@ import {ActivatedRoute, Params, Router} from "@angular/router";
 import {KeysetPaginationDirection} from "../../shared/product/models/keysetPaginationDirection";
 import {ParsedPaginationToken} from "../../shared/product/models/parsedPaginationToken";
 import {ProductSearchService} from "../../shared/product/product-search.service";
+import {TenantIdService} from "../../shared/shop/tenant-id.service";
 
 @Component({
   selector: 'app-products',
@@ -22,7 +23,8 @@ export class ProductsComponent implements OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private productStoreService: ProductStoreService,
-    private productSearchService: ProductSearchService) {
+    private productSearchService: ProductSearchService,
+    protected tenantService: TenantIdService) {
     this._searchTextSub = this.productSearchService.searchText.subscribe(this.onSearchTextChanged.bind(this));
     this.$productPage = this.route.queryParams.pipe(switchMap(this.onQueryParamsChanged.bind(this)));
   }

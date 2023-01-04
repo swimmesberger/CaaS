@@ -1,16 +1,18 @@
 import { Injectable } from '@angular/core';
-import {Observable, of} from "rxjs";
-import {environment} from "../../../../environments/environment";
+import {first, Observable, of, switchMap, throwError} from "rxjs";
+import {environment} from "../../../../environments/environment"
 import {HttpClient} from "@angular/common/http";
 import {AddressDto} from "./models/addressDto";
 import {OrderDto} from "./models/orderDto";
 import {CustomerDto} from "../cart/models/customerDto";
+import {TenantIdService} from "../shop/tenant-id.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderStoreService {
-  constructor(private httpClient: HttpClient) {  }
+  constructor(private httpClient: HttpClient,
+              private tenantIdService: TenantIdService) {  }
 
   public getCountries(): Observable<Array<string>> {
     return of(['Australia','Canada','France','Germany','Switzerland','USA']);
@@ -20,11 +22,10 @@ export class OrderStoreService {
     if (cartId === null || cartId === undefined) {
       throw new Error('Required parameter cartId was null or undefined when calling updateCart.');
     }
-    let xTenantId = environment.tenantId;
+    const xTenantId = this.tenantIdService.tenantId;
     if (xTenantId === null || xTenantId === undefined) {
-      throw new Error('Required parameter xTenantId was null or undefined when calling productGet.');
+      return throwError(() => new Error('Required parameter xTenantId was null or undefined when calling getCartById.'));
     }
-
     return this.httpClient.post<OrderDto>(`${environment.url}/order`, {
       cartId: cartId,
       billingAddress: billingAddress,

@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
-import {Observable} from "rxjs";
+import {Component, OnDestroy} from '@angular/core';
+import {map, Observable, Subscription} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
 import {CartService} from "../../shared/cart/cart.service";
 import {AbstractControl, FormControl, FormGroup, Validators} from "@angular/forms";
 import { StepInfoDto } from '../checkout-steps/step-info-dto';
 import {OrderService} from "../../shared/order/order.service";
 import {CustomerWithAddressDto} from "../../shared/order/models/customerWithAddressDto";
+import {TenantIdService} from "../../shared/shop/tenant-id.service";
 
 @Component({
   selector: 'app-checkout',
@@ -15,20 +16,22 @@ import {CustomerWithAddressDto} from "../../shared/order/models/customerWithAddr
     class: 'container pb-5 mb-2 mb-md-4'
   }
 })
-export class CheckoutComponent {
+export class CheckoutComponent implements OnDestroy {
   public static readonly Steps: Array<StepInfoDto> = [
-    {routeLink: "/shop/cart", routeTitle: $localize `:@@cartStepTitle:Cart`, routeIcon: 'cart'},
-    {routeLink: "/shop/checkout", routeTitle: $localize `:@@checkoutStepTitle:Details`, routeIcon: 'person-circle'},
-    {routeLink: "/shop/checkout/payment", routeTitle: $localize `:@@paymentStepTitle:Payment`, routeIcon: 'credit-card'},
-    {routeLink: "/shop/checkout/review", routeTitle: $localize `:@@reviewStepTitle:Review`, routeIcon: 'check-circle'}
+    {routeLink: "/cart", routeTitle: $localize `:@@cartStepTitle:Cart`, routeIcon: 'cart'},
+    {routeLink: "/checkout", routeTitle: $localize `:@@checkoutStepTitle:Details`, routeIcon: 'person-circle'},
+    {routeLink: "/checkout/payment", routeTitle: $localize `:@@paymentStepTitle:Payment`, routeIcon: 'credit-card'},
+    {routeLink: "/checkout/review", routeTitle: $localize `:@@reviewStepTitle:Review`, routeIcon: 'check-circle'}
   ];
   protected $cart: Observable<CartDto>;
   protected $countries: Observable<Array<string>>;
   protected checkoutFormGroup: FormGroup<CheckoutForm>;
   protected steps: Array<StepInfoDto> = CheckoutComponent.Steps;
+  private _customerDataSub: Subscription;
 
   constructor(private cartService: CartService,
-              private orderService: OrderService) {
+              private orderService: OrderService,
+              protected tenantService: TenantIdService) {
     this.$cart = cartService.$cart;
     this.$countries = orderService.getCountries();
     this.checkoutFormGroup = new FormGroup<CheckoutForm>({
@@ -46,7 +49,13 @@ export class CheckoutComponent {
         telephoneNumber: new FormControl<string | null>(null)
       })
     });
-    this.checkoutFormGroup.setValue(this.convertToForm(this.orderService.customerData));
+    this._customerDataSub = this.orderService.$customerData.subscribe(data => {
+      this.checkoutFormGroup.setValue(this.convertToForm(data ?? undefined));
+    })
+  }
+
+  ngOnDestroy() {
+    this._customerDataSub?.unsubscribe();
   }
 
   isInvalid(control: AbstractControl) {

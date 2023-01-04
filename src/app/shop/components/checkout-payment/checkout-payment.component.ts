@@ -4,6 +4,7 @@ import {StepInfoDto} from "../checkout-steps/step-info-dto";
 import {CheckoutComponent} from "../checkout/checkout.component";
 import {CreditcardComponent} from "../creditcard/creditcard.component";
 import {CreditCardDataDto} from "../../shared/order/models/customerWithAddressDto";
+import {TenantIdService} from "../../shared/shop/tenant-id.service";
 
 @Component({
   selector: 'app-payment',
@@ -17,7 +18,8 @@ export class CheckoutPaymentComponent {
   @ViewChild("creditcardComponent") creditcardComponent!: CreditcardComponent;
   protected steps: Array<StepInfoDto> = CheckoutComponent.Steps;
 
-  constructor(private orderService: OrderService) {  }
+  constructor(private orderService: OrderService,
+              protected tenantService: TenantIdService) {  }
 
   get creditCardData(): CreditCardDataDto | null {
     return this.orderService.customerData?.creditCard ?? null

@@ -26,7 +26,8 @@
     <!-- Navigation (desktop)-->
     <div class="d-none d-lg-flex pt-4">
       <div class="w-50 pe-3">
-        <a class="btn btn-secondary d-block w-100" routerLink="../">
+        <a class="btn btn-secondary d-block w-100"
+           [routerLink]="tenantService.tenantUrl + '/checkout'">
           <i class="bi bi-arrow-left mt-sm-0 me-1"></i>
           <span class="d-none d-sm-inline" i18n="@@checkoutBackAddresses">Back to Addresses</span>
           <span class="d-inline d-sm-none" i18n="@@checkoutBackPage">Back</span>
@@ -34,7 +35,8 @@
       </div>
       <div class="w-50 ps-2">
         <a [ngClass]="creditcardComponent.valid ? '' : 'disabled'"
-          (click)="saveCustomerData()" class="btn btn-primary d-block w-100" routerLink="../review">
+          (click)="saveCustomerData()" class="btn btn-primary d-block w-100"
+           [routerLink]="tenantService.tenantUrl + '/checkout/review'">
           <span class="d-none d-sm-inline" i18n="@@checkoutProceedReview">Review your order</span>
           <span class="d-inline d-sm-none" i18n="@@checkoutProceedReviewShort">Review order</span>
           <i class="bi bi-arrow-right mt-sm-0 ms-1"></i>
@@ -52,14 +54,16 @@
   <div class="col-lg-8">
     <div class="d-flex pt-4 mt-3">
       <div class="w-50 pe-3">
-        <a class="btn btn-secondary d-block w-100" routerLink="../">
+        <a class="btn btn-secondary d-block w-100"
+           [routerLink]="tenantService.tenantUrl + '/checkout'">
           <i class="bi bi-arrow-left mt-sm-0 me-1"></i>
           <span class="d-none d-sm-inline" i18n="@@checkoutBackAddresses">Back to Addresses</span>
           <span class="d-inline d-sm-none" i18n="@@checkoutBackPage">Back</span></a>
       </div>
       <div class="w-50 ps-2">
         <a [ngClass]="creditcardComponent.valid ? '' : 'disabled'"
-          (click)="saveCustomerData()" class="btn btn-primary d-block w-100" routerLink="../review">
+           (click)="saveCustomerData()" class="btn btn-primary d-block w-100"
+           [routerLink]="tenantService.tenantUrl + '/checkout/review'">
           <span class="d-none d-sm-inline" i18n="@@checkoutProceedReview">Review your order</span>
           <span class="d-inline d-sm-none" i18n="@@checkoutProceedReviewShort">Review order</span>
           <i class="bi bi-arrow-right mt-sm-0 ms-1"></i>

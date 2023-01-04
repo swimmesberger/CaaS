@@ -9,7 +9,7 @@ export class ProductSearchService {
   private readonly _$searchTextObs: Observable<string | null>;
 
   constructor() {
-    this._$searchText = new ReplaySubject<string | null>();
+    this._$searchText = new ReplaySubject<string | null>(1);
     this._$searchTextObs = this._$searchText.asObservable().pipe(
       debounceTime(300),
       distinctUntilChanged()

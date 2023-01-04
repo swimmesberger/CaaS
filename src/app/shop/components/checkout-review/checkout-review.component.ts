@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import {StepInfoDto} from "../checkout-steps/step-info-dto";
 import {CheckoutComponent} from "../checkout/checkout.component";
-import {Observable} from "rxjs";
+import {map, Observable} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
 import {CartService} from "../../shared/cart/cart.service";
 import {OrderService} from "../../shared/order/order.service";
@@ -12,6 +12,7 @@ import {ProductService} from "../../shared/product/product.service";
 import {CartItemDto} from "../../shared/cart/models/cartItemDto";
 import {CaasDuplicateCustomerEmailError} from "../../shared/errors/caasDuplicateCustomerEmailError";
 import {CaasPaymentError} from "../../shared/errors/caasPaymentError";
+import {TenantIdService} from "../../shared/shop/tenant-id.service";
 
 @Component({
   selector: 'app-checkout-review',
@@ -24,7 +25,7 @@ import {CaasPaymentError} from "../../shared/errors/caasPaymentError";
 export class CheckoutReviewComponent {
   protected steps: Array<StepInfoDto>;
   protected $cart: Observable<CartDto>;
-  protected customerData: CustomerWithAddressDto;
+  protected $customerData: Observable<CustomerWithAddressDto>;
   protected createdOrder?: OrderDto;
   protected isLoading: boolean;
   protected error: Set<string>;
@@ -33,24 +34,25 @@ export class CheckoutReviewComponent {
               private activatedRoute: ActivatedRoute,
               private cartService: CartService,
               private orderService: OrderService,
-              private productService: ProductService) {
+              private productService: ProductService,
+              protected tenantService: TenantIdService) {
     this.steps = CheckoutComponent.Steps;
     this.$cart = cartService.$cart;
-    this.customerData = orderService.customerData ?? <CustomerWithAddressDto>{
+    this.$customerData = orderService.$customerData.pipe(map(v => v ?? <CustomerWithAddressDto>{
       customer: {},
       address: {}
-    };
+    }));
     this.isLoading = false;
     this.error = new Set<string>();
   }
 
-  async completeOrder(e: Event): Promise<void> {
+  async completeOrder(e: Event, customerData: CustomerWithAddressDto): Promise<void> {
     this.isLoading = true;
     this.error.clear();
     try {
       e.preventDefault();
       e.stopPropagation();
-      await this.completeOrderImpl();
+      await this.completeOrderImpl(customerData);
     } catch (ex) {
       if (ex instanceof CaasDuplicateCustomerEmailError) {
         this.error.add('serverCustomerEmailError');
@@ -64,17 +66,17 @@ export class CheckoutReviewComponent {
     }
   }
 
-  private async completeOrderImpl(): Promise<void> {
-    this.createdOrder = await this.orderService.createOrder(this.customerData);
+  private async completeOrderImpl(customerData: CustomerWithAddressDto): Promise<void> {
+    this.createdOrder = await this.orderService.createOrder(customerData);
     // noinspection ES6MissingAwait
-    this.router.navigate(['../complete'], {
+    this.router.navigate([this.tenantService.tenantUrl + '/checkout/complete'], {
       queryParams: { orderNumber: this.orderNumber },
       relativeTo: this.activatedRoute
     });
   }
 
-  get creditCardNumber(): string {
-    return `**** **** **** ${this.customerData.customer?.creditCardNumber?.slice(-4) ?? '0000'}`;
+  getCreditCardNumber(customerData: CustomerWithAddressDto): string {
+    return `**** **** **** ${customerData.customer?.creditCardNumber?.slice(-4) ?? '0000'}`;
   }
 
   get orderNumber(): string {

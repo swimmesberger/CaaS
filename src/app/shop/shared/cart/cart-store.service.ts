@@ -1,19 +1,21 @@
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpParams} from "@angular/common/http";
-import {Observable} from "rxjs";
+import {HttpClient} from "@angular/common/http";
+import {first, Observable, switchMap, throwError} from "rxjs";
 import {environment} from "../../../../environments/environment";
 import {CartDto} from "./models/cartDto";
+import {TenantIdService} from "../shop/tenant-id.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartStoreService {
-  constructor(private httpClient: HttpClient) {  }
+  constructor(private httpClient: HttpClient,
+              private tenantIdService: TenantIdService) {  }
 
   public getCartById(cartId: string): Observable<CartDto> {
-    let xTenantId = environment.tenantId;
+    const xTenantId = this.tenantIdService.tenantId;
     if (xTenantId === null || xTenantId === undefined) {
-      throw new Error('Required parameter xTenantId was null or undefined when calling getCartById.');
+      return throwError(() => new Error('Required parameter xTenantId was null or undefined when calling getCartById.'));
     }
     return this.httpClient.get<CartDto>(`${environment.url}/cart/${encodeURIComponent(cartId)}`, {
       headers: {
@@ -34,11 +36,11 @@ export class CartStoreService {
     if (cart.id === null || cart.id === undefined) {
       throw new Error('Required parameter cartId was null or undefined when calling updateCart.');
     }
-    let xTenantId = environment.tenantId;
-    if (xTenantId === null || xTenantId === undefined) {
-      throw new Error('Required parameter xTenantId was null or undefined when calling productGet.');
-    }
 
+    const xTenantId = this.tenantIdService.tenantId;
+    if (xTenantId === null || xTenantId === undefined) {
+      return throwError(() => new Error('Required parameter xTenantId was null or undefined when calling getCartById.'));
+    }
     return this.httpClient.post<void>(`${environment.url}/cart/${encodeURIComponent(cart.id!)}`, cart, {
       headers: {
         'X-tenant-id': xTenantId,
@@ -48,6 +50,6 @@ export class CartStoreService {
           'application/problem+json'
         ]
       }
-    });
+    })
   }
 }

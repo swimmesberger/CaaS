@@ -16,7 +16,32 @@
 </head>
 <body>
   <app-root>
-    <div class="fade show" style="text-align: center; padding-top: calc(100vh / 2); height: 100vh">
+    <style>
+      @keyframes spinner-grow {
+        0% {
+          transform: scale(0);
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .spinner-grow {
+        display: inline-block;
+        width: 2rem;
+        height: 2rem;
+        vertical-align: text-bottom;
+        background-color: currentColor;
+        border-radius: 50%;
+        opacity: 0;
+        -webkit-animation: spinner-grow .75s linear infinite;
+        animation: spinner-grow .75s linear infinite;
+      }
+      .spinner-grow-sm {
+        width: 1rem;
+        height: 1rem;
+      }
+    </style>
+    <div style="text-align: center; padding-top: calc(100vh / 2); height: 100vh">
       <i class="spinner-grow spinner-grow-sm"></i>
       <span class="m-1">Loading...</span>
     </div>

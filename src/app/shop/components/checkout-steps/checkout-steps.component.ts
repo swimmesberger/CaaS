@@ -1,5 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {StepInfoDto} from "./step-info-dto";
+import {TenantIdService} from "../../shared/shop/tenant-id.service";
 
 @Component({
   selector: 'app-checkout-steps',
@@ -9,6 +10,9 @@ import {StepInfoDto} from "./step-info-dto";
 export class CheckoutStepsComponent {
   @Input() steps: Array<StepInfoDto> = [];
   private activeElementIdx?: number;
+
+  constructor(protected tenantService: TenantIdService) {
+  }
 
   onActiveChange(elementIdx: number, active: boolean): void{
     if (active) {

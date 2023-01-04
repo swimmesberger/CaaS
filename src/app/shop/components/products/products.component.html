@@ -22,7 +22,7 @@
         <ul class="pagination">
           <li class="page-item" [ngClass]="productPage.previousPage ? '' : 'disabled'">
             <a class="page-link"
-               [routerLink]="['./products']"
+               [routerLink]="tenantService.tenantUrl + '/products'"
                queryParamsHandling="merge"
                [queryParams]="prevPageQueryParams(productPage)">
               <i class="bi bi-arrow-left me-2"></i>Prev
@@ -32,7 +32,7 @@
         <ul class="pagination">
           <li class="page-item" [ngClass]="productPage.nextPage ? '' : 'disabled'">
             <a class="page-link"
-               [routerLink]="['./products']"
+               [routerLink]="tenantService.tenantUrl + '/products'"
                queryParamsHandling="merge"
                [queryParams]="nextPageQueryParams(productPage)" aria-label="Next">
               Next<i class="bi bi-arrow-right ms-2"></i>

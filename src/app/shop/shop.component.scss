@@ -1,5 +1,5 @@
 @import 'variables';
-@import '../../../node_modules/bootstrap-icons/font/bootstrap-icons.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
 
 html * {
@@ -165,7 +165,7 @@ html * {
   }
 }
 
-@import '../../../node_modules/bootstrap/scss/bootstrap';
+@import 'bootstrap/scss/bootstrap';
 @import './navbar';
 
 // Override solid buttons

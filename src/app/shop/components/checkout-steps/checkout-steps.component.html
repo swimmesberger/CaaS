@@ -4,7 +4,7 @@
      routerLinkActive="current"
      [routerLinkActiveOptions]="{exact: true}"
      (isActiveChange)="onActiveChange(i, $event)"
-     [routerLink]="step.routeLink"
+     [routerLink]="tenantService.tenantUrl + step.routeLink"
      [state]="step.routeState?.()">
     <div class="step-progress"><span class="step-count">{{i+1}}</span></div>
     <div class="step-label">
