@@ -1,19 +1,17 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { AdminComponent } from './admin.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import {AdminRoutingModule} from "./admin-routing.module";
-import {PageNotFoundComponent} from "../components/page-not-found/page-not-found.component";
 import { LoginComponent } from './components/login/login.component';
+import {CaasCommonModule} from "../caas-common.module";
 
 @NgModule({
   declarations: [
     AdminComponent,
-    PageNotFoundComponent,
     LoginComponent
   ],
   imports: [
-    CommonModule,
+    CaasCommonModule,
     AdminRoutingModule,
     ReactiveFormsModule
   ]

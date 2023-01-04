@@ -36,9 +36,7 @@
               "src/site.webmanifest",
               "src/assets"
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": [],
             "stylePreprocessorOptions": {
               "includePaths": [
                 "./node_modules"

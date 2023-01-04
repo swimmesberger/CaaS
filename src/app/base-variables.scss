@@ -1,0 +1,45 @@
+// Pre-Variables
+$prefix:  bs-;
+$white:    #fff;
+$black:    #000;
+$spacer: 1rem;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-600: #6c757d;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+$box-shadow:                  0 .5rem 1rem rgba($black, .15);
+$headings-font-weight:        500;
+$border-color:                $gray-300;
+$border-radius-lg:            .5rem;
+$card-spacer-y:               $spacer;
+
+$primary: #fe696a;
+$secondary: $gray-200;
+$warning: #fea569;
+$success: #42d697;
+$dark: rgb(55, 63, 80);
+$accent: #4e54c8;
+$body-color: $gray-700;
+$enable-shadows: true;
+$enable-rounded: true;
+
+$link-hover-color: #fe3638;
+$headings-color: #373f50;
+$btn-color: $white;
+
+// Fonts
+$font-size-base:              1rem;
+$font-size-xl:                ($font-size-base * 1.625);
+$font-size-lg:                ($font-size-base * 1.125);
+$font-size-md:                ($font-size-base * .9375);
+$font-size-sm:                ($font-size-base * .875);
+$font-size-ms:                ($font-size-base * .8125);
+$font-size-xs:                ($font-size-base * .75);
+$font-family-sans-serif: "Rubik", sans-serif;
+$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+$font-weight-medium:          500;
+$h3-font-size:                $font-size-base * 1.75 !default;
+
+$border-light-color:          rgba($white, .12);

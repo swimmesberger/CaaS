@@ -3,11 +3,11 @@ import {ActivatedRoute} from "@angular/router";
 import {Observable, of, switchMap} from "rxjs";
 
 @Component({
-  selector: 'app-order-complete-page',
-  templateUrl: './checkout-complete-page.component.html',
-  styleUrls: ['./checkout-complete-page.component.scss']
+  selector: 'app-checkout-complete',
+  templateUrl: './checkout-complete.component.html',
+  styleUrls: ['./checkout-complete.component.scss']
 })
-export class CheckoutCompletePageComponent {
+export class CheckoutCompleteComponent {
   protected $orderNumber: Observable<string>;
 
   constructor(private route: ActivatedRoute) {

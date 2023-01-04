@@ -5,11 +5,9 @@ import {CanNavigateToAdminGuard} from "./can-navigate-to-admin.guard";
 import {LoginComponent} from "./components/login/login.component";
 
 const routes: Routes = [
-  {
-    path: '', component: AdminComponent, canActivate: [CanNavigateToAdminGuard], children: [
+  { path: '', component: AdminComponent, canActivate: [CanNavigateToAdminGuard], children: [
 
-    ]
-  },
+  ]},
   { path: 'login', component: LoginComponent }
 ];
 

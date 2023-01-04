@@ -6,7 +6,7 @@ const routes: Routes = [
   { path: 'shop', loadChildren: () => import('./shop/shop.module').then(m => m.ShopModule) },
   { path: 'admin', loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule) },
   { path: '',   redirectTo: '/shop', pathMatch: 'full' },
-  { path: '**', component: PageNotFoundComponent },  // Wildcard route for a 404 page
+  { path: '**', loadComponent: () => PageNotFoundComponent },  // Wildcard route for a 404 page
 ];
 
 @NgModule({
