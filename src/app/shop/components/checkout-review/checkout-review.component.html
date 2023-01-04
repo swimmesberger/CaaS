@@ -77,8 +77,8 @@
         </a>
       </div>
     </div>
-    <div *ngIf="hasError('serverError')" class="alert alert-danger" role="alert" i18n="@@checkoutCompleteErrorServerError">
-      Failed to process order. Try it later again.
+    <div *ngIf="hasError()" class="shop-complete-error alert alert-danger" role="alert">
+      {{getErrorMessage()}}
     </div>
   </section>
   <!-- Sidebar-->

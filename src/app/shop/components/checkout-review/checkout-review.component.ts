@@ -10,6 +10,8 @@ import {OrderDto} from "../../shared/order/models/orderDto";
 import {Router} from "@angular/router";
 import {ProductService} from "../../shared/product/product.service";
 import {CartItemDto} from "../../shared/cart/models/cartItemDto";
+import {CaasDuplicateCustomerEmailError} from "../../shared/errors/caasDuplicateCustomerEmailError";
+import {CaasPaymentError} from "../../shared/errors/caasPaymentError";
 
 @Component({
   selector: 'app-checkout-review',
@@ -20,22 +22,25 @@ import {CartItemDto} from "../../shared/cart/models/cartItemDto";
   }
 })
 export class CheckoutReviewComponent {
-  protected steps: Array<StepInfoDto> = CheckoutComponent.Steps;
+  protected steps: Array<StepInfoDto>;
   protected $cart: Observable<CartDto>;
   protected customerData: CustomerWithAddressDto;
   protected createdOrder?: OrderDto;
-  protected isLoading: boolean = false;
-  protected error: Set<string> = new Set<string>();
+  protected isLoading: boolean;
+  protected error: Set<string>;
 
   constructor(private router: Router,
               private cartService: CartService,
               private orderService: OrderService,
               private productService: ProductService) {
+    this.steps = CheckoutComponent.Steps;
     this.$cart = cartService.$cart;
     this.customerData = orderService.customerData ?? <CustomerWithAddressDto>{
       customer: {},
       address: {}
     };
+    this.isLoading = false;
+    this.error = new Set<string>();
   }
 
   async completeOrder(e: Event): Promise<void> {
@@ -44,14 +49,24 @@ export class CheckoutReviewComponent {
     try {
       e.preventDefault();
       e.stopPropagation();
-      this.createdOrder = await this.orderService.createOrder(this.customerData);
-      // noinspection ES6MissingAwait
-      this.router.navigate(['/checkout/complete'], { queryParams: { orderNumber: this.orderNumber }});
+      await this.completeOrderImpl();
     } catch (ex) {
-      this.error.add('serverError');
+      if (ex instanceof CaasDuplicateCustomerEmailError) {
+        this.error.add('serverCustomerEmailError');
+      } if (ex instanceof CaasPaymentError) {
+        this.error.add('serverPaymentError');
+      } else {
+        this.error.add('serverGenericError');
+      }
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private async completeOrderImpl(): Promise<void> {
+    this.createdOrder = await this.orderService.createOrder(this.customerData);
+    // noinspection ES6MissingAwait
+    this.router.navigate(['/checkout/complete'], { queryParams: { orderNumber: this.orderNumber }});
   }
 
   get creditCardNumber(): string {
@@ -62,11 +77,18 @@ export class CheckoutReviewComponent {
     return this.createdOrder?.orderNumber ?? '';
   }
 
-  hasError(key: string | undefined = undefined): boolean {
-    if (key) {
-      return this.error.has(key);
-    }
+  hasError(): boolean {
     return this.error.size > 0;
+  }
+
+  getErrorMessage() : string {
+    if (this.error.has('serverCustomerEmailError')) {
+      return $localize `:@@checkoutCompleteServerCustomerEmailError:The provided E-Mail address is already taken. Please choose a different E-Mail.`;
+    }
+    if (this.error.has('serverPaymentError')) {
+      return $localize `:@@checkoutCompleteServerPaymentError:The provided credit card can't be charged. Please choose a different card.`;
+    }
+    return $localize `:@@checkoutCompleteErrorServerError:Failed to process order. Try it later again.`;
   }
 
   productImage(cartItem: CartItemDto, width: number, height: number): string {

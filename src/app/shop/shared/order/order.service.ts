@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
-import {lastValueFrom, Observable} from "rxjs";
+import {catchError, lastValueFrom, Observable, throwError} from "rxjs";
 import {OrderStoreService} from "./order-store.service";
 import {CustomerWithAddressDto} from "./models/customerWithAddressDto";
 import {CartService} from "../cart/cart.service";
 import {OrderDto} from "./models/orderDto";
 import { v4 as uuidv4 } from 'uuid';
+import {HttpErrorResponse} from "@angular/common/http";
+import {ProblemDetailsDto} from "../problemDetailsDto";
+import {CaasPaymentError} from "../errors/caasPaymentError";
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +27,6 @@ export class OrderService {
     if (billingData.customer && !billingData.customer.id) {
       billingData.customer.id = uuidv4();
     }
-    await this.cartService.setCustomerOfCart(billingData.customer ?? null);
     const order = await this.addOrder(billingData);
     this.cartService.resetCart()
     localStorage.removeItem(OrderService.CustomerDataKey);
@@ -65,7 +67,10 @@ export class OrderService {
     let retryCount = 0;
     while (true) {
       try {
-        order = await lastValueFrom(this.orderStoreService.createOrder(this.cartService.cardId!, billingData.address!));
+        order = await lastValueFrom(this.orderStoreService
+          .createOrder(this.cartService.cardId!, billingData.address!, billingData.customer!)
+          .pipe(catchError(this.handleCreateOrderError.bind(this)))
+        );
         break;
       } catch (e: any) {
         if (retryCount < 20 && e.status === 409) {
@@ -76,5 +81,18 @@ export class OrderService {
       }
     }
     return order;
+  }
+
+  private handleCreateOrderError(error: any) : Observable<any> {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 422) {
+        const problemDetails : ProblemDetailsDto = error.error;
+        if (problemDetails.type?.startsWith('payment_')) {
+          throw new CaasPaymentError(problemDetails.title ?? '');
+        }
+      }
+    }
+
+    return throwError(() => error);
   }
 }

@@ -4,6 +4,7 @@ import {environment} from "../../../../environments/environment";
 import {HttpClient} from "@angular/common/http";
 import {AddressDto} from "./models/addressDto";
 import {OrderDto} from "./models/orderDto";
+import {CustomerDto} from "../cart/models/customerDto";
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class OrderStoreService {
     return of(['Australia','Canada','France','Germany','Switzerland','USA']);
   }
 
-  public createOrder(cartId: string, billingAddress: AddressDto): Observable<OrderDto> {
+  public createOrder(cartId: string, billingAddress: AddressDto, customer: CustomerDto): Observable<OrderDto> {
     if (cartId === null || cartId === undefined) {
       throw new Error('Required parameter cartId was null or undefined when calling updateCart.');
     }
@@ -26,7 +27,8 @@ export class OrderStoreService {
 
     return this.httpClient.post<OrderDto>(`${environment.url}/order`, {
       cartId: cartId,
-      BillingAddress: billingAddress
+      billingAddress: billingAddress,
+      customer: customer
     }, {
       headers: {
         'X-tenant-id': xTenantId,

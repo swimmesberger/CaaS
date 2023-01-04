@@ -13,6 +13,9 @@ import {CartStoreService} from "./cart-store.service";
 import { v4 as uuidv4 } from 'uuid';
 import {CouponDto} from "./models/couponDto";
 import {CustomerDto} from "./models/customerDto";
+import {HttpErrorResponse} from "@angular/common/http";
+import {ProblemDetailsDto} from "../problemDetailsDto";
+import {CaasDuplicateCustomerEmailError} from "../errors/caasDuplicateCustomerEmailError";
 
 @Injectable({
   providedIn: 'root'
@@ -64,14 +67,6 @@ export class CartService {
     });
   }
 
-  public async setCustomerOfCart(customer: CustomerDto | null): Promise<void> {
-    const curCart = await firstValueFrom(this.$cart);
-    await this.updateCart({
-      ...curCart,
-      customer: customer ?? undefined
-    });
-  }
-
   public resetCart(): void {
     localStorage.removeItem(CartService.CartIdKey);
     // refresh cart
@@ -79,7 +74,7 @@ export class CartService {
   }
 
   public async updateCart(cart: CartDto): Promise<void> {
-    await lastValueFrom(this._cartStore.updateCart(cart));
+    await lastValueFrom(this._cartStore.updateCart(cart).pipe(catchError(this.handleUpdateCartError.bind(this))));
     localStorage.setItem(CartService.CartIdKey, cart.id!);
     // refresh cart
     this._$refreshCart.next();
@@ -87,6 +82,19 @@ export class CartService {
 
   public get cardId(): string | null {
     return localStorage.getItem(CartService.CartIdKey);
+  }
+
+  private handleUpdateCartError(error: any) : Observable<any> {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 422) {
+        const problemDetails : ProblemDetailsDto = error.error;
+        if (problemDetails.type === 'customer_e_mail_key') {
+          throw new CaasDuplicateCustomerEmailError(problemDetails.title ?? '');
+        }
+      }
+    }
+
+    return throwError(() => error);
   }
 
   private emptyCart(): CartDto {
