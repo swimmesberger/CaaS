@@ -18,13 +18,15 @@ public class CustomerServiceTest {
         var customerService = CreateCustomerService();
         var customer = new Customer {
             Id = CustomerIdB,
-            Name = "Roman",
+            FirstName = "Roman",
+            LastName = "Kofler-Hofer",
             ShopId = TestShopId
         };
 
         var result = await customerService.AddAsync(customer);
         result.Id.Should().Be(CustomerIdB);
-        result.Name.Should().Be("Roman");
+        result.FirstName.Should().Be("Roman");
+        result.LastName.Should().Be("Kofler-Hofer");
     }
 
     [Fact]
@@ -39,8 +41,8 @@ public class CustomerServiceTest {
 
     private ICustomerService CreateCustomerService() {
         var customerDao = new MemoryDao<CustomerDataModel>(new List<CustomerDataModel>() {
-            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, Name = "Roman Koho", EMail = "test@test.com", CreditCardNumber = "1111222233334444" },
-            new CustomerDataModel { Id = CustomerIdB, ShopId = TestShopId, Name = "Simon Wimmesb", EMail = "simon@test.com", CreditCardNumber = "9999948945454" }
+            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, FirstName = "Roman", LastName = "Koho", EMail = "test@test.com", CreditCardNumber = "1111222233334444" },
+            new CustomerDataModel { Id = CustomerIdB, ShopId = TestShopId, FirstName = "Simon", LastName = "Wimmesb", EMail = "simon@test.com", CreditCardNumber = "9999948945454" }
         });
         
         var customerRepository = new CustomerRepository(customerDao);

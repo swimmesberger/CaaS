@@ -13,7 +13,7 @@ public interface IStatementGenerator<T> : IDataRecordProvider<T> {
 
     Statement CreateInsert(T entity);
     
-    Statement CreateInsert(IEnumerable<T> entities);
+    StatementBatch CreateInsert(IEnumerable<T> entities);
 
     Statement CreateUpdate(T entity, int origRowVersion);
     

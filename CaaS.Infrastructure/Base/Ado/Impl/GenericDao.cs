@@ -135,7 +135,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
         try {
             return await _statementExecutor.QueryScalarAsync(_statementMaterializer.MaterializeStatement(statement), cancellationToken);
         } catch (DbException ex) {
-            throw new CaasDbException("Failed to execute statement", ex);
+            throw DbProviderFactoryUtil.ConvertException(ex);
         }
     }
 
@@ -147,7 +147,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
         try {
             return await _statementExecutor.ExecuteAsync(_statementMaterializer.MaterializeBatch(batch), cancellationToken);
         } catch (DbException ex) {
-            throw new CaasDbException("Failed to execute statement", ex);
+            throw DbProviderFactoryUtil.ConvertException(ex);
         }
     }
 
@@ -170,7 +170,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
         try {
             enumerable = _statementExecutor.StreamAsync(_statementMaterializer.MaterializeStatement(statement), cancellationToken: cancellationToken);
         } catch (DbException ex) {
-            throw new CaasDbException("Failed to execute statement", ex);
+            throw DbProviderFactoryUtil.ConvertException(ex);
         }
         await foreach (var dataModel in enumerable.WithCancellation(cancellationToken)) {
             yield return dataModel;

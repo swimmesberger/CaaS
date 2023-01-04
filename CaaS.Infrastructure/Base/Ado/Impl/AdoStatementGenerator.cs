@@ -35,36 +35,28 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T> where T: IDataMod
     }
 
     public Statement CreateInsert(T entity) {
-        return CreateInsert(new[] { entity });
-    }
-
-    public Statement CreateInsert(IEnumerable<T> entities) {
-
-        var insertValues = entities
-            .Select(entity => DataRecordMapper.RecordFromEntity(entity).ByPropertyName())
-            .Select(record => GetPropertyNames()
-                .Select(propertyName => new QueryParameter(propertyName, record.GetTypedValue(propertyName)))
-                .Where(p => {
-                    // ignore the property if it has the SqlIgnore attribute and the default value
-                    var propMapper = DataRecordMapper.ByPropertyName();
-                    if (!propMapper.IsSqlIgnored(p.Name, StatementType.Create)) 
-                        return true;
-                    var propType = record.GetPropertyType(p.Name);
-                    var defaultValue = propType.IsValueType ? Activator.CreateInstance(propType) : null;
-                    if (Equals(defaultValue, p.Value)) {
-                        return false;
-                    }
+        var entityRecord = DataRecordMapper.RecordFromEntity(entity).ByPropertyName();
+        var insertValues = entityRecord.Keys
+            .Select(propertyName => new QueryParameter(propertyName, entityRecord.GetTypedValue(propertyName)))
+            .Where(p => {
+                // ignore the property if it has the SqlIgnore attribute and the default value
+                var propMapper = DataRecordMapper.ByPropertyName();
+                if (!propMapper.IsSqlIgnored(p.Name, StatementType.Create))
                     return true;
-                })
-                .ToList())
+                var propType = entityRecord.GetPropertyType(p.Name);
+                var defaultValue = propType.IsValueType ? Activator.CreateInstance(propType) : null;
+                if (Equals(defaultValue, p.Value)) {
+                    return false;
+                }
+                return true;
+            })
             .ToList();
-        
         if (insertValues.Count == 0) return Statement.Empty;
 
-        var columnNames = GetPropertyNames();
+        var columnNames = insertValues.Select(q => q.Name);
         var insertParameters = new InsertParameters() {
             ColumnNames = columnNames,
-            Values = insertValues
+            Values = new []{ insertValues }
         };
         return new Statement(StatementType.Create, DataRecordMapper.ByPropertyName()) {
             From = DataRecordMapper.ByPropertyName().MappedTypeName,
@@ -72,6 +64,10 @@ public class AdoStatementGenerator<T> : IStatementGenerator<T> where T: IDataMod
                 InsertParameters = insertParameters
             }
         };
+    }
+
+    public StatementBatch CreateInsert(IEnumerable<T> entities) {
+        return new StatementBatch(entities.Select(CreateInsert).ToList());
     }
 
     public StatementBatch CreateUpdate(IEnumerable<VersionedEntity<T>> versionedEntities) {

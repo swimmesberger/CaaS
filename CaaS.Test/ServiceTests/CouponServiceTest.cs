@@ -222,7 +222,7 @@ public class CouponServiceTest {
     
     private ICouponService CreateCouponService(DateTimeOffset currentDate) {
         var customerDao = new MemoryDao<CustomerDataModel>(new List<CustomerDataModel>() {
-            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, Name = "Roman Koho", EMail = "test@test.com", CreditCardNumber = "1111222233334444" }
+            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, FirstName = "Roman", LastName = "Koho", EMail = "test@test.com", CreditCardNumber = "1111222233334444" }
         });
         var customerRepository = new CustomerRepository(customerDao);
         

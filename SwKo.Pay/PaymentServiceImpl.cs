@@ -25,7 +25,8 @@ public class PaymentServiceImpl : IPaymentService {
         CustomersDict.Add("testcustomer@test.com", new Customer() {
             Id = Guid.Parse("5D5EA856-00B5-4F1F-BF2D-2AD81311B865"),
             Email = "gschiefersten0@scientificamerican.com",
-            Name = "Gennie Schiefersten",
+            FirstName = "Gennie",
+            LastName = "Schiefersten",
             CreditCardNumber = "4405100664466647",
             Metadata = new Dictionary<string, string> {
                 {"CaasCustomerId", "709262d7-3b8c-4b90-b005-a698599c82b0"}

@@ -9,6 +9,7 @@ using CaaS.Core.DiscountAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.DiscountAggregate.Impl;
 using CaaS.Core.OrderAggregate;
+using CaaS.Core.ProductAggregate;
 using CaaS.Infrastructure.Base.Tenant;
 using CaaS.Infrastructure.CartData;
 using CaaS.Infrastructure.CouponData;
@@ -117,19 +118,25 @@ public class OrderServiceTest {
     [Fact]
     public async Task CreateOrderFromCartWhenCaasDbExceptionIsThrown() {
         var orderRepositoryMock = new Mock<IOrderRepository>();
-        var customerRepositoryMock = new Mock<ICustomerRepository>();
         var cartServiceMock = new Mock<ICartService>();
         var couponRepositoryMock = new Mock<ICouponRepository>();
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
         var uowManager = new MockUnitOfWorkManager();
         var paymentService = new Mock<IPaymentService>();
 
-        Customer customer = new Customer() {
+        var customer = new Customer() {
             Id = CustomerIdA,
             ShopId = TestShopId,
             EMail = "test@test.com",
-            Name = "Roman",
+            FirstName = "Roman",
+            LastName = "Kofler-Hofer",
             CreditCardNumber = "4405100664466647"
+        };
+
+        var cart = new Cart() {
+            Id = ExistingCartId1, 
+            Customer = customer,
+            Items = new List<CartItem>(){ new CartItem() { Product = new Product() } }
         };
 
         orderRepositoryMock.Setup(x => x.FindOrderNumberById(It.IsAny<Guid>(), CancellationToken.None))
@@ -138,17 +145,16 @@ public class OrderServiceTest {
         orderRepositoryMock.Setup(x => x.AddAsync(It.IsAny<Order>(), It.IsAny<Address>(), CancellationToken.None))
             .ReturnsAsync(new Order() {Id = ExistingOrderId});
 
-        customerRepositoryMock.Setup(x => x.FindByIdAsync(It.IsAny<Guid>(), CancellationToken.None))
-            .ReturnsAsync(new Customer() { Id = CustomerIdA });
-        
         cartServiceMock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), CancellationToken.None)).
-            ReturnsAsync(new Cart(){Id = ExistingCartId1, Customer = customer});
+            ReturnsAsync(cart);
+        cartServiceMock.Setup(x => x.SetCustomerAsync(It.IsAny<Guid>(), It.IsAny<Customer>(), CancellationToken.None))
+            .ReturnsAsync(cart);
         
         couponRepositoryMock.Setup(x => 
                 x.UpdateAsync(It.IsAny<IEnumerable<Coupon>>(), It.IsAny<IEnumerable<Coupon>>(), CancellationToken.None)).
             Throws(new CaasDbException("caas db exception"));
         
-        var orderService = new OrderService(orderRepositoryMock.Object, customerRepositoryMock.Object, cartServiceMock.Object, couponRepositoryMock.Object, 
+        var orderService = new OrderService(orderRepositoryMock.Object, cartServiceMock.Object, couponRepositoryMock.Object, 
             tenantIdAccessor, uowManager, paymentService.Object);
 
         Func<Task> act = async () => { await orderService.CreateOrderFromCartAsync(ExistingCartId1, TestAddress);};
@@ -172,10 +178,10 @@ public class OrderServiceTest {
             new ProductDataModel() { Id = ProductBId, Name = "ProductB", Price = 20, ShopId = TestShopId }
         });
         var customerDao = new MemoryDao<CustomerDataModel>(new List<CustomerDataModel>() {
-            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, Name = "Roman Koho", EMail = "roman@test.com", CreditCardNumber = "4405100664466647" },
-            new CustomerDataModel { Id = CustomerIdB, ShopId = TestShopId, Name = "User 2", EMail = "user2@test.com", CreditCardNumber = "9999999999999999" },
-            new CustomerDataModel { Id = CustomerIdC, ShopId = TestShopId, Name = "User with invalid credit card", EMail = "invalid@test.com", CreditCardNumber = "4594233824721535" },
-            new CustomerDataModel { Id = CustomerIdD, ShopId = TestShopId, Name = "User with no money", EMail = "poor@test.com", CreditCardNumber = "5349801875979163" },
+            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, FirstName = "Roman", LastName = "Koho", EMail = "roman@test.com", CreditCardNumber = "4405100664466647" },
+            new CustomerDataModel { Id = CustomerIdB, ShopId = TestShopId, FirstName = "User", LastName = "2",EMail = "user2@test.com", CreditCardNumber = "9999999999999999" },
+            new CustomerDataModel { Id = CustomerIdC, ShopId = TestShopId, FirstName = "User", LastName = "with invalid credit card", EMail = "invalid@test.com", CreditCardNumber = "4594233824721535" },
+            new CustomerDataModel { Id = CustomerIdD, ShopId = TestShopId, FirstName = "User", LastName = "with no money", EMail = "poor@test.com", CreditCardNumber = "5349801875979163" },
         });
         
         var orderDao = new MemoryDao<OrderDataModel>(new List<OrderDataModel>() {
@@ -212,6 +218,7 @@ public class OrderServiceTest {
         var cartItemDao = new MemoryDao<ProductCartDataModel>(new List<ProductCartDataModel>() {
             new ProductCartDataModel() {Id = CartItemIdA, Amount = 2, CartId = ExistingCartId1, ProductId = ProductAId},
             new ProductCartDataModel() {Id = CartItemIdB, Amount = 4, CartId = ExistingCartId1, ProductId = ProductBId},
+            new ProductCartDataModel() {Id = Guid.NewGuid(), Amount = 1, CartId = ExistingCartId3, ProductId = ProductBId},
             new ProductCartDataModel() {Id = Guid.NewGuid(), Amount = 5, CartId = ExistingCartId2, ProductId = ProductBId},
             new ProductCartDataModel() {Id = Guid.NewGuid(), Amount = 2, CartId = ExistingCartId2, ProductId = ProductBId},
             new ProductCartDataModel() {Id = Guid.NewGuid(), Amount = 2, CartId = ExistingCartId4, ProductId = ProductBId},
@@ -241,7 +248,7 @@ public class OrderServiceTest {
 
         var cartService = new CartService(cartRepository, productRepository, shopRepository, discountService, couponService,
             uowManager, tenantIdAccessor, SystemClock.Instance);
-        return new OrderService(orderRepository, customerRepository, cartService, couponRepository, tenantIdAccessor, uowManager, paymentService);
+        return new OrderService(orderRepository, cartService, couponRepository, tenantIdAccessor, uowManager, paymentService);
     }
     
 }

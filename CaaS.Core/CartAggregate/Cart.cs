@@ -18,14 +18,28 @@ public record Cart : IEntityBase {
 
     public decimal TotalPrice {
         get {
-            var price = Items.Select(i => i.TotalPrice).Sum();
+            var price = BasePrice;
+            price -= DiscountValue;
+            return price;
+        }
+    }
+    
+    public decimal BasePrice {
+        get {
+            return Items.Select(i => i.TotalPrice).Sum();
+        }
+    }
+    
+    public decimal DiscountValue {
+        get {
+            decimal discount = 0;
             foreach (var cartCoupon in Coupons) {
-                price -= cartCoupon.Value;
+                discount += cartCoupon.Value;
             }
             foreach (var cartDiscount in CartDiscounts) {
-                price -= cartDiscount.DiscountValue;
+                discount += cartDiscount.DiscountValue;
             }
-            return price;
+            return discount;
         }
     }
 }

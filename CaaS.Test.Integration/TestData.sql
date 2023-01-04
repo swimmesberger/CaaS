@@ -22,15 +22,15 @@ INSERT INTO product(id,row_version,creation_time,last_modification_time,shop_id,
     VALUES ('587c3437-b430-405a-99dd-a0ce9ebde0a4',1,'2022-03-17 00:49:17','2022-08-25 06:39:49','a468d796-db09-496d-9794-f6b42f8c7c0b','LAN cable',
             'estibulum ante','downloads/581e4c62-9127-4b95-898b-2836ca3d90d2',7.96,'false');
 
-INSERT INTO customer(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail,credit_card_number) 
+INSERT INTO customer(id,row_version,creation_time,last_modification_time,shop_id,first_name,last_name,e_mail,credit_card_number) 
     VALUES ('9234a988-0abd-4b44-808a-9e7a8852e19c',2,'2022-01-09 19:04:52','2022-10-21 05:29:31','a468d796-db09-496d-9794-f6b42f8c7c0b',
-            'Frances Hallums','fhallums2r@edublogs.org','3581814560128824');
-INSERT INTO customer(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail,credit_card_number) 
+            'Frances','Hallums','fhallums2r@edublogs.org','3581814560128824');
+INSERT INTO customer(id,row_version,creation_time,last_modification_time,shop_id,first_name,last_name,e_mail,credit_card_number) 
     VALUES ('703111b0-c3fd-4bf1-9d1a-12cd3852c182',2,'2022-01-15 15:06:22','2022-10-08 22:52:24','a468d796-db09-496d-9794-f6b42f8c7c0b',
-            'Lebbie Mancell','lmancell1@timesonline.co.uk','4844714712836418');
-INSERT INTO customer(id,row_version,creation_time,last_modification_time,shop_id,name,e_mail,credit_card_number) 
+            'Lebbie','Mancell','lmancell1@timesonline.co.uk','4844714712836418');
+INSERT INTO customer(id,row_version,creation_time,last_modification_time,shop_id,first_name,last_name,e_mail,credit_card_number) 
     VALUES ('c63b840a-a520-4a6a-a5d1-7328618c20c5',1,'2021-12-23 13:09:31','2022-10-26 13:50:23','a468d796-db09-496d-9794-f6b42f8c7c0b',
-            'Alex Cossentine','acossentine9@lycos.com','5018119876168150');
+            'Alex','Cossentine','acossentine9@lycos.com','5018119876168150');
 
 INSERT INTO "order"(id,row_version,creation_time,last_modification_time,shop_id,order_number,customer_id,order_date) 
     VALUES ('41b1fa55-fd34-4611-bda0-f3821f6db52b',4,'2022-07-18 09:38:13','2022-09-22 03:26:33','a468d796-db09-496d-9794-f6b42f8c7c0b',

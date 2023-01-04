@@ -88,8 +88,8 @@ public class CartRepositoryTest {
     
     private ICartRepository CreateCartRepository(DateTimeOffset currentDate) {
         var customerDao = new MemoryDao<CustomerDataModel>(new List<CustomerDataModel>() {
-            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, Name = "Roman Koho", EMail = "test@test.com", CreditCardNumber = "1111222233334444" },
-            new CustomerDataModel { Id = CustomerIdB, ShopId = TestShopId, Name = "Simon Wimmesb", EMail = "test@test.com", CreditCardNumber = "9999948945454" }
+            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, FirstName = "Roman", LastName = "Koho", EMail = "test@test.com", CreditCardNumber = "1111222233334444" },
+            new CustomerDataModel { Id = CustomerIdB, ShopId = TestShopId, FirstName = "Simon", LastName = "Wimmesb", EMail = "test@test.com", CreditCardNumber = "9999948945454" }
         });
 
         var shopDao = new MemoryDao<ShopDataModel>(new List<ShopDataModel>() {

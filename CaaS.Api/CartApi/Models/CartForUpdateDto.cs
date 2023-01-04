@@ -1,8 +1,10 @@
 using System.Collections.Immutable;
+using CaaS.Api.CustomerApi.Models;
 
 namespace CaaS.Api.CartApi.Models; 
 
 public record CartForUpdateDto {
+    public CustomerForCreationDto? Customer { get; init; }
     public IReadOnlyList<CartForUpdateItemDto> Items { get; init; } = ImmutableArray<CartForUpdateItemDto>.Empty;
     public IReadOnlyList<CartForUpdateCouponDto> Coupons { get; init; } = ImmutableArray<CartForUpdateCouponDto>.Empty;
     public string ConcurrencyToken { get; init; } = string.Empty;

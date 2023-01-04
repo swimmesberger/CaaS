@@ -1,9 +1,13 @@
-﻿namespace CaaS.Core.CartAggregate; 
+﻿using CaaS.Core.CustomerAggregate;
+
+namespace CaaS.Core.CartAggregate; 
 
 public interface ICartService {
     Task<Cart?> GetByIdAsync(Guid cartId, CancellationToken cancellationToken = default);
 
     Task<Cart> UpdateCartAsync(Cart cart, CancellationToken cancellationToken = default);
+    
+    Task<Cart> SetCustomerAsync(Guid cartId, Customer? customer, CancellationToken cancellationToken = default);
 
     Task<int> DeleteExpiredCartsAsync(CancellationToken cancellationToken = default);
     

@@ -42,17 +42,4 @@ public class CustomerController : ControllerBase {
             routeValues: new { customerId = savedCustomer.Id },
             value: _mapper.Map<CustomerDto>(savedCustomer));
     }
-    
-    [HttpPut("{customerId:guid}")]
-    public async Task<CustomerDto> UpdateCustomer(Guid customerId, [FromBody] CustomerForUpdateDto customerDto, CancellationToken cancellationToken = default) {
-        var updatedCustomer = _mapper.Map<Customer>(customerDto);
-        var result = await _customerService.UpdateAsync(customerId, updatedCustomer, cancellationToken);
-        return _mapper.Map<CustomerDto>(result);
-    }
-    
-    [HttpDelete("{customerId:guid}")]
-    public async Task<ActionResult> DeleteCustomer(Guid customerId, CancellationToken cancellationToken = default) {
-        await _customerService.DeleteAsync(customerId, cancellationToken);
-        return NoContent();
-    }
 }

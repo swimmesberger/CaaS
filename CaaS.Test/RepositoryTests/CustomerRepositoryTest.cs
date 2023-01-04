@@ -42,8 +42,8 @@ public class CustomerRepositoryTest {
     
     private ICustomerRepository GetCustomerRepository() {
         var customerDao = new MemoryDao<CustomerDataModel>(new List<CustomerDataModel>() {
-            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, Name = "Roman Koho", EMail = "test@test.com", CreditCardNumber = "1111222233334444" },
-            new CustomerDataModel { Id = CustomerIdB, ShopId = TestShopId, Name = "Simon Wimmes", EMail = "simon@test.com", CreditCardNumber = "9999999999999999" }
+            new CustomerDataModel { Id = CustomerIdA, ShopId = TestShopId, FirstName = "Roman", LastName = "Koho", EMail = "test@test.com", CreditCardNumber = "1111222233334444" },
+            new CustomerDataModel { Id = CustomerIdB, ShopId = TestShopId, FirstName = "Simon", LastName = "Wimmes", EMail = "simon@test.com", CreditCardNumber = "9999999999999999" }
         });
         return new CustomerRepository(customerDao);
     }

@@ -126,8 +126,10 @@ CREATE TABLE "customer" (
     "creation_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "last_modification_time" timestamp WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "shop_id" uuid NOT NULL,
-    "name" varchar(255) NOT NULL,
+    "first_name" varchar(255) NOT NULL,
+    "last_name" varchar(255) NOT NULL,
     "e_mail" varchar(255) UNIQUE NOT NULL,
+    "telephone_number" varchar(255),
     "credit_card_number" varchar(19),
     CONSTRAINT "FK_customer.shop_id"
         FOREIGN KEY ("shop_id")

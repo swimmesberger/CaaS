@@ -18,14 +18,21 @@ public class CustomerRepository : CrudRepository<CustomerDataModel, Customer>, I
 }
 
 internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerDataModel, Customer> {
-    public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(CustomerDataModel.Name));
+    public OrderParameters DefaultOrderParameters { get; } = new(
+        new OrderParameter[] {
+            new(nameof(CustomerDataModel.FirstName)), 
+            new(nameof(CustomerDataModel.LastName))
+        }
+    );
 
     public ValueTask<Customer> ConvertToDomain(CustomerDataModel dataModel, CancellationToken cancellationToken) {
         return new ValueTask<Customer>(new Customer() {
             Id = dataModel.Id,
-            Name = dataModel.Name,
+            FirstName = dataModel.FirstName,
+            LastName = dataModel.LastName,
             ShopId = dataModel.ShopId,
             EMail = dataModel.EMail,
+            TelephoneNumber = dataModel.TelephoneNumber,
             CreditCardNumber = dataModel.CreditCardNumber,
             ConcurrencyToken = dataModel.GetConcurrencyToken()
         });
@@ -38,9 +45,11 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
     public CustomerDataModel ApplyDomainModel(CustomerDataModel dataModel, Customer domainModel) {
         return dataModel with {
             Id = domainModel.Id,
-            Name = domainModel.Name,
+            FirstName = domainModel.FirstName,
+            LastName = domainModel.LastName,
             ShopId = domainModel.ShopId,
             EMail = domainModel.EMail,
+            TelephoneNumber = dataModel.TelephoneNumber,
             CreditCardNumber = domainModel.CreditCardNumber
         };
     }
@@ -52,9 +61,11 @@ internal class CustomerDomainModelConverter : IDomainModelConverter<CustomerData
     public CustomerDataModel ConvertFromDomain(Customer domainModel) {
         return new CustomerDataModel() {
             Id = domainModel.Id,
-            Name = domainModel.Name,
+            FirstName = domainModel.FirstName,
+            LastName = domainModel.LastName,
             ShopId = domainModel.ShopId,
             EMail = domainModel.EMail,
+            TelephoneNumber = domainModel.TelephoneNumber,
             CreditCardNumber = domainModel.CreditCardNumber,
             RowVersion = domainModel.GetRowVersion()
         };

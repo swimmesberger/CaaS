@@ -4,6 +4,7 @@ using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.Base.Validation;
 using CaaS.Core.CouponAggregate;
+using CaaS.Core.CustomerAggregate;
 using CaaS.Core.DiscountAggregate.Base;
 using CaaS.Core.ProductAggregate;
 using CaaS.Core.ShopAggregate;
@@ -68,30 +69,63 @@ public class CartService : ICartService {
                 });
             }
         }
+        var coupons = await _couponService
+            .RedeemCouponsAsync(oldCart?.Coupons ?? ImmutableArray<Coupon>.Empty, userCart.Coupons, userCart.Id, 
+                userCart.Customer?.Id, cancellationToken);
+
         // init empty cart
         var cart = new Cart() {
             Id = userCart.Id,
             ShopId = _tenantIdAccessor.GetTenantGuid(),
+            Customer = userCart.Customer,
             Items = cartItems.ToImmutableList(),
+            Coupons = coupons,
             LastAccess = _timeProvider.UtcNow,
             ConcurrencyToken = oldCart?.ConcurrencyToken ?? string.Empty
         };
-        var coupons = await _couponService
-            .RedeemCouponsAsync(oldCart?.Coupons ?? ImmutableArray<Coupon>.Empty, userCart.Coupons, cart.Id, cart.Customer?.Id, cancellationToken);
-        cart = cart with {
-            Coupons = coupons
-        };
+        try {
+            if (oldCart == null) {
+                cart = await _cartRepository.AddAsync(cart, cancellationToken);
+            } else {
+                cart = await _cartRepository.UpdateAsync(oldCart, cart, cancellationToken);
+            }
+            cart = (await _cartRepository.FindByIdAsync(cart.Id, cancellationToken))!;
+            cart = await PostProcessCart(cart, cancellationToken);
+            if (cart.TotalPrice < 0) {
+                throw new CaasValidationException("Cannot add coupon because cart value would be negative");
+            }
+            await uow.CompleteAsync(cancellationToken);
+            return cart;
+        } catch (CaasConstraintViolationDbException constraintViolationException) {
+            if ("customer_e_mail_key".Equals(constraintViolationException.ConstraintName)) {
+                throw new CaasDuplicateCustomerEmailException($"The e-mail address {userCart.Customer?.EMail} is already taken") {
+                    Type = constraintViolationException.ConstraintName
+                };
+            }
+            throw;
+        }
+    }
+
+    public async Task<Cart> SetCustomerAsync(Guid cartId, Customer? customer, CancellationToken cancellationToken = default) {
+        var oldCart = await _cartRepository.FindByIdAsync(cartId, cancellationToken);
         if (oldCart == null) {
-            cart = await _cartRepository.AddAsync(cart, cancellationToken);
-        } else {
+            throw new CaasItemNotFoundException($"Cart '{cartId}' not found");
+        }
+        Cart cart;
+        if (customer != null) {
+            if (oldCart.Customer != null) {
+                throw new CaasValidationException("Cart customer must be null if customer is provided");
+            }
+
+            cart = oldCart with {
+                Customer = customer
+            };
             cart = await _cartRepository.UpdateAsync(oldCart, cart, cancellationToken);
+        } else if(oldCart.Customer != null) {
+            cart = oldCart;
+        } else {
+            throw new CaasValidationException("Cart needs a customer");
         }
-        cart = (await _cartRepository.FindByIdAsync(cart.Id, cancellationToken))!;
-        cart = await PostProcessCart(cart, cancellationToken);
-        if (cart.TotalPrice < 0) {
-            throw new CaasValidationException("Cannot add coupon because cart value would be negative");
-        }
-        await uow.CompleteAsync(cancellationToken);
         return cart;
     }
 

@@ -110,21 +110,37 @@ public static class CaasApiServiceCollectionExtensions {
         options.MapToStatusCode<CaasNoTenantException>(StatusCodes.Status400BadRequest);
     
         // Custom mapping function for ValidationException.
-        options.Map<CaasValidationException>((ctx, ex) => HandleValidationErrors(ctx, ex.Errors));
+        options.Map<CaasValidationException>(HandleValidationErrors);
 
         // Because exceptions are handled polymorphically, this will act as a "catch all" mapping, which is why it's added last.
         // If an exception other than NotImplementedException and HttpRequestException is thrown, this will handle it.
         options.MapToStatusCode<Exception>(StatusCodes.Status500InternalServerError);
     }
 
-    private static ValidationProblemDetails HandleValidationErrors(HttpContext ctx, IEnumerable<ValidationFailure> errors) {
+    private static ValidationProblemDetails HandleValidationErrors(HttpContext ctx, CaasValidationException validationException) {
+        var errors = validationException.Errors;
         var factory = ctx.RequestServices.GetRequiredService<ProblemDetailsFactory>();
         var errorsDict = errors
             .GroupBy(x => x.PropertyName)
             .ToDictionary(
                 x => x.Key,
                 x => x.Select(failure => failure.ErrorMessage).ToArray());
-
-        return factory.CreateValidationProblemDetails(ctx, errorsDict);
+        
+        var problemDetails = factory.CreateValidationProblemDetails(
+            context: ctx, 
+            errorsDict
+        );
+        if (validationException.Type != null) {
+            problemDetails.Type = validationException.Type;
+        }
+        if (validationException.Title != null) {
+            problemDetails.Title = validationException.Title;
+        }
+        if (validationException.Detail != null) {
+            problemDetails.Detail = validationException.Detail;
+        }
+        problemDetails.Title ??= validationException.Message;
+        problemDetails.Detail ??= validationException.Message;
+        return problemDetails;
     }
 }

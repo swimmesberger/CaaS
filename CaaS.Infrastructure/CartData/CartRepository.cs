@@ -34,6 +34,9 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     }
 
     public async Task<Cart> AddAsync(Cart entity, CancellationToken cancellationToken = default) {
+        if (entity.Customer != null) {
+            await AddOrUpdateCustomer(entity, cancellationToken);
+        }
         var dataModel = Converter.ConvertFromDomain(entity);
         dataModel = await Dao.AddAsync(dataModel, cancellationToken);
         await Converter.CartItemRepository.AddAsync(entity.Items, cancellationToken);
@@ -43,6 +46,9 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
 
     public async Task<Cart> UpdateAsync(Cart oldEntity, Cart newEntity, CancellationToken cancellationToken = default) {
         await Converter.CartItemRepository.UpdateProductsAsync(oldEntity.Items, newEntity.Items, cancellationToken);
+        if (newEntity.Customer != null) {
+            await AddOrUpdateCustomer(newEntity, cancellationToken);
+        }
         var dataModel = Converter.ConvertFromDomain(newEntity);
         dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
         newEntity = Converter.ApplyDataModel(newEntity, dataModel);
@@ -56,11 +62,34 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.DeleteAsync(dataModels, cancellationToken);
     }
-    
+
+    private async Task<Cart> AddOrUpdateCustomer(Cart cart, CancellationToken cancellationToken = default) {
+        if (cart.Customer == null) {
+            return null!;
+        }
+        if (cart.Customer.ShopId == Guid.Empty) {
+            cart = cart with {
+                Customer = cart.Customer with {
+                    ShopId = cart.ShopId
+                }
+            };
+        }
+        var oldCustomer = await Converter.CustomerRepository.FindByIdAsync(cart.Customer.Id, cancellationToken);
+        Customer newCustomer;
+        if (oldCustomer == null) {
+            newCustomer = await Converter.CustomerRepository.AddAsync(cart.Customer, cancellationToken);
+        } else {
+            newCustomer = await Converter.CustomerRepository.UpdateAsync(oldCustomer, cart.Customer, cancellationToken);
+        }
+        return cart with {
+            Customer = newCustomer
+        };
+    }
+
     private class CartDomainModelConvert : IDomainReadModelConverter<CartDataModel, Cart> {
         internal CartItemRepository CartItemRepository { get; }
         internal ICouponRepository CouponRepository { get; }
-        private ICustomerRepository CustomerRepository { get; }
+        internal ICustomerRepository CustomerRepository { get; }
         internal ISystemClock TimeProvider { get; }
 
         public CartDomainModelConvert(IDao<ProductCartDataModel> cartItemDao, IProductRepository productRepository, 

@@ -1,7 +1,6 @@
 ﻿using CaaS.Core.Base.Exceptions;
 using CaaS.Core.CustomerAggregate;
 using CaaS.Infrastructure.Base.Ado;
-using CaaS.Infrastructure.Base.Ado.Model;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 using CaaS.Infrastructure.CustomerData;
 using CaaS.Infrastructure.Gen;
@@ -41,7 +40,8 @@ public class CustomerDaoTest : BaseDaoTest {
         var customerDao = GetCustomerDao(ShopTenantId);
         
         var parameters = new List<QueryParameter> {
-            new(nameof(Customer.Name), "Frances Hallums"),
+            new(nameof(Customer.FirstName), "Frances"),
+            new(nameof(Customer.LastName), "Hallums"),
             new(nameof(Customer.EMail), "fhallums2r@edublogs.org"),
         };
 
@@ -63,7 +63,8 @@ public class CustomerDaoTest : BaseDaoTest {
         var customer = new CustomerDataModel() {
                 Id = Guid.Parse("7A819343-23A1-4AD9-8798-64D1047CF01F"),
                 ShopId = Guid.Parse(ShopTenantId),
-                Name = "Roman Kofler-Hofer",
+                FirstName = "Roman",
+                LastName = "Kofler-Hofer",
                 EMail = "test@email.com",
                 CreditCardNumber = "1111222233334444"
         };
@@ -80,15 +81,18 @@ public class CustomerDaoTest : BaseDaoTest {
         var customerDao = GetCustomerDao(ShopTenantId);
         var customer = await customerDao.FindByIdAsync(customerId);
         customer.Should().NotBeNull();
-        customer!.Name.Should().Be("Alex Cossentine");
+        customer!.FirstName.Should().Be("Alex");
+        customer.LastName.Should().Be("Cossentine");
         customer = customer with {
-                Name = "Alex Cossentine-Kofler"
+            FirstName = "Alex",
+            LastName = "Cossentine-Kofler"
         };
         await customerDao.UpdateAsync(customer);
         
         customer = await customerDao.FindByIdAsync(customerId);
         customer.Should().NotBeNull();
-        customer!.Name.Should().Be("Alex Cossentine-Kofler");
+        customer!.FirstName.Should().Be("Alex");
+        customer.LastName.Should().Be("Cossentine-Kofler");
     }
     
     [Fact]
@@ -99,8 +103,9 @@ public class CustomerDaoTest : BaseDaoTest {
         customer.Should().NotBeNull();
         customer!.Id.Should().Be("c63b840a-a520-4a6a-a5d1-7328618c20c5");
         customer = customer with {
-                Id = Guid.Parse("f63b840a-a520-4a6a-a5d1-7328618c20c5"),
-                Name = "Test Name"
+            Id = Guid.Parse("f63b840a-a520-4a6a-a5d1-7328618c20c5"),
+            FirstName = "Test",
+            LastName = "Name"
         };
         
         Func<Task> act = async () => { await customerDao.UpdateAsync(customer); };
@@ -113,7 +118,8 @@ public class CustomerDaoTest : BaseDaoTest {
         var customerDao = GetCustomerDao(ShopTenantId);
         var customer = await customerDao.FindByIdAsync(customerId);
         customer.Should().NotBeNull();
-        customer!.Name.Should().Be("Alex Cossentine");
+        customer!.FirstName.Should().Be("Alex");
+        customer.LastName.Should().Be("Cossentine");
         await customerDao.DeleteAsync(customer);
         
         customer = await customerDao.FindByIdAsync(customerId);
