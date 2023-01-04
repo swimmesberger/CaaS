@@ -1,0 +1,15 @@
+@import '../../../../variables';
+
+:host {
+  display: block;
+}
+
+// Product details (Single product)
+
+@include media-breakpoint-up(lg) {
+  .product-details {
+    width: 100%;
+    max-width: 26rem;
+    padding-top: 0.25rem;
+  }
+}

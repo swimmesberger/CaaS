@@ -1,0 +1,23 @@
+<div class="card product-card">
+  <app-wishlist-button></app-wishlist-button>
+  <a class="card-img-top d-block overflow-hidden" [routerLink]="['../product', product.id]">
+    <img i18n-alt="@@pdProductImageAlt" alt="Product Image" src="{{productImage(259,242)}}">
+  </a>
+  <div class="card-body py-2">
+    <a class="product-meta d-block fs-xs pb-1">{{product.category ?? 'Robots'}}</a>
+    <h3 class="product-title fs-sm">
+      <a [routerLink]="['../product', product.id]">{{product.name}}</a>
+    </h3>
+    <div class="d-flex justify-content-between">
+      <div class="product-price">
+        <span class="text-accent">{{product.price | currency}}</span>
+      </div>
+      <app-rating-bar [rating]="4"></app-rating-bar>
+    </div>
+  </div>
+  <div class="card-body card-body-hidden">
+    <button class="btn btn-primary btn-sm d-block w-100 mb-2" type="button" (click)="addProductToCart($event)">
+      <i class="bi bi-cart fs-sm me-1"></i><ng-container i18n="@@pdAddToCart">Add to Cart</ng-container>
+    </button>
+  </div>
+</div>

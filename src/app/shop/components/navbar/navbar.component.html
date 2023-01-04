@@ -1,0 +1,38 @@
+<header class="shadow-sm">
+  <div #navbarSticky class="navbar-sticky bg-light">
+    <div class="navbar navbar-expand-lg navbar-light">
+      <div class="container"><a class="navbar-brand d-none d-sm-block flex-shrink-0" routerLink="/">
+        <img src="../../../../assets/images/logo.svg" width="80" alt="CaaS"></a>
+        <a class="navbar-brand d-sm-none flex-shrink-0 me-2" routerLink="/">
+        <img src="../../../../assets/images/logo.svg" width="40" alt="CaaS"></a>
+        <app-product-search></app-product-search>
+        <div class="navbar-toolbar d-flex flex-shrink-0 align-items-center">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"><span
+            class="navbar-toggler-icon"></span></button>
+          <a class="navbar-tool navbar-stuck-toggler" href="#">
+            <span class="navbar-tool-tooltip" i18n="@@headerExpandMenu">Expand menu</span>
+            <div class="navbar-tool-icon-box"><i class="navbar-tool-icon bi bi-list"></i></div>
+          </a>
+          <app-cart-widget></app-cart-widget>
+        </div>
+      </div>
+    </div>
+    <div class="navbar navbar-expand-lg navbar-light navbar-stuck-menu mt-n2 pt-0 pb-2">
+      <div class="container">
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <!-- Search-->
+          <app-product-search searchBarStyle="small"></app-product-search>
+          <!-- Primary menu-->
+          <ul class="navbar-nav" >
+            <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+              <a class="nav-link" routerLink="./">Home</a>
+            </li>
+            <li routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+              <a class="nav-link" routerLink="./products">Shop</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,45 @@
+<div class="container pb-5 mb-2 mb-md-4">
+  <div class="row">
+    <!-- Content  -->
+    <section *ngIf="$productPage | async as productPage" class="product-grid col-lg-12">
+      <div class="row mx-n2 no-products" *ngIf="!hasRows(productPage)">
+        <div class="col-md-3 col-sm-6 px-2 mb-4">
+          <h2 i18n="@@productPageNoProducts">No products found</h2>
+        </div>
+      </div>
+      <!-- Products grid-->
+      <ng-container *ngIf="hasRows(productPage)">
+        <div *ngFor="let productRow of chunkRows(productPage)" class="row mx-n2">
+          <div *ngFor="let productItem of productRow" class="col-md-3 col-sm-6 px-2 mb-4">
+            <app-product-item [product]="productItem"></app-product-item>
+            <hr class="d-sm-none">
+          </div>
+        </div>
+      </ng-container>
+      <hr class="my-3">
+      <!-- Pagination-->
+      <nav class="d-flex justify-content-between pt-2" aria-label="Page navigation">
+        <ul class="pagination">
+          <li class="page-item" [ngClass]="productPage.previousPage ? '' : 'disabled'">
+            <a class="page-link"
+               [routerLink]="['./products']"
+               queryParamsHandling="merge"
+               [queryParams]="prevPageQueryParams(productPage)">
+              <i class="bi bi-arrow-left me-2"></i>Prev
+            </a>
+          </li>
+        </ul>
+        <ul class="pagination">
+          <li class="page-item" [ngClass]="productPage.nextPage ? '' : 'disabled'">
+            <a class="page-link"
+               [routerLink]="['./products']"
+               queryParamsHandling="merge"
+               [queryParams]="nextPageQueryParams(productPage)" aria-label="Next">
+              Next<i class="bi bi-arrow-right ms-2"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </section>
+  </div>
+</div>
