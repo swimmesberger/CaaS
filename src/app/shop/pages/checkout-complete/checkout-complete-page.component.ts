@@ -4,10 +4,10 @@ import {Observable, of, switchMap} from "rxjs";
 
 @Component({
   selector: 'app-order-complete-page',
-  templateUrl: './order-complete-page.component.html',
-  styleUrls: ['./order-complete-page.component.scss']
+  templateUrl: './checkout-complete-page.component.html',
+  styleUrls: ['./checkout-complete-page.component.scss']
 })
-export class OrderCompletePageComponent {
+export class CheckoutCompletePageComponent {
   protected $orderNumber: Observable<string>;
 
   constructor(private route: ActivatedRoute) {

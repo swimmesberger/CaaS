@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
 import {CartPageComponent} from "./pages/cart/cart-page.component";
-import {OrderCompletePageComponent} from "./pages/order-complete-page/order-complete-page.component";
 import {RouterModule, Routes} from "@angular/router";
-import {PaymentPageComponent} from "./pages/payment/payment-page.component";
 import {CheckoutPageComponent} from "./pages/checkout/checkout-page.component";
-import {CheckoutReviewPageComponent} from "./pages/checkout-review-page/checkout-review-page.component";
 import {HomePageComponent} from "./pages/home/home-page.component";
 import {ProductPageComponent} from "./pages/product/product-page.component";
 import {ProductsPageComponent} from "./pages/products/products-page.component";
 import {ShopComponent} from "./shop.component";
+import {CheckoutReviewPageComponent} from "./pages/checkout-review/checkout-review-page.component";
+import {CheckoutPaymentPageComponent} from "./pages/checkout-payment/checkout-payment-page.component";
+import {CheckoutCompletePageComponent} from "./pages/checkout-complete/checkout-complete-page.component";
 
 const routes: Routes = [
   {
@@ -40,7 +40,7 @@ const routes: Routes = [
       },
       {
         path: 'checkout/payment',
-        component: PaymentPageComponent,
+        component: CheckoutPaymentPageComponent,
         title: $localize `:@@checkoutPageTitle:Checkout`
       },
       {
@@ -50,7 +50,7 @@ const routes: Routes = [
       },
       {
         path: 'checkout/complete',
-        component: OrderCompletePageComponent,
+        component: CheckoutCompletePageComponent,
         title: $localize `:@@checkoutCompletePageTitle:Checkout Complete`
       }
     ]

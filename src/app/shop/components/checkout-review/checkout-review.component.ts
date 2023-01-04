@@ -7,7 +7,7 @@ import {CartService} from "../../shared/cart/cart.service";
 import {OrderService} from "../../shared/order/order.service";
 import {CustomerWithAddressDto} from "../../shared/order/models/customerWithAddressDto";
 import {OrderDto} from "../../shared/order/models/orderDto";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {ProductService} from "../../shared/product/product.service";
 import {CartItemDto} from "../../shared/cart/models/cartItemDto";
 import {CaasDuplicateCustomerEmailError} from "../../shared/errors/caasDuplicateCustomerEmailError";
@@ -30,6 +30,7 @@ export class CheckoutReviewComponent {
   protected error: Set<string>;
 
   constructor(private router: Router,
+              private activatedRoute: ActivatedRoute,
               private cartService: CartService,
               private orderService: OrderService,
               private productService: ProductService) {
@@ -66,7 +67,10 @@ export class CheckoutReviewComponent {
   private async completeOrderImpl(): Promise<void> {
     this.createdOrder = await this.orderService.createOrder(this.customerData);
     // noinspection ES6MissingAwait
-    this.router.navigate(['/checkout/complete'], { queryParams: { orderNumber: this.orderNumber }});
+    this.router.navigate(['../complete'], {
+      queryParams: { orderNumber: this.orderNumber },
+      relativeTo: this.activatedRoute
+    });
   }
 
   get creditCardNumber(): string {
