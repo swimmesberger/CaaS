@@ -16,13 +16,18 @@ export class CanNavigateToAdminGuard implements CanActivate {
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+    const tenantId = this.tenantServcie.getTenantId(state.root);
+    this.tenantServcie.setTenantId(tenantId);
       if (!this.auth.isLoggedIn()) {
         // noinspection JSIgnoredPromiseFromCall
-        this.router.navigate([this.tenantServcie.getTenantUrl(route.root) + '/admin/login']);
+        this.router.navigate([this.tenantServcie.tenantUrl + '/admin/login'], {
+          queryParams: {
+            redirectUri: state.url
+          }
+        });
         return false;
       } else {
         return true;
       }
   }
-
 }

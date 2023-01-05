@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { AdminShopComponent } from './admin-shop.component';
-import {ReactiveFormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {
+  AlertModule,
   ButtonModule,
   CardModule,
   FormModule, GridModule,
@@ -14,6 +15,7 @@ import {IconModule} from "@coreui/icons-angular";
 import {NavProviderApi} from "../../shared/nav-provider.api";
 import {ShopNavProviderService} from "./shared/shop-nav-provider.service";
 import {AdminShopRoutingModule} from "./admin-shop-routing.module";
+import {NgClass, NgIf} from "@angular/common";
 
 
 @NgModule({
@@ -29,7 +31,11 @@ import {AdminShopRoutingModule} from "./admin-shop-routing.module";
     CardModule,
     GridModule,
     ButtonModule,
-    IconModule
+    IconModule,
+    FormsModule,
+    NgIf,
+    AlertModule,
+    NgClass
   ],
   providers: [
     { provide: AuthenticationApi, useClass: AppKeyAuthenticationService },

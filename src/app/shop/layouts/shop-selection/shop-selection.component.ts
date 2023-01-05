@@ -1,5 +1,5 @@
 import {Component, ViewEncapsulation} from '@angular/core';
-import {ShopService} from "../../shared/shop/shop.service";
+import {ShopStoreService} from "../../shared/shop/shop-store.service";
 import {Observable} from "rxjs";
 import {ShopMinimalDto} from "../../shared/shop/shopMinimalDto";
 import {RouterLinkWithHref} from "@angular/router";
@@ -19,7 +19,7 @@ import {AsyncPipe, NgForOf, NgIf} from "@angular/common";
 })
 export class ShopSelectionComponent {
   $shops: Observable<Array<ShopMinimalDto>>;
-  constructor(private shopService: ShopService) {
+  constructor(private shopService: ShopStoreService) {
     this.$shops = shopService.getShops();
   }
 }

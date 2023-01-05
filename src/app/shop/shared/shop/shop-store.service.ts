@@ -7,7 +7,7 @@ import {ShopMinimalDto} from "./shopMinimalDto";
 @Injectable({
   providedIn: 'root'
 })
-export class ShopService {
+export class ShopStoreService {
   constructor(private httpClient: HttpClient) {  }
 
   public getShops(): Observable<Array<ShopMinimalDto>> {

@@ -45,6 +45,9 @@ export class TenantIdService {
   }
 
   getTenantId(activatedRoute: ActivatedRouteSnapshot) : string | null {
+    if (this._$tenantId && this._$tenantId.value !== null) {
+      return this._$tenantId.value;
+    }
     let currentRoute: ActivatedRouteSnapshot | null = activatedRoute;
     do {
       if(currentRoute.data['tenantUser']) {

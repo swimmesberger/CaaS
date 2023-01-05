@@ -20,6 +20,10 @@ export class OAuthAuthenticationService implements AuthenticationApi {
     this.oauthService.initCodeFlow();
   }
 
+  logout(): void {
+    this.oauthService.logOut();
+  }
+
   isLoggedIn() {
     return this.oauthService.hasValidAccessToken() &&
           this.oauthService.hasValidIdToken();

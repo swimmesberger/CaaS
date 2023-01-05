@@ -9,6 +9,11 @@ const routes: Routes = [
   { path: '', component: AdminShopComponent, children: [
       { path: '', component: DefaultLayoutComponent, canActivate: [CanNavigateToAdminGuard], children: [
         {
+          path: '',
+          redirectTo: 'dashboard',
+          pathMatch: 'full'
+        },
+        {
           path: 'dashboard',
           loadChildren: () =>
             import('./components/dashboard/dashboard.module').then((m) => m.DashboardModule)

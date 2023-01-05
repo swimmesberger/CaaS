@@ -5,14 +5,33 @@
       <c-col md="5">
         <c-card class="p-4">
           <c-card-body>
-            <form cForm>
+            <form cForm
+                  name="form"
+                  (ngSubmit)="f.form.valid && login()"
+                  #f="ngForm"
+            >
               <h1>Login</h1>
               <p class="text-medium-emphasis">Sign In to your shop</p>
               <c-input-group class="mb-3">
-                  <span cInputGroupText>
-                    <svg cIcon name="cilUser"></svg>
-                  </span>
-                <input autoComplete="email" cFormControl placeholder="E-Mail" />
+                <span cInputGroupText>
+                  <svg cIcon name="cilUser"></svg>
+                </span>
+                <input
+                  autoComplete="email"
+                  [(ngModel)]="form['email']"
+                  cFormControl
+                  name="email"
+                  placeholder="E-Mail"
+                  required
+                  email
+                  #email="ngModel"
+                />
+                <c-alert color="danger" class="invalid-feedback" *ngIf="email.errors && f.submitted">
+                  <div *ngIf="email.errors?.['required']">Email is required</div>
+                  <div *ngIf="email.errors?.['email']">
+                    Email must be a valid email address
+                  </div>
+                </c-alert>
               </c-input-group>
               <c-input-group class="mb-4">
                   <span cInputGroupText>
@@ -20,18 +39,28 @@
                   </span>
                 <input
                   autoComplete="current-password"
-                  cFormControl
-                  placeholder="App Key"
                   type="password"
+                  [(ngModel)]="form['appKey']"
+                  cFormControl
+                  name="password"
+                  placeholder="App Key"
+                  required
+                  #password="ngModel"
                 />
+                <c-alert color="danger" class="invalid-feedback" *ngIf="password.errors && f.submitted">
+                  <div *ngIf="password.errors?.['required']">Password is required</div>
+                </c-alert>
               </c-input-group>
               <c-row>
                 <c-col xs="6">
-                  <button cButton class="px-4" color="primary">
+                  <button [disabled]="isLoading" cButton type="submit" class="px-4" color="primary">
                     Login
                   </button>
                 </c-col>
               </c-row>
+              <c-alert color="danger" class="invalid-feedback" *ngIf="isLoginFailed">
+                <div>Login failed. Check the E-Mail and/or app-key.</div>
+              </c-alert>
             </form>
           </c-card-body>
         </c-card>

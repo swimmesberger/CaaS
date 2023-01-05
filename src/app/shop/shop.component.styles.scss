@@ -1,60 +1,181 @@
 @import 'variables';
 
-$navbar-tool-transition:              color .25s ease-in-out;
-$navbar-tool-icon-box-size:           2.875rem;
-$navbar-tool-icon-font-size:          1.25rem;
-$navbar-tool-label-size:              1.25rem;
-$navbar-tool-label-bg:                var(--#{$prefix}primary);
-$navbar-tool-label-color:             $white;
-$navbar-tool-label-font-size:         $font-size-xs;
-$navbar-tool-label-font-weight:       $font-weight-medium;
-$navbar-tool-text-font-size:          $font-size-sm;
+//
+// Fonts
+// -------------------------------------------------
+
+.fs-xl {
+  font-size: #{$font-size-xl} !important;
+}
+
+.fs-lg {
+  font-size: #{$font-size-lg} !important;
+}
+
+.fs-md {
+  font-size: #{$font-size-md} !important;
+}
+
+.fs-sm {
+  font-size: #{$font-size-sm} !important;
+}
+
+.fs-ms {
+  font-size: #{$font-size-ms} !important;
+}
+
+.fs-xs {
+  font-size: #{$font-size-xs} !important;
+}
+
+.fs-base {
+  font-size: 1rem !important;
+}
+
+//
+// Buttons
+// --------------------------------------------------
+
+@each $color, $value in $theme-colors {
+  .btn-outline-#{$color} {
+    --#{$prefix}btn-border-color: #{rgba($value, .35)};
+  }
+}
+
+@mixin button-outline-variant(
+  $color,
+  $color-hover: color-contrast($color),
+  $active-background: $color,
+  $active-border: $color,
+  $active-color: color-contrast($active-background)
+) {
+  --#{$prefix}btn-color: #{$color};
+  --#{$prefix}btn-border-color: #{$color};
+  --#{$prefix}btn-hover-color: #{$color-hover};
+  --#{$prefix}btn-hover-bg: #{$active-background};
+  --#{$prefix}btn-hover-border-color: #{$active-border};
+  --#{$prefix}btn-focus-shadow-rgb: #{to-rgb($color)};
+  --#{$prefix}btn-active-color: #{$active-color};
+  --#{$prefix}btn-active-bg: #{$active-background};
+  --#{$prefix}btn-active-border-color: #{$active-border};
+  --#{$prefix}btn-active-shadow: #{$btn-active-box-shadow};
+  --#{$prefix}btn-disabled-color: #{$color};
+  --#{$prefix}btn-disabled-bg: transparent;
+  --#{$prefix}btn-disabled-border-color: #{$color};
+  --#{$prefix}gradient: none;
+}
+
+.text-accent {
+  color: rgba(var(--#{$prefix}accent-rgb), 1) !important;
+}
+
+// Navigation links style class
+
+.nav-link-style {
+  color: $nav-link-color;
+
+  > i {
+    margin-top: -.125rem;
+    vertical-align: middle;
+  }
+
+  &:hover {
+    color: $nav-link-hover-color;
+  }
+}
+
+.active > .nav-link-style,
+.nav-link-style.active {
+  color: $nav-link-active-color;
+}
+
+.nav-link-style.nav-link-light {
+  color: $nav-link-light-color;
+
+  &:hover {
+    color: $nav-link-light-hover-color;
+  }
+}
+
+.active > .nav-link-style.nav-link-light,
+.nav-link-style.nav-link-light.active {
+  color: $nav-link-light-active-color;
+}
+
+// pagination style class
+
+.pagination {
+  margin-bottom: 0;
+  user-select: none;
+}
+
+.page-link {
+  position: relative;
+  transition: $pagination-transition;
+
+  &:focus, &:hover {
+    color: $pagination-color;
+  }
+
+  &.page-link-static:hover {
+    border-color: transparent;
+    background-color: $pagination-bg;
+    color: $pagination-color;
+  }
+
+  > i {
+    margin-top: -.125rem;
+    vertical-align: middle;
+  }
+}
+
+.page-item {
+  margin: .15rem;
+
+  &.active {
+    position: relative;
+    z-index: 5;
+    cursor: default;
+
+    > .page-link {
+      @include box-shadow($pagination-active-box-shadow);
+    }
+  }
+}
+
+.page-title-overlap {
+  padding-bottom: 6.375rem;
+
+  & + * {
+    margin-top: -4.875rem;
+  }
+
+  @include media-breakpoint-down(md) {
+    padding-bottom: 5.5rem;
+  }
+}
+
+.list-unstyled > li {
+  margin-bottom: 0.4rem;
+}
+
+.input-group .position-absolute {
+  z-index: 5;
+}
+
+// Absolutely positioned addons
+.input-group .position-absolute {
+  z-index: 5;
+
+  & + .form-control,
+  & + .password-toggle .form-control {
+    padding-left: 2.5rem;
+  }
+}
+
+@import "node_modules/bootstrap";
 
 // Navbar
-
-$navbar-padding-y:                    $spacer * 0.75;
-$navbar-nav-link-padding-y:           1rem;
-$navbar-nav-link-padding-x:           1.125rem;
-
-$navbar-brand-padding-y:              $spacer * .625;
-$navbar-brand-font-size:              $h3-font-size;
-$navbar-brand-font-weight:            $font-weight-medium;
-
-$navbar-toggler-padding-y:            .75rem;
-$navbar-toggler-padding-x:            .75rem;
-$navbar-toggler-font-size:            $font-size-base;
-$navbar-toggler-border-radius:        0;
-
-
-
-$navbar-dropdown-min-width:           12.5rem;
-$navbar-mega-dropdown-column-width:   15rem;
-
-$navbar-light-color:                  $gray-700;
-$navbar-light-hover-color:            var(--#{$prefix}primary);
-$navbar-light-active-color:           var(--#{$prefix}primary);
-$navbar-light-disabled-color:         $gray-600;
-$navbar-light-toggler-border-color:   transparent;
-$navbar-light-brand-color:            $gray-800;
-$navbar-light-brand-hover-color:      $navbar-light-brand-color;
-
-$navbar-dark-color:                   rgba($white, .65);
-$navbar-dark-hover-color:             $white;
-$navbar-dark-active-color:            $white;
-$navbar-dark-disabled-color:          rgba($white, .35);
-$navbar-dark-toggler-border-color:    transparent;
-$navbar-dark-brand-color:             $white;
-$navbar-dark-brand-hover-color:       $navbar-dark-brand-color;
-
-$navbar-light-tool-color:             $gray-700;
-$navbar-light-tool-hover-color:       $gray-900;
-$navbar-light-tool-text-small-color:  $gray-600;
-
-$navbar-dark-tool-color:              $white;
-$navbar-dark-tool-hover-color:        $white;
-$navbar-dark-tool-text-small-color:   rgba($white, .5);
-
-$navbar-stuck-box-shadow:             $box-shadow;
 
 // Navbar brand
 
@@ -367,7 +488,6 @@ $navbar-stuck-box-shadow:             $box-shadow;
   }
 }
 
-
 // Sticky navbar
 
 .navbar-stuck-toggler { display: none; }
@@ -519,4 +639,34 @@ $navbar-stuck-box-shadow:             $box-shadow;
   .navbar-mega-nav::after {
     background-color: $border-light-color;
   }
+}
+
+// Override solid buttons
+@each $color, $value in $theme-colors {
+  .btn-#{$color} {
+    --#{$prefix}btn-color: #{$btn-color};
+    --#{$prefix}btn-hover-color: #{$btn-color};
+    --#{$prefix}btn-active-color: #{$btn-color};
+    --#{$prefix}btn-hover-bg: #{darken($value, 8%)};
+    --#{$prefix}btn-active-bg: #{darken($value, 8%)};
+    --#{$prefix}btn-hover-border-color: #{darken($value, 8%)};
+    --#{$prefix}btn-active-border-color: #{darken($value, 8%)};
+    --#{$prefix}btn-disabled-color: #{$btn-color};
+  }
+}
+
+.btn-secondary,
+.btn-light {
+  --#{$prefix}btn-color: #{$gray-800} !important;
+  --#{$prefix}btn-hover-color: #{$gray-900} !important;
+  --#{$prefix}btn-active-color: #{$gray-900} !important;
+  --#{$prefix}btn-disabled-color: #{$gray-600};
+}
+
+.btn-light {
+  --#{$prefix}btn-border-color: #{$light} !important;
+  --#{$prefix}btn-hover-border-color: #{$light} !important;
+  --#{$prefix}btn-active-border-color: #{$light} !important;
+  --#{$prefix}btn-hover-bg: #{$light} !important;
+  --#{$prefix}btn-active-bg: #{$light} !important;
 }

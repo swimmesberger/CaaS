@@ -1,7 +1,7 @@
 export interface ShopAdminDto {
   id?: string,
   name?: string,
-  email?: string,
+  eMail?: string,
   shopId?: string,
   concurrencyToken?: string
 }
