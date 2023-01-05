@@ -66,7 +66,7 @@ import {
   cilPaperPlane,
   cilPen,
   cilPencil,
-  cilPeople,
+  cilPeople, cilPlus,
   cilPrint,
   cilPuzzle,
   cilReportSlash,
@@ -87,7 +87,7 @@ import {
   cilUser,
   cilUserFemale,
   cilUserFollow,
-  cilUserUnfollow,
+  cilUserUnfollow, cilViewModule,
 } from '@coreui/icons';
 
 export const iconSubset = {
@@ -180,8 +180,11 @@ export const iconSubset = {
   cilUserFemale,
   cilUserFollow,
   cilUserUnfollow,
+  cilViewModule,
+  cilPlus
 };
 
+// noinspection JSUnusedGlobalSymbols
 export enum IconSubset {
   cibCcAmex = 'cibCcAmex',
   cibCcApplePay = 'cibCcApplePay',
@@ -272,4 +275,5 @@ export enum IconSubset {
   cilUserFemale = 'cilUserFemale',
   cilUserFollow = 'cilUserFollow',
   cilUserUnfollow = 'cilUserUnfollow',
+  cilViewModule = 'cilViewModule'
 }

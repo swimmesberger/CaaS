@@ -6,7 +6,7 @@ import {AbstractControl, FormControl, FormGroup, Validators} from "@angular/form
 import { StepInfoDto } from '../checkout-steps/step-info-dto';
 import {OrderService} from "../../shared/order/order.service";
 import {CustomerWithAddressDto} from "../../shared/order/models/customerWithAddressDto";
-import {TenantIdService} from "../../shared/shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Component({
   selector: 'app-checkout',

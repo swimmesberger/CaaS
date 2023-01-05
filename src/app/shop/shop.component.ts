@@ -1,10 +1,14 @@
 import {Component, ViewEncapsulation} from '@angular/core';
-import { environment } from '../../environments/environment';
+import {environment} from '../../environments/environment';
 
 @Component({
   selector: 'shop-root',
-  templateUrl: './shop.component.html',
-  styleUrls: ['./shop.component.scss'],
+  template: `
+    <main class="page-wrapper">
+      <router-outlet></router-outlet>
+    </main>
+  `,
+  styleUrls: ['./styles.scss'],
   encapsulation: ViewEncapsulation.None
 })
 export class ShopComponent {

@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import {Observable} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
 import {CartService} from "../../shared/cart/cart.service";
-import {TenantIdService} from "../../shared/shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Component({
   selector: 'app-cart-widget',

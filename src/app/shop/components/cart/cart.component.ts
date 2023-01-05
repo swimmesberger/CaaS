@@ -4,7 +4,7 @@ import {Observable, Subscription} from "rxjs";
 import {CartDto} from "../../shared/cart/models/cartDto";
 import {FormArray, FormControl, FormGroup, Validators} from "@angular/forms";
 import {ProductService} from "../../shared/product/product.service";
-import {TenantIdService} from "../../shared/shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Component({
   selector: 'app-cart',

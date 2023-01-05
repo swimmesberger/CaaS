@@ -1,5 +1,5 @@
 import {Component, ElementRef, HostListener, ViewChild} from '@angular/core';
-import {TenantIdService} from "../../shared/shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Component({
   selector: 'app-navbar',

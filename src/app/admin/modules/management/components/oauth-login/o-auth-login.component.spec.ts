@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AdminComponent } from './admin.component';
+import { OAuthLoginComponent } from './o-auth-login.component';
 
-describe('AdminComponent', () => {
-  let component: AdminComponent;
-  let fixture: ComponentFixture<AdminComponent>;
+describe('LoginComponentComponent', () => {
+  let component: OAuthLoginComponent;
+  let fixture: ComponentFixture<OAuthLoginComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AdminComponent ]
+      declarations: [ OAuthLoginComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(AdminComponent);
+    fixture = TestBed.createComponent(OAuthLoginComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

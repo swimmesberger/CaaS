@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {HttpErrorResponse} from "@angular/common/http";
 import {ProblemDetailsDto} from "../problemDetailsDto";
 import {CaasPaymentError} from "../errors/caasPaymentError";
-import {TenantIdService} from "../shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 import {CaasDuplicateCustomerEmailError} from "../errors/caasDuplicateCustomerEmailError";
 
 @Injectable({

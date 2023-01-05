@@ -7,7 +7,7 @@ import {ActivatedRoute, Params, Router} from "@angular/router";
 import {KeysetPaginationDirection} from "../../shared/product/models/keysetPaginationDirection";
 import {ParsedPaginationToken} from "../../shared/product/models/parsedPaginationToken";
 import {ProductSearchService} from "../../shared/product/product-search.service";
-import {TenantIdService} from "../../shared/shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Component({
   selector: 'app-products',

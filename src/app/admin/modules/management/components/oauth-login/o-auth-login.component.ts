@@ -1,18 +1,17 @@
 import { Component } from '@angular/core';
-import {AuthenticationService} from "../../shared/authentication.service";
-import {authConfig} from "../../auth.config";
+import {OAuthAuthenticationService} from "../../shared/o-auth-authentication.service";
 import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-login-component',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  templateUrl: './o-auth-login.component.html',
+  styleUrls: ['./o-auth-login.component.scss']
 })
-export class LoginComponent {
+export class OAuthLoginComponent {
   constructor(private router: Router,
               private activatedRoute: ActivatedRoute,
-              private authenticationService: AuthenticationService) {
-    authenticationService.loadConfig(authConfig).then(_ => {
+              private authenticationService: OAuthAuthenticationService) {
+    authenticationService.loadConfig().then(_ => {
       if(!authenticationService.isLoggedIn()) {
         authenticationService.login();
       } else {

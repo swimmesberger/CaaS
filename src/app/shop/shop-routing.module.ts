@@ -28,10 +28,6 @@ function createPageNavbarRoute(route: Route) {
 const routes: Routes = [
   { path: '', loadComponent: () => ShopSelectionComponent },
   { path: '', component: ShopComponent, children: [
-      {
-        path: '',
-        component: ShopSelectionComponent
-      },
       { path: ':shopId', component: PageSimpleLayoutComponent, data: { tenantUser: true }, children: [
         {
           path: '',
@@ -76,6 +72,11 @@ const routes: Routes = [
       ]}
     ]
   },
+  {
+    path: ':shopId/admin',
+    data: { tenantUser: true },
+    loadChildren: () => import('../admin/modules/shop/admin-shop.module').then(m => m.AdminShopModule)
+  }
 ];
 
 @NgModule({

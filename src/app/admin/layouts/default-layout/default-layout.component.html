@@ -7,16 +7,14 @@
 >
   <c-sidebar-brand
     [brandFull]="{
-      src: 'assets/img/brand/coreui-angular.svg',
-      width: 200,
-      height: 46,
-      alt: 'CoreUI Logo'
+      src: 'assets/images/logo.svg',
+      width: 78,
+      alt: 'Caas Logo'
     }"
     [brandNarrow]="{
-      src: 'assets/img/brand/coreui-signet-white.svg',
+      src: 'assets/images/logo.svg',
       width: 46,
-      height: 46,
-      alt: 'CoreUI Logo'
+      alt: 'Caas Logo'
     }"
     routerLink="./"
   >
@@ -29,11 +27,6 @@
   >
   </c-sidebar-nav>
     </perfect-scrollbar>
-  <c-sidebar-toggler
-    *ngIf="!sidebar.narrow"
-    toggle="unfoldable"
-    cSidebarToggle="sidebar"
-  ></c-sidebar-toggler>
 </c-sidebar>
 
 <!--main-->

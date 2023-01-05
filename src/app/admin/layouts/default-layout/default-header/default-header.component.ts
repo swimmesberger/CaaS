@@ -2,7 +2,8 @@ import { Component, Input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 import { ClassToggleService, HeaderComponent } from '@coreui/angular';
-import {AuthenticationService} from "../../../shared/authentication.service";
+import {OAuthAuthenticationService} from "../../../modules/management/shared/o-auth-authentication.service";
+import {AuthenticationApi} from "../../../shared/authentication.api";
 
 @Component({
   selector: 'app-default-header',
@@ -17,7 +18,7 @@ export class DefaultHeaderComponent extends HeaderComponent {
   public newNotifications = new Array(5)
 
   constructor(private classToggler: ClassToggleService,
-              private authenticationService: AuthenticationService) {
+              private authenticationService: AuthenticationApi) {
     super();
   }
 

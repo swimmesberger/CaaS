@@ -12,7 +12,7 @@ import {CartDto} from "./models/cartDto";
 import {CartStoreService} from "./cart-store.service";
 import { v4 as uuidv4 } from 'uuid';
 import {CouponDto} from "./models/couponDto";
-import {TenantIdService} from "../shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Injectable({
   providedIn: 'root'

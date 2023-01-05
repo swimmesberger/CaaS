@@ -12,7 +12,7 @@ import {ProductService} from "../../shared/product/product.service";
 import {CartItemDto} from "../../shared/cart/models/cartItemDto";
 import {CaasDuplicateCustomerEmailError} from "../../shared/errors/caasDuplicateCustomerEmailError";
 import {CaasPaymentError} from "../../shared/errors/caasPaymentError";
-import {TenantIdService} from "../../shared/shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Component({
   selector: 'app-checkout-review',

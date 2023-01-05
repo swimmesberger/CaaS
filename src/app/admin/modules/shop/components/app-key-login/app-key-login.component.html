@@ -1,0 +1,41 @@
+<!--suppress HtmlUnknownBooleanAttribute -->
+<div class="bg-light min-vh-100 d-flex flex-row align-items-center">
+  <c-container>
+    <c-row class="justify-content-center">
+      <c-col md="5">
+        <c-card class="p-4">
+          <c-card-body>
+            <form cForm>
+              <h1>Login</h1>
+              <p class="text-medium-emphasis">Sign In to your shop</p>
+              <c-input-group class="mb-3">
+                  <span cInputGroupText>
+                    <svg cIcon name="cilUser"></svg>
+                  </span>
+                <input autoComplete="email" cFormControl placeholder="E-Mail" />
+              </c-input-group>
+              <c-input-group class="mb-4">
+                  <span cInputGroupText>
+                    <svg cIcon name="cilLockLocked"></svg>
+                  </span>
+                <input
+                  autoComplete="current-password"
+                  cFormControl
+                  placeholder="App Key"
+                  type="password"
+                />
+              </c-input-group>
+              <c-row>
+                <c-col xs="6">
+                  <button cButton class="px-4" color="primary">
+                    Login
+                  </button>
+                </c-col>
+              </c-row>
+            </form>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>

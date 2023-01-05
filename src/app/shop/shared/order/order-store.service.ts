@@ -5,7 +5,7 @@ import {HttpClient} from "@angular/common/http";
 import {AddressDto} from "./models/addressDto";
 import {OrderDto} from "./models/orderDto";
 import {CustomerDto} from "../cart/models/customerDto";
-import {TenantIdService} from "../shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Injectable({
   providedIn: 'root'

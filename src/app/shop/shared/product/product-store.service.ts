@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams} from "@angular/common/http";
 import { environment } from 'src/environments/environment';
-import {first, Observable, switchMap, throwError} from "rxjs";
+import {Observable, throwError} from "rxjs";
 import {ProductMinimalDtoPagedResult} from "./models/productMinimalDtoPagedResult";
 import {HttpUtil} from "../http-util";
 import {ParsedPaginationToken} from "./models/parsedPaginationToken";
 import {ProductDetailDto} from "./models/productDetailDto";
-import {TenantIdService} from "../shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Injectable({
   providedIn: 'root'

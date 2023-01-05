@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
-import {AuthConfig, OAuthService} from 'angular-oauth2-oidc';
+import {OAuthService} from 'angular-oauth2-oidc';
 import {authConfig} from "../auth.config";
 import {Md5} from 'ts-md5';
+import {AuthenticationApi} from "../../../shared/authentication.api";
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthenticationService {
+export class OAuthAuthenticationService implements AuthenticationApi {
   constructor(private oauthService: OAuthService) {  }
 
-  loadConfig(config: AuthConfig): Promise<boolean> {
+  loadConfig(): Promise<boolean> {
     this.oauthService.configure(authConfig);
     // noinspection JSIgnoredPromiseFromCall
     return this.oauthService.loadDiscoveryDocumentAndTryLogin();

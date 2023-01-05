@@ -4,7 +4,7 @@ import {PageNotFoundComponent} from "./components/page-not-found/page-not-found.
 
 const routes: Routes = [
   { path: 'shop', loadChildren: () => import('./shop/shop.module').then(m => m.ShopModule) },
-  { path: 'admin', loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule) },
+  { path: 'admin', loadChildren: () => import('./admin/modules/management/admin-management.module').then(m => m.AdminManagementModule) },
   { path: '',   redirectTo: '/shop', pathMatch: 'full' },
   { path: '**', loadComponent: () => PageNotFoundComponent },  // Wildcard route for a 404 page
 ];

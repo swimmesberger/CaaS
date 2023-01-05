@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
-import { navItems } from './_nav';
+import {NavProviderApi} from "../../shared/nav-provider.api";
+import {INavData} from "@coreui/angular";
 
 @Component({
   selector: 'app-dashboard',
@@ -8,11 +9,15 @@ import { navItems } from './_nav';
 })
 export class DefaultLayoutComponent {
 
-  public navItems = navItems;
+  public navItems: Array<INavData> = [];
 
   public perfectScrollbarConfig = {
     suppressScrollX: true,
   };
 
-  constructor() {}
+  constructor(private navProvider: NavProviderApi) {
+    navProvider.navItems().then(items => {
+      this.navItems = items;
+    });
+  }
 }

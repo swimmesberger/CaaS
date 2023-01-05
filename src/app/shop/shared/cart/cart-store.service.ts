@@ -3,7 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {first, Observable, switchMap, throwError} from "rxjs";
 import {environment} from "../../../../environments/environment";
 import {CartDto} from "./models/cartDto";
-import {TenantIdService} from "../shop/tenant-id.service";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Injectable({
   providedIn: 'root'
