@@ -6,21 +6,32 @@ import { OAuthLoginComponent } from './components/oauth-login/o-auth-login.compo
 import {AuthenticationApi} from "../../shared/authentication.api";
 import {OAuthAuthenticationService} from "./shared/o-auth-authentication.service";
 import {CaasAdminModule} from "../../caas-admin.module";
-import {CardModule, FormModule} from "@coreui/angular";
+import {CardModule, FormModule, GridModule, TableModule} from "@coreui/angular";
 import {NavProviderApi} from "../../shared/nav-provider.api";
 import {ManagementNavProviderService} from "./shared/management-nav-provider.service";
+import { ShopsComponent } from './components/shops/shops.component';
+import {IconModule} from "@coreui/icons-angular";
+import {AsyncPipe, NgForOf} from "@angular/common";
+import { ShopEditComponent } from './components/shop-edit/shop-edit.component';
 
 @NgModule({
   declarations: [
     AdminManagementComponent,
-    OAuthLoginComponent
+    OAuthLoginComponent,
+    ShopsComponent,
+    ShopEditComponent
   ],
   imports: [
     CaasAdminModule,
     AdminManagementRoutingModule,
     ReactiveFormsModule,
     FormModule,
-    CardModule
+    CardModule,
+    GridModule,
+    TableModule,
+    IconModule,
+    NgForOf,
+    AsyncPipe
   ],
   providers: [
     { provide: AuthenticationApi, useClass: OAuthAuthenticationService },

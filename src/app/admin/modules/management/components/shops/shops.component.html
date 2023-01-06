@@ -1,0 +1,73 @@
+<!--suppress HtmlUnknownBooleanAttribute -->
+<c-row>
+  <c-col xs>
+    <c-card class="mb-4">
+      <c-card-header>Shops</c-card-header>
+      <c-card-body>
+        <c-row class="mb-4">
+          <c-col>
+            <div class="float-end">
+              <button [disabled]="isLoading" routerLink="/admin/shop" type="button" class="me-2 btn btn-primary">
+                <svg cIcon name="cilPlus"></svg>Add new shop</button>
+              <button [disabled]="isLoading" (click)="deleteSelectedShops($event)" type="button" class="btn btn-danger">
+                <svg cIcon name="cilPlus"></svg>Remove selected shops</button>
+            </div>
+          </c-col>
+        </c-row>
+        <table
+          [hover]="true"
+          [responsive]="true"
+          [striped]="true"
+          align="middle"
+          cTable
+          class="mb-0 border"
+        >
+          <thead cTableColor="light">
+            <tr>
+              <th class="white-space-nowrap fs--1 align-middle" style="max-width:20px; width:18px;">
+                <div class="form-check mb-0 fs-0"></div>
+              </th>
+              <th>Name</th>
+              <th>App Key</th>
+              <th>Cart Lifetime Minutes</th>
+              <th>Admin Name</th>
+              <th>Admin E-Mail</th>
+              <th class="white-space-nowrap fs--1 align-middle" style="max-width:20px; width:18px;">
+                <div class="form-check mb-0 fs-0"></div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let shop of $shops | async; index as i">
+              <td class="fs--1 align-middle">
+                <div class="form-check mb-0 fs-0">
+                  <!--suppress HtmlUnknownAttribute -->
+                  <input #selectionCbElement [attr.data-shop-id]="shop.id" class="form-check-input" type="checkbox">
+                </div>
+              </td>
+              <td>
+                <div>{{ shop.name }}</div>
+              </td>
+              <td>
+                <div>{{ shop.appKey }}</div>
+              </td>
+              <td>
+                <div>{{ shop.cartLifetimeMinutes }}</div>
+              </td>
+              <td>
+                <div>{{ shop.shopAdmin?.name }}</div>
+              </td>
+              <td>
+                <div>{{ shop.shopAdmin?.eMail }}</div>
+              </td>
+              <td>
+                <div class="col-auto"><button [disabled]="isLoading" [routerLink]="['/admin/shop', shop.id]"
+                                              class="btn btn-sm btn-secondary px-5">Edit</button></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </c-card-body>
+    </c-card>
+  </c-col>
+</c-row>

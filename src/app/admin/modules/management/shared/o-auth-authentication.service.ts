@@ -3,12 +3,14 @@ import {OAuthService} from 'angular-oauth2-oidc';
 import {authConfig} from "../auth.config";
 import {Md5} from 'ts-md5';
 import {AuthenticationApi} from "../../../shared/authentication.api";
+import {Router} from "@angular/router";
 
 @Injectable({
   providedIn: 'root'
 })
 export class OAuthAuthenticationService implements AuthenticationApi {
-  constructor(private oauthService: OAuthService) {  }
+  constructor(private router: Router,
+              private oauthService: OAuthService) {  }
 
   loadConfig(): Promise<boolean> {
     this.oauthService.configure(authConfig);
@@ -22,6 +24,8 @@ export class OAuthAuthenticationService implements AuthenticationApi {
 
   logout(): void {
     this.oauthService.logOut();
+    // noinspection JSIgnoredPromiseFromCall
+    this.router.navigate(['/admin']);
   }
 
   isLoggedIn() {

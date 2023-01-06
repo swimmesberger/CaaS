@@ -1,0 +1,54 @@
+<h2 class="mb-4">{{shopId ? 'Edit Shop' : 'Create a Shop'}}</h2>
+<div class="row">
+  <div class="col-xl-9">
+    <form (ngSubmit)="save($event)" [formGroup]="shopForm" class="row g-3 mb-6">
+      <div class="col-md-6">
+        <div class="form-floating">
+          <input formControlName="name" class="form-control" id="name" type="text">
+          <label for="name">Shop Name</label>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-floating">
+          <input formControlName="appKey" class="form-control" id="appKey" type="text">
+          <label for="appKey">App Key</label>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <div class="form-floating">
+          <input formControlName="cartLifetimeMinutes" type="number" id="cartLifetimeMinutes" class="form-control" />
+          <label class="form-label" for="cartLifetimeMinutes">Cart Lifetime Minutes</label>
+        </div>
+      </div>
+      <ng-container formGroupName="shopAdmin">
+        <div class="col-sm-6 col-md-4">
+          <div class="form-floating">
+            <input formControlName="name" form type="text" id="adminName" class="form-control" />
+            <label class="form-label" for="adminName">Admin Name</label>
+          </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+          <div class="form-floating">
+            <input formControlName="eMail" type="text" id="adminEmail" class="form-control" />
+            <label class="form-label" for="cartLifetimeMinutes">Admin E-Mail</label>
+          </div>
+        </div>
+      </ng-container>
+      <div class="col-12 gy-6">
+        <div class="row g-3 justify-content-end">
+          <div class="col-auto">
+            <button routerLink="/admin/shops" class="btn btn-lg btn-secondary px-5">Cancel</button>
+          </div>
+          <div class="col-auto">
+            <button
+              [disabled]="shopForm.invalid"
+              type="submit"
+              class="btn btn-lg btn-primary px-5 px-sm-15">
+              {{shopId ? 'Save Shop' : 'Create Shop'}}
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

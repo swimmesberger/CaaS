@@ -8,7 +8,8 @@ import { OAuthAuthenticationService } from './shared/o-auth-authentication.servi
 })
 export class CanNavigateToAdminGuard implements CanActivate {
 
-  constructor(protected router: Router, protected auth: OAuthAuthenticationService) {}
+  constructor(private router: Router,
+              private auth: OAuthAuthenticationService) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
