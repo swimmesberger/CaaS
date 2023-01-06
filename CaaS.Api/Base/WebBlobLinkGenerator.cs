@@ -16,8 +16,8 @@ public sealed class WebBlobLinkGenerator : ILinkGenerator {
         if (string.IsNullOrEmpty(relativeUrl) || _httpContext == null) return relativeUrl;
         return _linkGenerator.GetUriByAction(
             httpContext: _httpContext,
-            controller: "BlobAdministration",
-            action: nameof(BlobAdministrationController.Get),
+            controller: "Blob",
+            action: nameof(BlobController.Get),
             values: new { path = relativeUrl }
         ) ?? throw new InvalidOperationException();
     }

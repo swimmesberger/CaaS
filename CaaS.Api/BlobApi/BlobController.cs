@@ -9,14 +9,13 @@ using Microsoft.Net.Http.Headers;
 
 namespace CaaS.Api.BlobApi; 
 
-[Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
 [RequireTenant]
 [ApiController]
 [Route("Blob/{**path}")]
-public class BlobAdministrationController : ControllerBase {
+public class BlobController : ControllerBase {
     private readonly IBlobService _blobService;
 
-    public BlobAdministrationController(IBlobService blobService) {
+    public BlobController(IBlobService blobService) {
         _blobService = blobService;
     }
 
@@ -45,6 +44,7 @@ public class BlobAdministrationController : ControllerBase {
         return File(blobItem.Blob.ToArray(), mimeType, blobItem.LastModificationTime, etag);
     }
     
+    [Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [HttpPost]
     public async Task AddOrUpdate([FromRoute] string path, IFormFile file, CancellationToken cancellationToken = default) {

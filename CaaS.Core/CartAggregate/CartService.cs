@@ -94,12 +94,7 @@ public class CartService : ICartService {
             await uow.CompleteAsync(cancellationToken);
             return cart;
         } catch (CaasConstraintViolationDbException constraintViolationException) {
-            if ("customer_e_mail_key".Equals(constraintViolationException.ConstraintName)) {
-                throw new CaasDuplicateCustomerEmailException($"The e-mail address {userCart.Customer?.EMail} is already taken") {
-                    Type = constraintViolationException.ConstraintName
-                };
-            }
-            throw;
+            throw CheckException(constraintViolationException, userCart);
         }
     }
 
@@ -117,7 +112,11 @@ public class CartService : ICartService {
             cart = oldCart with {
                 Customer = customer
             };
-            cart = await _cartRepository.UpdateAsync(oldCart, cart, cancellationToken);
+            try {
+                cart = await _cartRepository.UpdateAsync(oldCart, cart, cancellationToken);
+            } catch (CaasConstraintViolationDbException constraintViolationException) {
+                throw CheckException(constraintViolationException, cart);
+            }
         } else if(oldCart.Customer != null) {
             cart = oldCart;
         } else {
@@ -155,5 +154,16 @@ public class CartService : ICartService {
 
     private async Task<Cart> PostProcessCart(Cart cart, CancellationToken cancellationToken = default) {
         return await _discountService.ApplyDiscountAsync(cart, cancellationToken);
+    }
+
+    private CaasException CheckException(CaasException exception, Cart cart) {
+        if (exception is CaasConstraintViolationDbException constraintViolationException) {
+            if ("customer_e_mail_key".Equals(constraintViolationException.ConstraintName)) {
+                throw new CaasDuplicateCustomerEmailException($"The e-mail address {cart.Customer?.EMail} is already taken") {
+                    Type = constraintViolationException.ConstraintName
+                };
+            }
+        }
+        throw exception;
     }
 }

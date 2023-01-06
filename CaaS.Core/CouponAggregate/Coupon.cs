@@ -5,7 +5,7 @@ namespace CaaS.Core.CouponAggregate;
 public record Coupon : IEntityBase {
     public Guid Id { get; init; } = Guid.NewGuid();
     public Guid ShopId { get; init; }
-    public string Code { get; init; }
+    public string Code { get; init; } = string.Empty;
     public decimal Value { get; init; }
     public Guid? OrderId { get; init; }
     public Guid? CartId { get; init; }

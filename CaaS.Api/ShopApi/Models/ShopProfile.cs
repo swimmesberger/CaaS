@@ -7,12 +7,15 @@ public class ShopProfile : Profile {
 
     public ShopProfile() {
         CreateMap<Shop, ShopDto>();
+        CreateMap<Shop, ShopMinimalDto>();
+
+        CreateMap<ShopForCreationDto, Shop>();
+        CreateMap<ShopAdminForCreationDto, ShopAdmin>();
         
-        CreateMap<ShopForCreationDto, Shop>().ForMember(s => s.ShopAdmin,
-            opt => opt.MapFrom(src => new ShopAdmin() { Id = src.ShopAdminId }));
-        
-        CreateMap<ShopForUpdateDto, Shop>().ForMember(s => s.ShopAdmin,
-            opt => opt.MapFrom(src => new ShopAdmin() { Id = src.ShopAdminId }));
+        CreateMap<ShopForUpdateDto, Shop>().ForMember(c => c.Id, 
+            opt => opt.MapFrom(c => Guid.Empty));
+        CreateMap<ShopAdminForUpdateDto, ShopAdmin>().ForMember(c => c.Id, 
+            opt => opt.MapFrom(c => c.Id ?? Guid.Empty));
     }
     
 }

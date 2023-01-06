@@ -58,6 +58,7 @@ public class CartRepository : CrudReadRepository<CartDataModel, Cart>, ICartRepo
     public async Task DeleteAsync(Cart entity, CancellationToken cancellationToken = default) {
         await Dao.DeleteAsync(Converter.ConvertFromDomain(entity), cancellationToken);
     }
+    
     public async Task DeleteAsync(IEnumerable<Cart> entities, CancellationToken cancellationToken = default) {
         var dataModels = Converter.ConvertFromDomain(entities);
         await Dao.DeleteAsync(dataModels, cancellationToken);

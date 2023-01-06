@@ -24,6 +24,32 @@ public class ShopAdminRepository : IShopAdminRepository {
         return await Converter.ConvertToDomain(dataModel, cancellationToken);
     }
 
+    public async Task<ShopAdmin?> FindByEmailAsync(string email, CancellationToken cancellationToken = default) {
+        var dataModel = await Dao.FindBy(StatementParameters.CreateWhere(nameof(ShopAdminDataModel.EMail), email), cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (dataModel == null) return null;
+        return await Converter.ConvertToDomain(dataModel, cancellationToken);
+    }
+
+    public async Task<ShopAdmin> AddAsync(ShopAdmin entity, CancellationToken cancellationToken = default) {
+        var dataModel = Converter.ConvertFromDomain(entity);
+        dataModel = await Dao.AddAsync(dataModel, cancellationToken);
+        entity = Converter.ApplyDataModel(entity, dataModel);
+        return entity;
+    }
+
+    public async Task<ShopAdmin> UpdateAsync(ShopAdmin oldEntity, ShopAdmin newEntity, CancellationToken cancellationToken = default) {
+        var dataModel = Converter.ConvertFromDomain(newEntity);
+        dataModel = await Dao.UpdateAsync(dataModel, cancellationToken);
+        newEntity = Converter.ApplyDataModel(newEntity, dataModel);
+        return newEntity;
+    }
+
+    public async Task DeleteAsync(ShopAdmin entity, CancellationToken cancellationToken = default) {
+        var dataModel = Converter.ConvertFromDomain(entity);
+        await Dao.DeleteAsync(dataModel, cancellationToken);
+    }
+
     private class ShopAdminDomainModelConverter : IDomainReadModelConverter<ShopAdminDataModel, ShopAdmin> {
         public OrderParameters DefaultOrderParameters { get; } = new OrderParameters(nameof(ShopAdminDataModel.Name));
 
@@ -35,6 +61,20 @@ public class ShopAdminRepository : IShopAdminRepository {
                 ShopId = dataModel.ShopId,
                 ConcurrencyToken = dataModel.GetConcurrencyToken()
             });
+        }
+        
+        public ShopAdminDataModel ConvertFromDomain(ShopAdmin domainModel) {
+            return new ShopAdminDataModel() {
+                Id = domainModel.Id,
+                Name = domainModel.Name,
+                EMail = domainModel.EMail,
+                ShopId = domainModel.ShopId,
+                RowVersion = domainModel.GetRowVersion()
+            };
+        }
+        
+        public ShopAdmin ApplyDataModel(ShopAdmin domainModel, ShopAdminDataModel dataModel) {
+            return domainModel with { ConcurrencyToken = dataModel.GetConcurrencyToken() };
         }
 
         public async Task<IReadOnlyList<ShopAdmin>> ConvertToDomain(IAsyncEnumerable<ShopAdminDataModel> dataModels,

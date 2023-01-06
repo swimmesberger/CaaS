@@ -10,8 +10,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace CaaS.Api.ShopApi;
 
-//[RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
-[Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
+// Authorize for shop administration is not really a good idea because it is not shop specific
+// This should have OAuth authentication when implemented
+// [Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
 [ApiController]
 [Route("[controller]")]
 [CaasApiConvention]
@@ -43,9 +44,18 @@ public class ShopAdministrationController : ControllerBase {
         return _mapper.Map<ShopDto>(shop);
     }
     
+    [HttpGet("adminMail/{adminMail}")]
+    // verify app-key
+    [Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
+    [RequireTenant]
+    public async Task<ActionResult<ShopDto?>> GetByAdminMail(string adminMail, CancellationToken cancellationToken = default) {
+        var shop = await _shopService.GetByAdminEmailAsync(adminMail, cancellationToken);
+        return _mapper.Map<ShopDto>(shop);
+    }
+
     [HttpGet("{shopId:guid}")]
-    public async Task<ShopDto?> GetById(Guid id, CancellationToken cancellationToken = default) {
-        Shop? shop = await _shopService.GetByIdAsync(id, cancellationToken);
+    public async Task<ShopDto?> GetById(Guid shopId, CancellationToken cancellationToken = default) {
+        Shop? shop = await _shopService.GetByIdAsync(shopId, cancellationToken);
         return _mapper.Map<ShopDto>(shop);
     }
     
@@ -68,14 +78,15 @@ public class ShopAdministrationController : ControllerBase {
     }
         
     [HttpPut("{shopId:guid}")]
-    public async Task<ShopDto> UpdateCoupon(Guid shopId, [FromBody] ShopForUpdateDto couponDto, CancellationToken cancellationToken = default) {
-        var updatedCoupon = _mapper.Map<Shop>(couponDto);
-        var result = await _shopService.UpdateAsync(shopId, updatedCoupon, cancellationToken);
+    public async Task<ShopDto> Update(Guid shopId, [FromBody] ShopForUpdateDto shopDto, CancellationToken cancellationToken = default) {
+        var updatedShop = _mapper.Map<Shop>(shopDto);
+        updatedShop = updatedShop with { Id = shopId };
+        var result = await _shopService.UpdateAsync(updatedShop, cancellationToken);
         return _mapper.Map<ShopDto>(result);
     }
     
     [HttpDelete("{shopId:guid}")]
-    public async Task<ActionResult> DeleteProduct(Guid shopId, CancellationToken cancellationToken = default) {
+    public async Task<ActionResult> Delete(Guid shopId, CancellationToken cancellationToken = default) {
         await _shopService.DeleteAsync(shopId, cancellationToken);
         return NoContent();
     }
