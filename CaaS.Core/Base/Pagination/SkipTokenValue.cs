@@ -8,7 +8,7 @@ namespace CaaS.Core.Base.Pagination;
 
 [JsonConverter(typeof(SkipTokenValueJsonConverter))]
 public class SkipTokenValue {
-    public const char CommaDelimiter = ',';
+    public const char CommaDelimiter = '|';
     public const char PropertyDelimiter = ':';
 
     public IReadOnlyDictionary<string, object?> PropertyValues { get; init; } = ImmutableDictionary<string, object?>.Empty;
