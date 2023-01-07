@@ -17,6 +17,7 @@ const routes: Routes = [
           },
           {
             path: 'shops',
+            title: $localize `:@@adminShopsTitle:Shops`,
             data: {
               title: $localize `:@@adminShopsTitle:Shops`
             },
@@ -24,6 +25,7 @@ const routes: Routes = [
           },
           {
             path: 'shop/:shopId',
+            title: $localize `:@@adminShopEditTitle:Edit Shop`,
             data: {
               title: $localize `:@@adminShopEditTitle:Edit Shop`
             },
@@ -31,6 +33,7 @@ const routes: Routes = [
           },
           {
             path: 'shop',
+            title: $localize `:@@adminShopAddTitle:Add Shop`,
             data: {
               title: $localize `:@@adminShopAddTitle:Add Shop`
             },
