@@ -9,6 +9,9 @@ public class DiscountProfile : Profile {
         
         CreateMap<DiscountSetting, DiscountSettingRaw>();
         CreateMap<DiscountSettingForCreationDto, DiscountSettingRaw>();
+        CreateMap<DiscountMetadataSettingRawForCreationDto, DiscountMetadataSettingRaw>().ForMember(c => c.Id, 
+            opt => opt
+                .MapFrom(c => c.Id ?? Guid.Empty));
         CreateMap<DiscountSettingForUpdateDto, DiscountSettingRaw>();
     }
 }

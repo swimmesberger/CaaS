@@ -2,5 +2,4 @@
 
 public interface IDiscountComponentProvider {
     IEnumerable<DiscountComponentMetadata> GetDiscountMetadata();
-    DiscountComponentMetadata? GetDiscountMetadataById(Guid id);
 }

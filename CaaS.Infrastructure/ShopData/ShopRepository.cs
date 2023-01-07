@@ -111,7 +111,7 @@ internal class ShopDomainModelConverter : IDomainModelConverter<ShopDataModel, S
             CartLifetimeMinutes = dataModel.CartLifetimeMinutes,
             ShopAdmin = shopAdmin,
             AppKey = dataModel.AppKey,
-            ConcurrencyToken = dataModel.RowVersion.ToString()
+            ConcurrencyToken = dataModel.GetConcurrencyToken()
         };
     }
 }

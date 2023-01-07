@@ -1,5 +1,6 @@
 ﻿using CaaS.Core.BlobAggregate;
 using CaaS.Infrastructure.Base.Ado;
+using CaaS.Infrastructure.Base.Ado.Impl;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
 
 namespace CaaS.Infrastructure.BlobData; 
@@ -10,6 +11,7 @@ public sealed class BlobService : IBlobService {
     public BlobService(IDao<BlobDataModel> dao) {
         _dao = dao;
     }
+    
     public async Task<IBlobItem?> GetAsync(string path, CancellationToken cancellationToken = default) {
         return ItemFromDataModel(await GetModelAsync(path, cancellationToken));
     }
@@ -24,7 +26,13 @@ public sealed class BlobService : IBlobService {
     }
 
     private async Task<BlobDataModel?> GetModelAsync(string path, CancellationToken cancellationToken = default) {
-        return await _dao.FindBy(new StatementParameters() {
+        var dao = _dao;
+        if (dao is GenericDao<BlobDataModel> genericDao) {
+            // all paths should be unique and to allow access to the files without providing a header value we disable tenantId preProcessing
+            // = no WHERE shop_id = tenantId in query
+            dao = genericDao.WithOptions(new GenericDaoOptions() { IgnoreTenantId = true });
+        }
+        return await dao.FindBy(new StatementParameters() {
             Where = new QueryParameter[] { new(nameof(BlobDataModel.Path), path) }
         }, cancellationToken).FirstOrDefaultAsync(cancellationToken);
     }

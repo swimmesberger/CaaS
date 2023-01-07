@@ -33,10 +33,9 @@ public class OrderAdministrationController : ControllerBase {
         return _mapper.Map<OrderDto>(result);
     }
     
-    
-    [HttpGet("/OrderStatisticsAggregatedByDate")]
-    public async Task<IReadOnlyCollection<OrderStatisticsResultDateAggregate>> OrderStatisticsAggregatedByDate([FromQuery] DateTimeOffset from, [FromQuery] DateTimeOffset until, 
-            [Required][FromQuery] AggregateByDatePart aggregate, CancellationToken cancellationToken = default) {
+    [HttpGet("OrderStatisticsAggregatedByDate")]
+    public async Task<IReadOnlyCollection<OrderStatisticsResultDateAggregate>> OrderStatisticsAggregatedByDate([FromQuery][Required] DateTimeOffset from, 
+        [FromQuery][Required] DateTimeOffset until, [Required][FromQuery] AggregateByDatePart aggregate, CancellationToken cancellationToken = default) {
         if (from.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
         }
@@ -44,5 +43,17 @@ public class OrderAdministrationController : ControllerBase {
             throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
         }
         return await _statisticsService.OrderStatisticsAggregatedByDate(from, until, aggregate, cancellationToken);
+    }
+
+    [HttpGet("MostSoldProducts")]
+    public async Task<IReadOnlyCollection<MostSoldProductResult>> MostSoldProducts([FromQuery][Required] DateTimeOffset from, 
+        [FromQuery][Required] DateTimeOffset until, [FromQuery] int? limit = null, CancellationToken cancellationToken = default) {
+        if (from.Offset != TimeSpan.Zero) {
+            throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
+        }
+        if (until.Offset != TimeSpan.Zero) {
+            throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
+        }
+        return await _statisticsService.MostSoldProducts(from, until, limit, cancellationToken: cancellationToken);
     }
 }

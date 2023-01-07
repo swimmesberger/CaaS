@@ -50,11 +50,33 @@ public sealed class DiscountSettingRawConverter : IDiscountSettingRawConverter {
     }
 
     public DiscountSettingMetadata DeserializeSetting(DiscountMetadataSettingRaw rawSetting) {
-        var componentId = rawSetting.Id;
-        var discountComponentMetadata = _componentMetadata.FirstOrDefault(c => c.Id == componentId);
-        if (discountComponentMetadata == null) throw new ArgumentException($"Can't find action with id '{componentId}'");
+        DiscountComponentMetadata? discountComponentMetadata;
+        if (rawSetting.Id == Guid.Empty) {
+            var discountParameters = rawSetting.Parameters.Deserialize<DiscountParameters>(_jsonOptions.JsonSerializerOptions);
+            discountComponentMetadata = discountParameters == null ? null : GetDiscountMetadataByName(discountParameters.Name);
+            if (discountComponentMetadata == null) throw new ArgumentException($"Can't find action with by name");
+        } else {
+            // TODO:
+            // this shouldn't be a production solution - normally the rule/action should be selected from a combobox via name but the id
+            // should be associated - therefore no lookup via name is required
+            // for our use-case without dynamic forms it is easier to simply provide a "text" field of the action/rule name
+            // when the frontend is "advanced" enough, this can be removed
+            var componentId = rawSetting.Id;
+            discountComponentMetadata = _componentMetadata.FirstOrDefault(c => c.Id == componentId);
+            if (discountComponentMetadata == null) throw new ArgumentException($"Can't find action with id '{componentId}'");
+        }
         var parameters = (DiscountParameters?)rawSetting.Parameters.Deserialize(discountComponentMetadata.SettingsType, _jsonOptions.JsonSerializerOptions);
         if (parameters == null) throw new JsonException();
-        return new DiscountSettingMetadata { Id = componentId, Parameters = parameters };
+        return new DiscountSettingMetadata { Id = discountComponentMetadata.Id, Parameters = parameters };
+    }
+    
+    private DiscountComponentMetadata? GetDiscountMetadataByName(string name) {
+        return _componentMetadata
+            .Where(d => {
+                var param = (DiscountParameters)Activator.CreateInstance(d.SettingsType)!;
+                var paramName = param.Name;
+                return paramName.Equals(name);
+            })
+            .FirstOrDefault();
     }
 }

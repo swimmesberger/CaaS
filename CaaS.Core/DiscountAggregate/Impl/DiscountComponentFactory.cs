@@ -21,9 +21,7 @@ public class DiscountComponentFactory : IDiscountComponentFactory {
     }
 
     public IEnumerable<DiscountComponentMetadata> GetDiscountMetadata() => _discountComponents.Values;
-
-    public DiscountComponentMetadata? GetDiscountMetadataById(Guid id) => _discountComponents.GetValueOrDefault(id);
-
+    
     public DiscountComponent CreateComponent(DiscountSetting discountSetting) {
         if (!_discountComponents.TryGetValue(discountSetting.Rule.Id, out var rule)) {
             throw new CaasDiscountException($"Can't find discount rule with id {discountSetting.Id}");

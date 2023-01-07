@@ -47,20 +47,23 @@ public class DiscountService : IDiscountService {
         return setting;
     }
 
-    public async Task<DiscountSettingRaw> UpdateAsync(Guid id, DiscountSettingRaw updatedDiscountSetting, CancellationToken cancellationToken = default) {
+    public async Task<DiscountSettingRaw> UpdateAsync(Guid id, DiscountSettingRaw updatedDiscountSettingRaw, CancellationToken cancellationToken = default) {
         await using var uow = _unitOfWorkManager.Begin();
         var oldDiscountSetting = await _discountSettingRepository.FindByIdAsync(id, cancellationToken);
         if (oldDiscountSetting == null) {
             throw new CaasItemNotFoundException($"discountSettingId '{id}' not found");
         }
-        
-        updatedDiscountSetting = updatedDiscountSetting with {
+        var updatedDiscountSetting = DeserializeSetting(updatedDiscountSettingRaw);
+        updatedDiscountSetting = oldDiscountSetting with {
             Id = id,
+            Name = updatedDiscountSetting.Name,
+            Action = updatedDiscountSetting.Action,
+            Rule = updatedDiscountSetting.Rule,
             ShopId = _tenantIdAccessor.GetTenantGuid()
         };
-        var domainModel = DeserializeSetting(updatedDiscountSetting);
-        domainModel = await _discountSettingRepository.UpdateAsync(oldDiscountSetting, domainModel, cancellationToken);
-        var setting = _settingRawConverter.SerializeSetting(domainModel);
+
+        updatedDiscountSetting = await _discountSettingRepository.UpdateAsync(oldDiscountSetting, updatedDiscountSetting, cancellationToken);
+        var setting = _settingRawConverter.SerializeSetting(updatedDiscountSetting);
         await uow.CompleteAsync(cancellationToken);
         return setting;
     }

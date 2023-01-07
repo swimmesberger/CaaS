@@ -1,11 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using AutoMapper;
 using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
-using CaaS.Api.CartApi.Models;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
-using CaaS.Core.CartAggregate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,37 +14,33 @@ namespace CaaS.Api.CartApi;
 [RequireTenant]
 [CaasApiConvention]
 public class CartAdministrationController : ControllerBase {
-    private readonly ICartService _cartService;
     private readonly IStatisticsService _statisticsService;
-    private readonly IMapper _mapper;
 
-    public CartAdministrationController(ICartService cartService, IStatisticsService statisticsService, IMapper mapper) {
-        _cartService = cartService;
+    public CartAdministrationController(IStatisticsService statisticsService) {
         _statisticsService = statisticsService;
-        _mapper = mapper;
     }
     
-    [HttpGet("/CartStatisticsOverall")]
-    public async Task<CartStatisticsResult> CartStatisticsOverall([FromQuery] [Required] DateTimeOffset from, [FromQuery] [Required] DateTimeOffset until, CancellationToken cancellationToken = default) {
+    [HttpGet("CartStatisticsOverall")]
+    public async Task<CartStatisticsResult> CartStatisticsOverall([FromQuery] [Required] DateTimeOffset from, [FromQuery] DateTimeOffset? until = null, 
+        CancellationToken cancellationToken = default) {
         if (from.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
         }
-        if (until.Offset != TimeSpan.Zero) {
+        if (until != null && until.Value.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
         }
         return await _statisticsService.CartStatisticsOverall(from, until, cancellationToken: cancellationToken);
     }
     
-    [HttpGet("/CartStatisticsAggregatedByDate")]
+    [HttpGet("CartStatisticsAggregatedByDate")]
     public async Task<IReadOnlyCollection<CartStatisticsResultDateAggregate>> CartStatisticsAggregatedByDate([FromQuery] [Required] DateTimeOffset from, 
-        [FromQuery] [Required] DateTimeOffset until, [Required] [FromQuery] AggregateByDatePart aggregate, CancellationToken cancellationToken = default) {
+        [FromQuery] DateTimeOffset? until, [Required] [FromQuery] AggregateByDatePart aggregate, CancellationToken cancellationToken = default) {
         if (from.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
         }
-        if (until.Offset != TimeSpan.Zero) {
+        if (until != null && until.Value.Offset != TimeSpan.Zero) {
             throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
         }
         return await _statisticsService.CartStatisticsAggregatedByDate(from, until, aggregate, cancellationToken: cancellationToken);
     }
-    
 }

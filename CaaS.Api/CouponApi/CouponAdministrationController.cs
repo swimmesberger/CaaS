@@ -1,8 +1,11 @@
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
 using CaaS.Api.Base;
 using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.CouponApi.Models;
+using CaaS.Core.Base;
+using CaaS.Core.Base.Exceptions;
 using CaaS.Core.CouponAggregate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,10 +21,12 @@ namespace CaaS.Api.CouponApi;
 public class CouponAdministrationController : ControllerBase {
     private readonly ICouponService _couponService;
     private readonly IMapper _mapper;
+    private readonly IStatisticsService _statisticsService;
     
-    public CouponAdministrationController(ICouponService couponService, IMapper mapper) {
+    public CouponAdministrationController(ICouponService couponService, IMapper mapper, IStatisticsService statisticsService) {
         _couponService = couponService;
         _mapper = mapper;
+        _statisticsService = statisticsService;
     }
 
     [HttpGet]
@@ -73,5 +78,17 @@ public class CouponAdministrationController : ControllerBase {
     public async Task<ActionResult> DeleteCoupon(Guid couponId, CancellationToken cancellationToken = default) {
         await _couponService.DeleteAsync(couponId, cancellationToken);
         return NoContent();
+    }
+    
+    [HttpGet("CouponStatisticsOverall")]
+    public async Task<CouponStatisticsResult> CouponStatisticsOverall([FromQuery] [Required] DateTimeOffset from, [FromQuery] DateTimeOffset? until = null, 
+        CancellationToken cancellationToken = default) {
+        if (from.Offset != TimeSpan.Zero) {
+            throw new CaasValidationException($"{nameof(from)} must be specified in UTC");
+        }
+        if (until != null && until.Value.Offset != TimeSpan.Zero) {
+            throw new CaasValidationException($"{nameof(until)} must be specified in UTC");
+        }
+        return await _statisticsService.CouponStatisticsOverall(from, until, cancellationToken: cancellationToken);
     }
 }

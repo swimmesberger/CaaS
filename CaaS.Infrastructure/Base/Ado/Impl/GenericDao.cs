@@ -19,6 +19,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
     private readonly ISystemClock _timeProvider;
     private readonly ITenantIdAccessor? _tenantService;
     private readonly ITenantIdProvider<T>? _tenantIdProvider;
+    private readonly GenericDaoOptions _options;
     
     public IRecordMetadataProvider MetadataProvider => _statementGenerator.DataRecordMapper.MetadataProvider;
 
@@ -26,8 +27,10 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
             IStatementMaterializer statementMaterializer,
             IStatementGenerator<T> statementGenerator,
             ISystemClock timeProvider,
-            IServiceProvider<ITenantIdAccessor>? tenantService = null) {
+            IServiceProvider<ITenantIdAccessor>? tenantService = null,
+            GenericDaoOptions? options = null) {
         tenantService ??= IServiceProvider<ITenantIdAccessor>.Empty;
+        options ??= new GenericDaoOptions();
         _statementExecutor = statementExecutor;
         _statementMaterializer = statementMaterializer;
         _statementGenerator = statementGenerator;
@@ -36,6 +39,12 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
             _tenantIdProvider = tenantIdProvider;
             _tenantService = tenantService.GetRequiredService();
         }
+        _options = options;
+    }
+
+    public GenericDao<T> WithOptions(GenericDaoOptions options) {
+        return new GenericDao<T>(_statementExecutor, _statementMaterializer, _statementGenerator, 
+            _timeProvider, _tenantService.AsTypedService(), options);
     }
 
     public IAsyncEnumerable<T> FindAllAsync(CancellationToken cancellationToken = default) {
@@ -178,7 +187,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
     }
 
     private Statement<TResult> PostProcessStatement<TResult>(Statement<TResult> statement) {
-        if (_tenantService == null || _tenantIdProvider == null) {
+        if (_options.IgnoreTenantId || _tenantService == null || _tenantIdProvider == null) {
             return statement;
         }
         var tenantId = _tenantService!.GetTenantGuid();

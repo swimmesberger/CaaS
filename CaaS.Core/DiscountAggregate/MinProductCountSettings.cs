@@ -5,7 +5,7 @@ namespace CaaS.Core.DiscountAggregate;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
-public record MinProductCountSettings : DiscountParameters {
+public record MinProductCountSettings() : DiscountParameters(1, "minProductCountRule") {
     public Guid ProductId { get; init; }
     
     [Required]

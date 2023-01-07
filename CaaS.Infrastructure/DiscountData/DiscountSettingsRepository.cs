@@ -45,7 +45,8 @@ internal class DiscountSettingsConverter : IDomainModelConverter<DiscountSetting
             RuleId = domainModel.Rule.Id,
             ActionId = domainModel.Action.Id,
             RuleParameters = rule.Parameters,
-            ActionParameters = action.Parameters
+            ActionParameters = action.Parameters,
+            RowVersion = domainModel.GetRowVersion()
         };
     }
 
