@@ -2,6 +2,83 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en-US" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="adminShopsTitle" datatype="html">
+        <source>Shops</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/management/admin-management-routing.module.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/management/admin-management-routing.module.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="adminShopEditTitle" datatype="html">
+        <source>Edit Shop</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/management/admin-management-routing.module.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/management/admin-management-routing.module.ts</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="adminShopAddTitle" datatype="html">
+        <source>Add Shop</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/management/admin-management-routing.module.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/management/admin-management-routing.module.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shopAdminDashboardTitle" datatype="html">
+        <source>Dashboard</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/shop/admin-shop-routing.module.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/shop/admin-shop-routing.module.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shopAdminDiscountsTitle" datatype="html">
+        <source>Discounts</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/shop/admin-shop-routing.module.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/shop/admin-shop-routing.module.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shopAdminEditDiscountTitle" datatype="html">
+        <source>Edit Discount</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/shop/admin-shop-routing.module.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/shop/admin-shop-routing.module.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="shopAdminAddDiscountTitle" datatype="html">
+        <source>Add Discount</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/shop/admin-shop-routing.module.ts</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/admin/modules/shop/admin-shop-routing.module.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="headerMyCart" datatype="html">
         <source>My Cart</source>
         <context-group purpose="location">
@@ -27,70 +104,91 @@
         <source>Quantity</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">27,28</context>
+          <context context-type="linenumber">31,32</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutRemoveBtn" datatype="html">
         <source>Remove</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">31,33</context>
+          <context context-type="linenumber">35,37</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutEmptyTitle" datatype="html">
         <source>Your cart is empty.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">38,39</context>
+          <context context-type="linenumber">42,43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutEmptySubtitle" datatype="html">
         <source>Check out items on the page and add it to the cart.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">39,41</context>
+          <context context-type="linenumber">43,45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutUpdateCartBtn" datatype="html">
         <source>Update cart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">43,45</context>
+          <context context-type="linenumber">47,49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutSubtotal" datatype="html">
         <source>Subtotal</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">51,52</context>
+          <context context-type="linenumber">55,56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutSidebarNote" datatype="html">
         <source>Note</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">56,57</context>
+          <context context-type="linenumber">60,61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutSidebarNoteComment" datatype="html">
         <source>Additional comments</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">57,59</context>
+          <context context-type="linenumber">61,63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutApplyPromoHeader" datatype="html">
         <source>Apply promo code</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">65,67</context>
+          <context context-type="linenumber">69,71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutProceed" datatype="html">
         <source>Proceed to Checkout</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/cart/cart.component.html</context>
-          <context context-type="linenumber">74,76</context>
+          <context context-type="linenumber">78,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="checkoutCompleteTitle" datatype="html">
+        <source>Thank you for your order!</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/components/checkout-complete/checkout-complete.component.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="checkoutCompleteSubtitle" datatype="html">
+        <source>Your order has been placed and will be processed as soon as possible.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/components/checkout-complete/checkout-complete.component.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="checkoutCompleteInfo" datatype="html">
+        <source>Make sure you make note of your order number, which is <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;fw-medium&quot;&gt;"/><x id="INTERPOLATION" equiv-text="ync}}"/>.<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/components/checkout-complete/checkout-complete.component.html</context>
+          <context context-type="linenumber">7,10</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutPaymentCreditcard" datatype="html">
@@ -111,30 +209,30 @@
         <source>Back to Addresses</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-payment/checkout-payment.component.html</context>
-          <context context-type="linenumber">31</context>
+          <context context-type="linenumber">32</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-payment/checkout-payment.component.html</context>
-          <context context-type="linenumber">57</context>
+          <context context-type="linenumber">60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutBackPage" datatype="html">
         <source>Back</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-payment/checkout-payment.component.html</context>
-          <context context-type="linenumber">32</context>
+          <context context-type="linenumber">33</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-payment/checkout-payment.component.html</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">61</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">67,69</context>
+          <context context-type="linenumber">69,71</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">97,99</context>
+          <context context-type="linenumber">100,102</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout/checkout.component.html</context>
@@ -149,111 +247,125 @@
         <source>Review your order</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-payment/checkout-payment.component.html</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">40</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-payment/checkout-payment.component.html</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutProceedReviewShort" datatype="html">
         <source>Review order</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-payment/checkout-payment.component.html</context>
-          <context context-type="linenumber">39</context>
+          <context context-type="linenumber">41</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-payment/checkout-payment.component.html</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutReviewTitle" datatype="html">
         <source>Review your order</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">6,7</context>
+          <context context-type="linenumber">7,8</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutReviewQuantity" datatype="html">
         <source>Quantity</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">23,24</context>
+          <context context-type="linenumber">24,25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutSelectedName" datatype="html">
         <source>Client</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">36,37</context>
+          <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutSelectedAddress" datatype="html">
         <source>Address</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">40,41</context>
+          <context context-type="linenumber">41,42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutSelectedPhone" datatype="html">
         <source>Phone</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">45,46</context>
+          <context context-type="linenumber">46,47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutSelectedPaymentMethod" datatype="html">
         <source>Payment method</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">51,52</context>
+          <context context-type="linenumber">52,53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutSelectedPaymentMethodName" datatype="html">
         <source>Credit Card</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">54,55</context>
+          <context context-type="linenumber">55,56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutBackPayment" datatype="html">
         <source>Back to Payment</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">66,67</context>
+          <context context-type="linenumber">68,69</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">96,97</context>
+          <context context-type="linenumber">99,100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutProceedComplete" datatype="html">
         <source>Complete order</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">74,75</context>
+          <context context-type="linenumber">76,77</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">104,105</context>
+          <context context-type="linenumber">107,108</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutProceedCompleteShort" datatype="html">
         <source>Complete</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">75,76</context>
+          <context context-type="linenumber">77,78</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">105,106</context>
+          <context context-type="linenumber">108,109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="checkoutCompleteServerCustomerEmailError" datatype="html">
+        <source>The provided E-Mail address is already taken. Please choose a different E-Mail.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.ts</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="checkoutCompleteServerPaymentError" datatype="html">
+        <source>The provided credit card can&apos;t be charged. Please choose a different card.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.ts</context>
+          <context context-type="linenumber">95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutCompleteErrorServerError" datatype="html">
-        <source> Failed to process order. Try it later again. </source>
+        <source>Failed to process order. Try it later again.</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.html</context>
-          <context context-type="linenumber">81,84</context>
+          <context context-type="sourcefile">src/app/shop/components/checkout-review/checkout-review.component.ts</context>
+          <context context-type="linenumber">97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="orderPageSummary" datatype="html">
@@ -374,28 +486,28 @@
         <source>Cart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout/checkout.component.ts</context>
-          <context context-type="linenumber">20</context>
+          <context context-type="linenumber">21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutStepTitle" datatype="html">
         <source>Details</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout/checkout.component.ts</context>
-          <context context-type="linenumber">21</context>
+          <context context-type="linenumber">22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="paymentStepTitle" datatype="html">
         <source>Payment</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout/checkout.component.ts</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="reviewStepTitle" datatype="html">
         <source>Review</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/checkout/checkout.component.ts</context>
-          <context context-type="linenumber">23</context>
+          <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="creditCardNumberPh" datatype="html">
@@ -410,6 +522,20 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/components/creditcard/creditcard.component.html</context>
           <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="homeTitle" datatype="html">
+        <source>Over 1,500 curated Design resources, Images, Graphic &amp; Website templates</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/components/home/home-page.component.html</context>
+          <context context-type="linenumber">7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="homeSubTitle" datatype="html">
+        <source>High quality items created by our global community</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shop/components/home/home-page.component.html</context>
+          <context context-type="linenumber">9</context>
         </context-group>
       </trans-unit>
       <trans-unit id="headerExpandMenu" datatype="html">
@@ -507,89 +633,47 @@
           <context context-type="linenumber">26,29</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="homeTitle" datatype="html">
-        <source>Over 1,500 curated Design resources, Images, Graphic &amp; Website templates</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/shop/pages/home/home-page.component.html</context>
-          <context context-type="linenumber">7</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="homeSubTitle" datatype="html">
-        <source>High quality items created by our global community</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/shop/pages/home/home-page.component.html</context>
-          <context context-type="linenumber">9</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="checkoutCompleteTitle" datatype="html">
-        <source>Thank you for your order!</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/shop/pages/order-complete-page/order-complete-page.component.html</context>
-          <context context-type="linenumber">5,6</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="checkoutCompleteSubtitle" datatype="html">
-        <source>Your order has been placed and will be processed as soon as possible.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/shop/pages/order-complete-page/order-complete-page.component.html</context>
-          <context context-type="linenumber">6,7</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="checkoutCompleteInfo" datatype="html">
-        <source>Make sure you make note of your order number, which is <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;fw-medium&quot;&gt;"/><x id="INTERPOLATION" equiv-text="ync}}"/>.<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/shop/pages/order-complete-page/order-complete-page.component.html</context>
-          <context context-type="linenumber">7,10</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="homePageTitle" datatype="html">
-        <source>Home</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/shop/shop-routing.module.ts</context>
-          <context context-type="linenumber">19</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="productPageTitle" datatype="html">
         <source>Products</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/shop-routing.module.ts</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="productDetailsPageTitle" datatype="html">
         <source>Product Details</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/shop-routing.module.ts</context>
-          <context context-type="linenumber">29</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cartPageTitle" datatype="html">
         <source>Your cart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/shop-routing.module.ts</context>
-          <context context-type="linenumber">34</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutPageTitle" datatype="html">
         <source>Checkout</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/shop-routing.module.ts</context>
-          <context context-type="linenumber">39</context>
+          <context context-type="linenumber">53</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/shop-routing.module.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">58</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/shop-routing.module.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="checkoutCompletePageTitle" datatype="html">
         <source>Checkout Complete</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shop/shop-routing.module.ts</context>
-          <context context-type="linenumber">54</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
     </body>
