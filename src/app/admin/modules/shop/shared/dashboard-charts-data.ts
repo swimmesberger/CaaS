@@ -1,16 +1,6 @@
-import { Injectable } from '@angular/core';
-import { getStyle, hexToRgba } from '@coreui/utils/src';
-
-export interface IChartProps {
-  data?: any;
-  labels?: any;
-  options?: any;
-  colors?: any;
-  type?: any;
-  legend?: any;
-
-  [propName: string]: any;
-}
+import {Injectable} from '@angular/core';
+import {getStyle, hexToRgba} from '@coreui/utils/src';
+import {IChartProps} from "../components/dashboard/chart-props";
 
 @Injectable({
   providedIn: 'any'

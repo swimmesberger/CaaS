@@ -15,7 +15,7 @@ export class ShopStoreService {
   public getShopByAdmin(shopAdminEmail: string, appKey: string): Observable<ShopDto> {
     const xTenantId = this.tenantIdService.tenantId;
     if (xTenantId === null || xTenantId === undefined) {
-      return throwError(() => new Error('Required parameter xTenantId was null or undefined when calling getCartById.'));
+      return throwError(() => new Error('Required parameter xTenantId was null or undefined when calling getShopByAdmin.'));
     }
     return this.httpClient.get<ShopDto>(`${environment.url}/shopadministration/adminmail/${shopAdminEmail}`, {
       headers: {

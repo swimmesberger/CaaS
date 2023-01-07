@@ -1,11 +1,20 @@
 <div class="container" *ngIf="$shops | async as shops">
   <div class="row">
-    <div *ngFor="let shop of shops"  class="col-3">
+    <div *ngFor="let shop of shops" class="col">
       <div class="card position-relative" style="width: 18rem;">
         <div class="card-body">
           <h5 class="card-title">Shop</h5>
           <p class="card-text">{{shop.name}}</p>
           <a [routerLink]="['../shop', shop.id]" class="stretched-link"></a>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card position-relative" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">Administration</h5>
+          <p class="card-text">Shop Management</p>
+          <a [routerLink]="['/admin']" class="stretched-link"></a>
         </div>
       </div>
     </div>

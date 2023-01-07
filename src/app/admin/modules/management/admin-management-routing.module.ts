@@ -17,14 +17,23 @@ const routes: Routes = [
           },
           {
             path: 'shops',
+            data: {
+              title: $localize `:@@adminShopsTitle:Shops`
+            },
             component: ShopsComponent
           },
           {
             path: 'shop/:shopId',
+            data: {
+              title: $localize `:@@adminShopEditTitle:Edit Shop`
+            },
             component: ShopEditComponent
           },
           {
             path: 'shop',
+            data: {
+              title: $localize `:@@adminShopAddTitle:Add Shop`
+            },
             component: ShopEditComponent
           },
       ]}

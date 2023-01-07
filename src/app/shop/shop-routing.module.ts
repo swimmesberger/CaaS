@@ -9,7 +9,6 @@ import {CartComponent} from "./components/cart/cart.component";
 import {CheckoutComponent} from "./components/checkout/checkout.component";
 import {CheckoutPaymentComponent} from "./components/checkout-payment/checkout-payment.component";
 import {CheckoutReviewComponent} from "./components/checkout-review/checkout-review.component";
-import {ShopSelectionComponent} from "./layouts/shop-selection/shop-selection.component";
 import {PageNavbarLayoutComponent} from "./layouts/page-navbar-layout/page-navbar-layout.component";
 import {PageSimpleLayoutComponent} from "./layouts/page-simple-layout/page-simple-layout.component";
 
@@ -26,7 +25,6 @@ function createPageNavbarRoute(route: Route) {
 }
 
 const routes: Routes = [
-  { path: '', loadComponent: () => ShopSelectionComponent },
   { path: '', component: ShopComponent, children: [
       { path: ':shopId', component: PageSimpleLayoutComponent, data: { tenantUser: true }, children: [
         {

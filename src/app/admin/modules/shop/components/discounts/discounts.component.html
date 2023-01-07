@@ -1,0 +1,67 @@
+<!--suppress HtmlUnknownBooleanAttribute -->
+<c-row>
+  <c-col xs>
+    <c-card class="mb-4">
+      <c-card-header>Discount Settings</c-card-header>
+      <c-card-body>
+        <c-row class="mb-4">
+          <c-col>
+            <div class="float-end">
+              <button [disabled]="isLoading" [routerLink]="tenantIdService.tenantUrl + '/admin/discount'" type="button" class="me-2 btn btn-primary">
+                <svg cIcon name="cilPlus"></svg>Add new discount</button>
+              <button [disabled]="isLoading" (click)="deleteSelected($event)" type="button" class="btn btn-danger">
+                <svg cIcon name="cilPlus"></svg>Remove selected discounts</button>
+            </div>
+          </c-col>
+        </c-row>
+        <table
+          [hover]="true"
+          [responsive]="true"
+          [striped]="true"
+          align="middle"
+          cTable
+          class="mb-0 border">
+          <thead cTableColor="light">
+          <tr>
+            <th class="white-space-nowrap fs--1 align-middle" style="max-width:20px; width:18px;">
+              <div class="form-check mb-0 fs-0"></div>
+            </th>
+            <th>Name</th>
+            <th>Rule Name</th>
+            <th>Action Name</th>
+            <th class="white-space-nowrap fs--1 align-middle" style="max-width:20px; width:18px;">
+              <div class="form-check mb-0 fs-0"></div>
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let discount of $discounts | async; index as i">
+            <td class="fs--1 align-middle">
+              <div class="form-check mb-0 fs-0">
+                <!--suppress HtmlUnknownAttribute -->
+                <input #selectionCbElement [attr.data-discount-id]="discount.id" class="form-check-input" type="checkbox">
+              </div>
+            </td>
+            <td>
+              <div>{{ discount.name }}</div>
+            </td>
+            <td>
+              <div>{{ discount.rule?.parameters['name'] }}</div>
+            </td>
+            <td>
+              <div>{{ discount.action?.parameters['name'] }}</div>
+            </td>
+            <td>
+              <div class="col-auto">
+                <button [disabled]="isLoading"
+                        [routerLink]="[tenantIdService.tenantUrl + '/admin/discount', discount.id]"
+                        class="btn btn-sm btn-secondary px-5">Edit</button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </c-card-body>
+    </c-card>
+  </c-col>
+</c-row>

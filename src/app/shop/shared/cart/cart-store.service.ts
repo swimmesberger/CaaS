@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {first, Observable, switchMap, throwError} from "rxjs";
+import {Observable, throwError} from "rxjs";
 import {environment} from "../../../../environments/environment";
 import {CartDto} from "./models/cartDto";
 import {TenantIdService} from "../../../shared/tenant-id.service";

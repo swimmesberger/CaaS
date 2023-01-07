@@ -26,7 +26,6 @@ import {ShopComponent} from "./shop.component";
 import {CommonModule} from "@angular/common";
 import {CheckoutCompleteComponent} from "./components/checkout-complete/checkout-complete.component";
 import { PageHeaderLayoutComponent } from './layouts/page-header-layout/page-header-layout.component';
-import { ShopSelectionComponent } from './layouts/shop-selection/shop-selection.component';
 import { PageNavbarLayoutComponent } from './layouts/page-navbar-layout/page-navbar-layout.component';
 import { PageSimpleLayoutComponent } from './layouts/page-simple-layout/page-simple-layout.component';
 

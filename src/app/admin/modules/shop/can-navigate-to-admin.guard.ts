@@ -16,8 +16,8 @@ export class CanNavigateToAdminGuard implements CanActivate {
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    const tenantId = this.tenantServcie.getTenantId(state.root);
-    this.tenantServcie.setTenantId(tenantId);
+      const tenantId = this.tenantServcie.getTenantId(state.root, true);
+      this.tenantServcie.setTenantId(tenantId);
       if (!this.auth.isLoggedIn()) {
         // noinspection JSIgnoredPromiseFromCall
         this.router.navigate([this.tenantServcie.tenantUrl + '/admin/login'], {

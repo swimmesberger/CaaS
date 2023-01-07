@@ -1,23 +1,23 @@
 import {Component, ViewEncapsulation} from '@angular/core';
-import {ShopStoreService} from "../../shared/shop/shop-store.service";
+import {ShopStoreService} from "../../shop/shared/shop/shop-store.service";
 import {Observable} from "rxjs";
-import {ShopMinimalDto} from "../../shared/shop/shopMinimalDto";
+import {ShopMinimalDto} from "../../shop/shared/shop/shopMinimalDto";
 import {RouterLinkWithHref} from "@angular/router";
 import {AsyncPipe, NgForOf, NgIf} from "@angular/common";
 
 @Component({
   standalone: true,
   selector: 'app-shop-selection',
-  templateUrl: './shop-selection.component.html',
+  templateUrl: './home.component.html',
   imports: [
     RouterLinkWithHref,
     AsyncPipe,
     NgForOf,
     NgIf
   ],
-  styleUrls: ['./shop-selection.component.scss']
+  styleUrls: ['./home.component.scss']
 })
-export class ShopSelectionComponent {
+export class HomeComponent {
   $shops: Observable<Array<ShopMinimalDto>>;
   constructor(private shopService: ShopStoreService) {
     this.$shops = shopService.getShops();

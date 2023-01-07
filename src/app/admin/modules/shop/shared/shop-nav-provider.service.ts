@@ -19,6 +19,16 @@ export class ShopNavProviderService implements NavProviderApi {
         name: 'Dashboard',
         url: `${tenantService.tenantUrl}/admin/dashboard`,
         iconComponent: { name: 'cil-speedometer' }
+      },
+      {
+        name: 'Discount Rules',
+        url: `${tenantService.tenantUrl}/admin/discounts`,
+        iconComponent: { name: 'cil-money' }
+      },
+      {
+        name: 'Add Discount Rule',
+        url: `${tenantService.tenantUrl}/admin/discount`,
+        iconComponent: { name: 'cil-plus' }
       }
     ];
   }

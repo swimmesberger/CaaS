@@ -76,16 +76,16 @@ export class AppKeyAuthenticationService implements AuthenticationApi {
     return `https://www.gravatar.com/avatar/${ hash }?s=${size}`;
   }
 
+  public get appKey(): string | null {
+    return localStorage.getItem(this.appKeyKey);
+  }
+
   private get appKeyKey(): string {
     return `${this._tenantService.tenantId}_${AppKeyAuthenticationService.AppKeyKey}`
   }
 
   private get shopAdminKey(): string {
     return `${this._tenantService.tenantId}_${AppKeyAuthenticationService.AppKeyShopAdmin}`
-  }
-
-  private get appKey(): string | null {
-    return localStorage.getItem(this.appKeyKey);
   }
 
   private get shopAdmin(): ShopAdminDto | null {

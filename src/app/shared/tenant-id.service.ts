@@ -12,7 +12,7 @@ export class TenantIdService {
   constructor(private router: Router) {
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(event => {
       const activatedRoute = this.router.routerState.root;
-      this.setTenantId(this.getTenantId(activatedRoute.snapshot));
+      this.setTenantId(this.getTenantId(activatedRoute.snapshot, true));
     });
     this._$tenantId = new BehaviorSubject<string | null>(this.tenantId);
     this._$tenantIdObs = this._$tenantId.asObservable().pipe(
@@ -44,10 +44,14 @@ export class TenantIdService {
     return `/shop/${this.getTenantId(activatedRoute)}`;
   }
 
-  getTenantId(activatedRoute: ActivatedRouteSnapshot) : string | null {
-    if (this._$tenantId && this._$tenantId.value !== null) {
+  getTenantId(activatedRoute: ActivatedRouteSnapshot, force: boolean = false) : string | null {
+    if (!force && this._$tenantId && this._$tenantId.value !== null) {
       return this._$tenantId.value;
     }
+    return this.getTenantIdImpl(activatedRoute);
+  }
+
+  private getTenantIdImpl(activatedRoute: ActivatedRouteSnapshot) : string | null {
     let currentRoute: ActivatedRouteSnapshot | null = activatedRoute;
     do {
       if(currentRoute.data['tenantUser']) {

@@ -58,7 +58,7 @@ import {
   cilMagnifyingGlass,
   cilMap,
   cilMediaPlay,
-  cilMenu,
+  cilMenu, cilMoney,
   cilMoon,
   cilNotes,
   cilOptions,
@@ -181,7 +181,8 @@ export const iconSubset = {
   cilUserFollow,
   cilUserUnfollow,
   cilViewModule,
-  cilPlus
+  cilPlus,
+  cilMoney
 };
 
 // noinspection JSUnusedGlobalSymbols
