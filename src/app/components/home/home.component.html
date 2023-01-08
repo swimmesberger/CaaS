@@ -4,7 +4,7 @@
       <div *ngFor="let shop of shops" class="col">
         <div class="card position-relative" >
           <div class="card-body">
-            <h5 class="card-title">Shop</h5>
+            <h5 class="card-title" i18n="@@homeShopTitle">Shop</h5>
             <p class="card-text">{{shop.name}}</p>
             <a [routerLink]="['../shop', shop.id]" class="stretched-link"></a>
           </div>
@@ -13,8 +13,8 @@
       <div class="col">
         <div class="card position-relative">
           <div class="card-body">
-            <h5 class="card-title">Administration</h5>
-            <p class="card-text">Shop Management</p>
+            <h5 class="card-title" i18n="@@homeAdminTitle">Administration</h5>
+            <p class="card-text" i18n="@@homeAdminSubtitle">Shop Management</p>
             <a [routerLink]="['/admin']" class="stretched-link"></a>
           </div>
         </div>

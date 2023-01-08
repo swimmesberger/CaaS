@@ -15,7 +15,7 @@ export class OrderStoreService {
               private tenantIdService: TenantIdService) {  }
 
   public getCountries(): Observable<Array<string>> {
-    return of(['Australia','Canada','France','Germany','Switzerland','USA']);
+    return of(['Australia','Austria','Canada','France','Germany','Switzerland','USA']);
   }
 
   public createOrder(cartId: string, billingAddress: AddressDto, customer: CustomerDto): Observable<OrderDto> {

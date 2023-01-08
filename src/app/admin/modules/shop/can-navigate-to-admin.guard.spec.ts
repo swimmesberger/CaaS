@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
 import { CanNavigateToAdminGuard } from './can-navigate-to-admin.guard';
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
-describe('CanNavigateToAdminGuard', () => {
+describe('ShopCanNavigateToAdminGuard', () => {
   let guard: CanNavigateToAdminGuard;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [ HttpClientTestingModule ]
+    });
     guard = TestBed.inject(CanNavigateToAdminGuard);
   });
 

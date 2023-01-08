@@ -75,7 +75,7 @@ export class ProductsComponent implements OnDestroy {
       });
   }
 
-  private onQueryParamsChanged(params: Params) {
+  private onQueryParamsChanged(params: Params): Observable<ProductMinimalDtoPagedResult> {
     let searchText: string | undefined = params['q'];
     let keysetPaginationDirection: KeysetPaginationDirection | undefined = params['paginationDirection'];
     let reference: string | undefined = params['reference'];

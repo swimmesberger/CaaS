@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import {DEFAULT_CURRENCY_CODE, LOCALE_ID, NgModule} from '@angular/core';
 
 import {ReactiveFormsModule} from "@angular/forms";
 import {ShopRoutingModule} from "./shop-routing.module";
@@ -23,7 +23,7 @@ import {ProductDetailsComponent} from "./components/product-details/product-deta
 import {ProductItemComponent} from "./components/product-item/product-item.component";
 import {CartWidgetComponent} from "./components/cart-widget/cart-widget.component";
 import {ShopComponent} from "./shop.component";
-import {CommonModule} from "@angular/common";
+import {CommonModule, getLocaleCurrencyCode} from "@angular/common";
 import {CheckoutCompleteComponent} from "./components/checkout-complete/checkout-complete.component";
 import { PageHeaderLayoutComponent } from './layouts/page-header-layout/page-header-layout.component';
 import { PageNavbarLayoutComponent } from './layouts/page-navbar-layout/page-navbar-layout.component';
@@ -61,6 +61,9 @@ import { PageSimpleLayoutComponent } from './layouts/page-simple-layout/page-sim
     CommonModule,
     ShopRoutingModule,
     ReactiveFormsModule
+  ],
+  providers: [
+    { provide: DEFAULT_CURRENCY_CODE, useFactory: getLocaleCurrencyCode, deps: [LOCALE_ID] },
   ]
 })
 export class ShopModule { }

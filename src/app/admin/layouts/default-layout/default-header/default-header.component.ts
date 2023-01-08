@@ -8,10 +8,7 @@ import {AuthenticationApi} from "../../../shared/authentication.api";
   templateUrl: './default-header.component.html',
 })
 export class DefaultHeaderComponent extends HeaderComponent {
-  @Input() sidebarId: string = "sidebar";
-
-  constructor(private classToggler: ClassToggleService,
-              private authenticationService: AuthenticationApi) {
+  constructor(private authenticationService: AuthenticationApi) {
     super();
   }
 

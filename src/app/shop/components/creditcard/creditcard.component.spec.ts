@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CreditcardComponent } from './creditcard.component';
+import {ReactiveFormsModule} from "@angular/forms";
 
 describe('CreditcardComponent', () => {
   let component: CreditcardComponent;
@@ -8,7 +9,8 @@ describe('CreditcardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CreditcardComponent ]
+      declarations: [ CreditcardComponent ],
+      imports: [ReactiveFormsModule]
     })
     .compileComponents();
 

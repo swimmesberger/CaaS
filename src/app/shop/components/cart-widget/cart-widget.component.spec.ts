@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CartWidgetComponent } from './cart-widget.component';
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {RouterTestingModule} from "@angular/router/testing";
 
 describe('CartWidgetComponent', () => {
   let component: CartWidgetComponent;
@@ -8,7 +10,8 @@ describe('CartWidgetComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CartWidgetComponent ]
+      declarations: [ CartWidgetComponent ],
+      imports: [ HttpClientTestingModule, RouterTestingModule ]
     })
     .compileComponents();
 

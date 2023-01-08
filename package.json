@@ -4,7 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "startDe": "ng serve --configuration de",
+    "build": "npm run buildEn && npm run buildDe",
+    "buildEn": "ng build --output-path dist/en",
+    "buildDe": "ng build --configuration deProduction --output-path dist --delete-output-path false",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

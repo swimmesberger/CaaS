@@ -13,6 +13,10 @@ import { IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from '../../../icons/icon-subset';
 import { DefaultHeaderComponent } from './default-header.component';
 import { RouterTestingModule } from '@angular/router/testing';
+import {AuthenticationApi} from "../../../shared/authentication.api";
+import {OAuthAuthenticationService} from "../../../modules/management/shared/o-auth-authentication.service";
+import {AppKeyAuthenticationService} from "../../../modules/shop/shared/app-key-authentication.service";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('DefaultHeaderComponent', () => {
   let component: DefaultHeaderComponent;
@@ -22,8 +26,11 @@ describe('DefaultHeaderComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [DefaultHeaderComponent],
-      imports: [GridModule, HeaderModule, NavModule, BadgeModule, AvatarModule, DropdownModule, BreadcrumbModule, RouterTestingModule, SidebarModule],
-      providers: [IconSetService]
+      imports: [HttpClientTestingModule, GridModule, HeaderModule, NavModule, BadgeModule, AvatarModule, DropdownModule, BreadcrumbModule, RouterTestingModule, SidebarModule],
+      providers: [
+        IconSetService,
+        { provide: AuthenticationApi, useClass: AppKeyAuthenticationService }
+      ]
     })
       .compileComponents();
   });

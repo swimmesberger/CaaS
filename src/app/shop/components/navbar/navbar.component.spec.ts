@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavbarComponent } from './navbar.component';
+import {ProductSearchComponent} from "../product-search/product-search.component";
+import {CartWidgetComponent} from "../cart-widget/cart-widget.component";
+import {RouterTestingModule} from "@angular/router/testing";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -8,7 +12,8 @@ describe('NavbarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NavbarComponent ]
+      declarations: [ NavbarComponent, ProductSearchComponent, CartWidgetComponent ],
+      imports: [RouterTestingModule, HttpClientTestingModule]
     })
     .compileComponents();
 
