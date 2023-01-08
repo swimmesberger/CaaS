@@ -3,6 +3,7 @@ using CaaS.Api.Base;
 using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.ShopApi.Models;
+using CaaS.Core.Base.Tenant;
 using CaaS.Core.ShopAggregate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,9 +49,13 @@ public class ShopAdministrationController : ControllerBase {
     // verify app-key
     [Authorize(Policy = AppKeyAuthenticationDefaults.AuthorizationPolicy)]
     [RequireTenant]
-    public async Task<ActionResult<ShopDto?>> GetByAdminMail(string adminMail, CancellationToken cancellationToken = default) {
-        var shop = await _shopService.GetByAdminEmailAsync(adminMail, cancellationToken);
-        return _mapper.Map<ShopDto>(shop);
+    public async Task<ActionResult<ShopDto?>> GetByAdminMail(string adminMail, [FromServices] ITenantIdAccessor tenantIdAccessor, 
+        CancellationToken cancellationToken = default) {
+        var tenantShop = await _shopService.GetByIdAsync(tenantIdAccessor.GetTenantGuid(), cancellationToken);
+        if (!adminMail.Equals(tenantShop?.ShopAdmin.EMail)) {
+            return NotFound();
+        }
+        return _mapper.Map<ShopDto>(tenantShop);
     }
 
     [HttpGet("{shopId:guid}")]

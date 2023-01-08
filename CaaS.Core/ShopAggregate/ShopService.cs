@@ -27,12 +27,6 @@ public class ShopService : IShopService {
         return await _shopRepository.FindByAdminIdAsync(adminId, cancellationToken);
     }
 
-    public async Task<Shop?> GetByAdminEmailAsync(string adminEmail, CancellationToken cancellationToken = default) {
-        var shopAdmin = await _shopAdminRepository.FindByEmailAsync(adminEmail, cancellationToken);
-        if (shopAdmin == null) return null;
-        return await GetByIdAsync(shopAdmin.ShopId, cancellationToken);
-    }
-
     public async Task<Shop?> GetByNameAsync(string name, CancellationToken cancellationToken = default) {
         return await _shopRepository.FindByNameAsync(name, cancellationToken);
     }
