@@ -6,7 +6,9 @@ using CaaS.Api.Base.Attributes;
 using CaaS.Api.CouponApi.Models;
 using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Pagination;
 using CaaS.Core.CouponAggregate;
+using CaaS.Infrastructure.Base.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
@@ -41,6 +43,25 @@ public class CouponAdministrationController : ControllerBase {
         Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
         return _mapper.Map<IEnumerable<CouponDto>>(result.Items);
     }
+    
+    [HttpGet("couponsPaged")]
+    public async Task<PagedResult<CouponDto>> GetPaged([FromQuery] Guid? cartId, [FromQuery] Guid? orderId, [FromQuery] Guid? customerId, 
+        [FromQuery] string? code, [FromQuery] KeysetPaginationDirection paginationDirection = KeysetPaginationDirection.Forward,
+        [FromQuery(Name = "$skiptoken")] string? skipToken = null, [FromQuery] int? limit = null, CancellationToken cancellationToken = default) {
+        
+        var paginationToken = new PaginationToken(paginationDirection, skipToken, limit);
+        var result =  await _couponService.GetByPagedAsync(new CouponQuery() {
+            CartId = cartId, 
+            OrderId = orderId,
+            CustomerId = customerId,
+            Code = code
+        }, paginationToken, cancellationToken);
+        Response.Headers[HeaderConstants.TotalCount] = new StringValues(result.TotalCount.ToString());
+        
+        var viewCoupons = _mapper.Map<IReadOnlyCollection<CouponDto>>(result.Items);
+        return result.WithItems(viewCoupons);
+    }
+
 
     [HttpGet("{couponId:guid}")]
     public async Task<CouponDto?> GetById(Guid couponId, CancellationToken cancellationToken = default) {

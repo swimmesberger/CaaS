@@ -1,10 +1,13 @@
 ﻿using CaaS.Core.Base;
+using CaaS.Core.Base.Pagination;
 
 namespace CaaS.Core.CouponAggregate; 
 
 public interface ICouponRepository : IRepository {
     Task<Coupon?> FindByIdAsync(Guid couponId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Coupon>> FindByAsync(CouponQuery couponQuery, CancellationToken cancellationToken = default);
+    Task<PagedResult<Coupon>> FindByPagedAsync(CouponQuery couponQuery, PaginationToken? paginationToken = null,
+        CancellationToken cancellationToken = default);
 
     Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIdsAsync(IReadOnlyCollection<Guid> orderIds, CancellationToken cancellationToken = default);
     Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByCartIdsAsync(IReadOnlyCollection<Guid> cartIds, CancellationToken cancellationToken = default);

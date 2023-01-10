@@ -142,6 +142,7 @@ public sealed class GenericDao<T> : IDao<T>, IHasMetadataProvider where T : Data
 
     private async Task<TResult?> QueryScalarAsync<TResult>(Statement<TResult> statement, CancellationToken cancellationToken = default) {
         try {
+            statement = PostProcessStatement(statement);
             return await _statementExecutor.QueryScalarAsync(_statementMaterializer.MaterializeStatement(statement), cancellationToken);
         } catch (DbException ex) {
             throw DbProviderFactoryUtil.ConvertException(ex);

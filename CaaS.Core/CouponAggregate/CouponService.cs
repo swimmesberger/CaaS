@@ -1,5 +1,6 @@
 using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Pagination;
 using CaaS.Core.Base.Tenant;
 
 namespace CaaS.Core.CouponAggregate; 
@@ -26,6 +27,10 @@ public class CouponService : ICouponService {
     public async Task<CountedResult<Coupon>> GetByAsync(CouponQuery couponQuery, CancellationToken cancellationToken = default) {
         var items = await _couponRepository.FindByAsync(couponQuery, cancellationToken);
         return new CountedResult<Coupon>() { Items = items, TotalCount = await _couponRepository.CountAsync(cancellationToken) };
+    }
+
+    public Task<PagedResult<Coupon>> GetByPagedAsync(CouponQuery couponQuery, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
+        return _couponRepository.FindByPagedAsync(couponQuery, paginationToken, cancellationToken);
     }
 
     public async Task<Coupon> UpdateAsync(Coupon updatedCoupon, CancellationToken cancellationToken = default) {

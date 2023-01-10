@@ -1,7 +1,9 @@
 ﻿using System.Collections.Immutable;
+using CaaS.Core.Base.Pagination;
 using CaaS.Core.CouponAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Ado.Query.Parameters.Where;
 using CaaS.Infrastructure.Base.Repository;
 
 namespace CaaS.Infrastructure.CouponData; 
@@ -11,7 +13,7 @@ public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICoupon
 
     public CouponRepository(IDao<CouponDataModel> dao): 
                             base(dao, new CouponDomainModelConvert()) { }
-
+    
     public async Task<Dictionary<Guid, IReadOnlyList<Coupon>>> FindByOrderIdsAsync(IReadOnlyCollection<Guid> orderIds,
         CancellationToken cancellationToken = default) {
         return (await Converter
@@ -52,6 +54,28 @@ public class CouponRepository : CrudRepository<CouponDataModel, Coupon>, ICoupon
         return (await Converter.ConvertToDomain(Dao
                 .FindBy(new StatementParameters(){ Where = whereParameters }, cancellationToken), cancellationToken))
             .ToList();
+    }
+    
+    public async Task<PagedResult<Coupon>> FindByPagedAsync(CouponQuery couponQuery, PaginationToken? paginationToken = null, CancellationToken cancellationToken = default) {
+        var whereParameters = new List<QueryParameter>();
+        if (couponQuery.CartId != null) {
+            whereParameters.Add(new QueryParameter(nameof(CouponDataModel.CartId), couponQuery.CartId));
+        }
+        if (couponQuery.OrderId != null) {
+            whereParameters.Add(new QueryParameter(nameof(CouponDataModel.OrderId), couponQuery.OrderId));
+        }
+        if (couponQuery.CustomerId != null) {
+            whereParameters.Add(new QueryParameter(nameof(CouponDataModel.CustomerId), couponQuery.CustomerId));
+        }
+        if (couponQuery.Code != null) {
+            whereParameters.Add(new QueryParameter(nameof(CouponDataModel.Code), couponQuery.Code));
+        }
+        
+        var statementParameters = new StatementParameters() {
+            WhereParameters = new WhereParameters(whereParameters)
+        };
+        
+        return await FindByPagedAsync(statementParameters, paginationToken, cancellationToken);
     }
 
     public async Task UpdateAsync(IEnumerable<Coupon> oldDomainModels, IEnumerable<Coupon> newDomainModels, CancellationToken cancellationToken = default) {

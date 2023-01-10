@@ -1,11 +1,15 @@
 using AutoMapper;
+using CaaS.Api.Base;
 using CaaS.Api.Base.AppKey;
 using CaaS.Api.Base.Attributes;
 using CaaS.Api.ProductApi.Models;
 using CaaS.Core.Base;
+using CaaS.Core.Base.Pagination;
 using CaaS.Core.ProductAggregate;
+using CaaS.Infrastructure.Base.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 
 namespace CaaS.Api.ProductApi; 
 

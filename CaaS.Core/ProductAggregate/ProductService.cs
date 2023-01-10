@@ -76,7 +76,7 @@ public class ProductService : IProductService {
         await uow.CompleteAsync(cancellationToken);
         return updatedProduct;
     }
-    
+
     public async Task DeleteAsync(Guid productId, CancellationToken cancellationToken = default) {
         await using var uow = _unitOfWorkManager.Begin();
         var product = await _productRepository.FindByIdAsync(productId, cancellationToken);
@@ -86,7 +86,7 @@ public class ProductService : IProductService {
         var updatedProduct = product with {
             Deleted = true
         };
-        
+
         await _productRepository.UpdateAsync(product, updatedProduct, cancellationToken);
         await uow.CompleteAsync(cancellationToken);
     }
