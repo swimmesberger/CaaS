@@ -1,23 +1,34 @@
-﻿using CaaS.Core.BlobAggregate;
+﻿using CaaS.Core.Base.Exceptions;
+using CaaS.Core.Base.Tenant;
+using CaaS.Core.BlobAggregate;
 using CaaS.Infrastructure.Base.Ado;
 using CaaS.Infrastructure.Base.Ado.Impl;
 using CaaS.Infrastructure.Base.Ado.Query.Parameters;
+using CaaS.Infrastructure.Base.Di;
 
 namespace CaaS.Infrastructure.BlobData; 
 
 public sealed class BlobService : IBlobService {
     private readonly IDao<BlobDataModel> _dao;
+    private readonly ITenantIdAccessor? _tenantService;
 
-    public BlobService(IDao<BlobDataModel> dao) {
+    public BlobService(IDao<BlobDataModel> dao, IServiceProvider<ITenantIdAccessor>? tenantService = null) {
         _dao = dao;
+        _tenantService = tenantService?.GetService();
     }
     
     public async Task<IBlobItem?> GetAsync(string path, CancellationToken cancellationToken = default) {
-        return ItemFromDataModel(await GetModelAsync(path, cancellationToken));
+        var dao = _dao;
+        if (_tenantService == null && dao is GenericDao<BlobDataModel> genericDao) {
+            // all paths should be unique and to allow access to the files without providing a header value we disable tenantId preProcessing
+            // = no WHERE shop_id = tenantId in query
+            dao = genericDao.WithOptions(new GenericDaoOptions() { IgnoreTenantId = true });
+        }
+        return ItemFromDataModel(await GetModelAsync(dao, path, cancellationToken));
     }
     
     public async Task AddOrUpdateAsync(IBlobItem blobItem, CancellationToken cancellationToken = default) {
-        var existingItem = await GetModelAsync(blobItem.Path, cancellationToken);
+        var existingItem = await GetModelAsync(_dao, blobItem.Path, cancellationToken);
         if (existingItem == null) {
             await _dao.AddAsync(DataModelFromItem(blobItem), cancellationToken);
         } else {
@@ -25,13 +36,7 @@ public sealed class BlobService : IBlobService {
         }
     }
 
-    private async Task<BlobDataModel?> GetModelAsync(string path, CancellationToken cancellationToken = default) {
-        var dao = _dao;
-        if (dao is GenericDao<BlobDataModel> genericDao) {
-            // all paths should be unique and to allow access to the files without providing a header value we disable tenantId preProcessing
-            // = no WHERE shop_id = tenantId in query
-            dao = genericDao.WithOptions(new GenericDaoOptions() { IgnoreTenantId = true });
-        }
+    private async Task<BlobDataModel?> GetModelAsync(IDao<BlobDataModel> dao, string path, CancellationToken cancellationToken = default) {
         return await dao.FindBy(new StatementParameters() {
             Where = new QueryParameter[] { new(nameof(BlobDataModel.Path), path) }
         }, cancellationToken).FirstOrDefaultAsync(cancellationToken);
@@ -50,7 +55,10 @@ public sealed class BlobService : IBlobService {
         };
     }
 
-    private static BlobDataModel DataModelFromItem(IBlobItem blobItem) {
+    private BlobDataModel DataModelFromItem(IBlobItem blobItem) {
+        if (_tenantService == null) {
+            throw new CaasNoTenantException();
+        }
         return new BlobDataModel() {
             RowVersion = blobItem.Version,
             CreationTime = blobItem.CreationTime,
@@ -58,7 +66,8 @@ public sealed class BlobService : IBlobService {
             Name = blobItem.Name,
             Path = blobItem.Path,
             MimeType = blobItem.MimeType,
-            Blob = blobItem.Blob
+            Blob = blobItem.Blob,
+            ShopId = _tenantService.GetTenantGuid()
         };
     }
     

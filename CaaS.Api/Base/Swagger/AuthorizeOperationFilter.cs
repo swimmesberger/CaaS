@@ -8,10 +8,10 @@ namespace CaaS.Api.Base.Swagger;
 public sealed class AuthorizeOperationFilter : IOperationFilter {
     public void Apply(OpenApiOperation operation, OperationFilterContext context) {
         var authorizeAttribute = context.MethodInfo.GetAttribute<AuthorizeAttribute>();
-        if (authorizeAttribute != null) {
-            CaasConventionOperationFilter.AddProblemDetailsByStatusCode(StatusCodes.Status401Unauthorized, operation, context);
-            AddAppKeySecurity(operation);
-        }
+        var anonAttribute = context.MethodInfo.GetAttribute<AllowAnonymousAttribute>();
+        if (anonAttribute != null || authorizeAttribute == null) return;
+        CaasConventionOperationFilter.AddProblemDetailsByStatusCode(StatusCodes.Status401Unauthorized, operation, context);
+        AddAppKeySecurity(operation);
     }
     
     private void AddAppKeySecurity(OpenApiOperation operation) {

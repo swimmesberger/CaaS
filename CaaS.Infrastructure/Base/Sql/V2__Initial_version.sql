@@ -94,6 +94,9 @@ CREATE TABLE "files" (
     "path" varchar(4096) NOT NULL,
     "mime_type" varchar(255) NOT NULL,
     "blob" bytea NOT NULL,
+    CONSTRAINT "FK_files.shop_id"
+        FOREIGN KEY ("shop_id")
+            REFERENCES "shop"("id") ON DELETE CASCADE,
     CONSTRAINT  "UNIQUE_path_shop_id" UNIQUE (path, shop_id)
 );
 

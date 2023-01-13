@@ -145,6 +145,6 @@ public class ProductServiceTest {
         var uowManager = new MockUnitOfWorkManager();
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
 
-        return new ProductService(productRepository, shopRepository, blobService, uowManager, tenantIdAccessor);
+        return new ProductService(productRepository, shopRepository, uowManager, tenantIdAccessor);
     }
 }

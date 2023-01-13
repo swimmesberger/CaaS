@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using CaaS.Core.Base;
 using CaaS.Infrastructure.Base;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using ISystemClock = Microsoft.AspNetCore.Authentication.ISystemClock;
 
@@ -13,6 +14,10 @@ public class AppKeyAuthenticationHandler : AuthenticationHandler<AppKeyAuthentic
         UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock) { }
     
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync() {
+        var endpoint = Context.GetEndpoint();
+        if (endpoint?.Metadata.GetMetadata<IAllowAnonymous>() != null) {
+            return AuthenticateResult.NoResult();
+        }
         if (!Request.Headers.TryGetValue(HeaderConstants.AppKey, out var appKey)) {
             return AuthenticateResult.Fail("No app-key provided");
         }

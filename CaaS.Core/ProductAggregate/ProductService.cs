@@ -1,9 +1,8 @@
-using CaaS.Core.Base;
+﻿using CaaS.Core.Base;
 using CaaS.Core.Base.Exceptions;
 using CaaS.Core.Base.Pagination;
 using CaaS.Core.Base.Tenant;
 using CaaS.Core.Base.Validation;
-using CaaS.Core.BlobAggregate;
 using CaaS.Core.ShopAggregate;
 
 namespace CaaS.Core.ProductAggregate; 
@@ -11,18 +10,15 @@ namespace CaaS.Core.ProductAggregate;
 public class ProductService : IProductService {
     private readonly IProductRepository _productRepository;
     private readonly IShopRepository _shopRepository;
-    private readonly IBlobService _blobService;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ITenantIdAccessor _tenantIdAccessor;
 
-    public ProductService(IProductRepository productRepository, IShopRepository shopRepository, 
-        IBlobService blobService, IUnitOfWorkManager unitOfWorkManager,
+    public ProductService(IProductRepository productRepository, IShopRepository shopRepository, IUnitOfWorkManager unitOfWorkManager,
         ITenantIdAccessor tenantIdAccessor) {
         _productRepository = productRepository;
         _shopRepository = shopRepository;
         _tenantIdAccessor = tenantIdAccessor;
         _unitOfWorkManager = unitOfWorkManager;
-        _blobService = blobService;
     }
 
     public async Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) {
@@ -40,14 +36,9 @@ public class ProductService : IProductService {
             throw new CaasItemNotFoundException();
         }
         product = product with {
-            Shop = shop,
-            DownloadLink = $"downloads/{Guid.NewGuid()}",
-            ImageSrc = $"products/{product.Id}/image"
+            Shop = shop
         };
-
-        await _blobService.AddEmptyAsync(product.DownloadLink, cancellationToken);
-        await _blobService.AddEmptyAsync(product.ImageSrc, cancellationToken);
-
+        
         product = await _productRepository.AddAsync(product, cancellationToken);
         await uow.CompleteAsync(cancellationToken);
         return product;

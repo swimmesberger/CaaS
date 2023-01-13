@@ -23,8 +23,6 @@ public sealed class WebBlobLinkGenerator : ILinkGenerator {
     }
     
     public string CreateRelativeUrl(string absoluteUrl) {
-        var firstSlash = absoluteUrl.IndexOf('/');
-        if (firstSlash < 0) return absoluteUrl;
-        return absoluteUrl.Substring(firstSlash + 1);
+        return absoluteUrl;
     }
 }
