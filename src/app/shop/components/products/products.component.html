@@ -30,7 +30,7 @@
           </li>
         </ul>
         <ul class="pagination">
-          <li class="page-item" [ngClass]="productPage.previousPage ? '' : 'disabled'">
+          <li class="page-item" [ngClass]="productPage.nextPage ? '' : 'disabled'">
             <a class="page-link" [ngClass]="productPage.nextPage ? '' : 'disabled'"
                [routerLink]="tenantService.tenantUrl + '/products'"
                queryParamsHandling="merge"

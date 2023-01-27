@@ -674,3 +674,11 @@
   --#{$prefix}btn-hover-bg: #{$light} !important;
   --#{$prefix}btn-active-bg: #{$light} !important;
 }
+
+.page-link {
+  background-color: $pagination-hover-bg;
+
+  &:hover {
+    background-color: #{darken($btn-color, 15%)};
+  }
+}
