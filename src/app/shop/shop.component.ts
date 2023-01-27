@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {environment} from '../../environments/environment';
+import {Component, OnDestroy} from '@angular/core';
+import {ProductSearchService} from "./shared/product/product-search.service";
 
 @Component({
   selector: 'shop-root',
@@ -9,6 +9,10 @@ import {environment} from '../../environments/environment';
     </main>
   `
 })
-export class ShopComponent {
-  environment = environment;
+export class ShopComponent implements OnDestroy {
+  constructor(private productSearchService: ProductSearchService) { }
+
+  ngOnDestroy(): void {
+    this.productSearchService.setSearchText(null)
+  }
 }

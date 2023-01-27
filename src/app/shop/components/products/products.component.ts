@@ -70,8 +70,8 @@ export class ProductsComponent implements OnDestroy {
     // noinspection JSIgnoredPromiseFromCall
     this.router.navigate([],{
         relativeTo: this.route,
-        queryParams: params,
-        queryParamsHandling: 'merge', // remove to replace all query params by provided
+        queryParams: params
+        //queryParamsHandling: 'merge', // remove to replace all query params by provided
       });
   }
 

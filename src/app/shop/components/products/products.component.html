@@ -21,7 +21,7 @@
       <nav class="d-flex justify-content-between pt-2" aria-label="Page navigation">
         <ul class="pagination">
           <li class="page-item" [ngClass]="productPage.previousPage ? '' : 'disabled'">
-            <a class="page-link"
+            <a class="page-link" [ngClass]="productPage.previousPage ? '' : 'disabled'"
                [routerLink]="tenantService.tenantUrl + '/products'"
                queryParamsHandling="merge"
                [queryParams]="prevPageQueryParams(productPage)">
@@ -30,8 +30,8 @@
           </li>
         </ul>
         <ul class="pagination">
-          <li class="page-item" [ngClass]="productPage.nextPage ? '' : 'disabled'">
-            <a class="page-link"
+          <li class="page-item" [ngClass]="productPage.previousPage ? '' : 'disabled'">
+            <a class="page-link" [ngClass]="productPage.nextPage ? '' : 'disabled'"
                [routerLink]="tenantService.tenantUrl + '/products'"
                queryParamsHandling="merge"
                [queryParams]="nextPageQueryParams(productPage)" aria-label="Next">

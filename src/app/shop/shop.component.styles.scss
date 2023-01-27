@@ -143,6 +143,10 @@
   }
 }
 
+.page-item.disabled {
+  --#{$prefix}pagination-border-width: 0px;
+}
+
 .page-title-overlap {
   padding-bottom: 6.375rem;
 

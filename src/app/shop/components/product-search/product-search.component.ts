@@ -3,6 +3,7 @@ import {ProductSearchService} from "../../shared/product/product-search.service"
 import {SearchBarStyle} from "./search-bar-style";
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {Subscription} from "rxjs";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Component({
   selector: 'app-product-search',
@@ -18,6 +19,7 @@ export class ProductSearchComponent implements OnDestroy, AfterViewInit {
   private _queryParamsSub: Subscription;
   constructor(private router: Router,
               private route: ActivatedRoute,
+              private tenantIdService: TenantIdService,
               private productSearchService: ProductSearchService) {
     this._queryParamsSub = this.route.queryParams.subscribe(this.onQueryParamsChanged.bind(this));
   }
@@ -44,7 +46,7 @@ export class ProductSearchComponent implements OnDestroy, AfterViewInit {
     e.preventDefault();
     e.stopPropagation();
     // noinspection JSIgnoredPromiseFromCall
-    this.router.navigate(['/products'],{
+    this.router.navigate([this.tenantIdService.tenantUrl + '/products'],{
       queryParams: {q: e.target.value},
       queryParamsHandling: 'merge', // remove to replace all query params by provided
     });
