@@ -141,7 +141,7 @@ public class ProductServiceTest {
         
         var shopRepository = new ShopRepository(shopDao, shopAdminDao);
         var productRepository = new ProductRepository(productDao, shopRepository, NoOpLinkGenerator.Instance);
-        var blobService = new BlobService(new MemoryDao<BlobDataModel>());
+        var blobService = new BlobService(new MemoryDao<BlobDataModel>(), new CompositeTenantIdAccessor());
         var uowManager = new MockUnitOfWorkManager();
         var tenantIdAccessor = new StaticTenantIdAccessor(TestShopId.ToString());
 

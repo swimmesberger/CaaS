@@ -9,6 +9,8 @@ public sealed class CompositeTenantIdAccessor : ITenantIdAccessor {
     public CompositeTenantIdAccessor(IEnumerable<ITenantIdAccessor> tenantIdAccessors) {
         _tenantIdAccessors = tenantIdAccessors.OrderByDescending(t => t.Priority);
     }
+    
+    public CompositeTenantIdAccessor() : this(Enumerable.Empty<ITenantIdAccessor>()) { }
 
     public bool TryGetTenantId([MaybeNullWhen(false)] out string tenantId) {
         foreach (var tenantIdAccessor in _tenantIdAccessors) {

@@ -10,16 +10,16 @@ namespace CaaS.Infrastructure.BlobData;
 
 public sealed class BlobService : IBlobService {
     private readonly IDao<BlobDataModel> _dao;
-    private readonly ITenantIdAccessor? _tenantService;
+    private readonly ITenantIdAccessor _tenantService;
 
-    public BlobService(IDao<BlobDataModel> dao, IServiceProvider<ITenantIdAccessor>? tenantService = null) {
+    public BlobService(IDao<BlobDataModel> dao, ITenantIdAccessor tenantService) {
         _dao = dao;
-        _tenantService = tenantService?.GetService();
+        _tenantService = tenantService;
     }
     
     public async Task<IBlobItem?> GetAsync(string path, CancellationToken cancellationToken = default) {
         var dao = _dao;
-        if (_tenantService == null && dao is GenericDao<BlobDataModel> genericDao) {
+        if (!_tenantService.HasTenantId() && dao is GenericDao<BlobDataModel> genericDao) {
             // all paths should be unique and to allow access to the files without providing a header value we disable tenantId preProcessing
             // = no WHERE shop_id = tenantId in query
             dao = genericDao.WithOptions(new GenericDaoOptions() { IgnoreTenantId = true });

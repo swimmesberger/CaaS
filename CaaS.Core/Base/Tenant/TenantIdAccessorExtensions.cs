@@ -17,4 +17,8 @@ public static class TenantIdAccessorExtensions {
             throw new CaasNoTenantException("Can't verify tenant");
         }
     }
+    
+    public static bool HasTenantId(this ITenantIdAccessor tenantIdAccessor) {
+        return tenantIdAccessor.TryGetTenantId(out _);
+    }
 }
