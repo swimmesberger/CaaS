@@ -1,7 +1,7 @@
 <form [formGroup]="couponFormGroup" *ngIf="!hasValidPromoCode"
-      (ngSubmit)="applyCoupon()" class="accordion-body needs-validation" method="post">
-  <div class="mb-3">
-    <input [ngClass]="promoCodeControl.touched && promoCodeControl.invalid ? 'is-invalid' : ''"
+      (ngSubmit)="applyCoupon()" class="accordion-body" method="post">
+  <div class="mb-3 input-group">
+    <input [ngClass]="promoCodeControl.touched && promoCodeControl.errors ? 'is-invalid' : ''"
            formControlName="promoCode" class="form-control" type="text"
            i18n-placeholder="@@checkoutPromoCodeFeld"
            placeholder="Promo code">
