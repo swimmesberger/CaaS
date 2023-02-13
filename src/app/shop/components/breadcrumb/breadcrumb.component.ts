@@ -1,6 +1,7 @@
 import {Component} from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
 import {concat, filter, map, Observable, of, shareReplay} from "rxjs";
+import {TenantIdService} from "../../../shared/tenant-id.service";
 
 @Component({
   selector: 'app-breadcrumb',
@@ -12,7 +13,8 @@ export class BreadcrumbComponent {
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private tenantService: TenantIdService
   ) {
     const initialNavigation = new NavigationEnd(0, "", "");
     this.$breadcrumbs = concat(of(initialNavigation), this.router.events).pipe(
@@ -20,6 +22,10 @@ export class BreadcrumbComponent {
         map(() => this.buildBreadcrumb()),
         shareReplay(1)
     );
+  }
+
+  homeUrl(): string {
+    return this.tenantService.tenantUrl;
   }
 
   private buildBreadcrumb(): IBreadcrumbItem[] {

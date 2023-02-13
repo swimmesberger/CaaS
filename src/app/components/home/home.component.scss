@@ -28,6 +28,7 @@
     transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
     height: 20rem;
     width: 23rem;
+    margin: 1rem;
     background: $secondary;
   }
 
@@ -47,5 +48,5 @@
 }
 
 .container {
-  margin-top: 20px;
+  //margin-top: 20px;
 }
