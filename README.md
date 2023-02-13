@@ -1,4 +1,4 @@
-# caas-bb-g2-wimmesberger-g2-kofler-hofer
-caas-bb-g2-wimmesberger-g2-kofler-hofer created by GitHub Classroom
+# CaaS
+Cart as a Service
 
-[![.NET](https://github.com/swk5-2022ws/caas-bb-g2-wimmesberger-g2-kofler-hofer/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/swk5-2022ws/caas-bb-g2-wimmesberger-g2-kofler-hofer/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/swimmesberger/CaaS/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/swimmesberger/CaaS/actions/workflows/dotnet.yml)

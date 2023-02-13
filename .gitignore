@@ -764,3 +764,12 @@ fabric.properties
 
 
 CaaS.Test.Integration/Sql
+# Visual Studio Code
+CaaS.UI/.vscode/*
+!CaaS.UI/.vscode/settings.json
+!CaaS.UI/.vscode/tasks.json
+!CaaS.UI/.vscode/launch.json
+!CaaS.UI/.vscode/extensions.json
+
+# Miscellaneous
+CaaS.UI/.angular/cache

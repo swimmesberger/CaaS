@@ -9,17 +9,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Core", "CaaS.Core\CaaS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Infrastructure", "CaaS.Infrastructure\CaaS.Infrastructure.csproj", "{4D3769FA-BC55-47B2-955B-CDD1017D33ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Infrastructure.Generator", "CaaS.Infrastructure.Generator\CaaS.Infrastructure.Generator.csproj", "{6433E6CB-A736-4BE7-9294-20926BDE01B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Infrastructure.Generator", "CaaS.Infrastructure.Generator\CaaS.Infrastructure.Generator.csproj", "{6433E6CB-A736-4BE7-9294-20926BDE01B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Test", "CaaS.Test\CaaS.Test.csproj", "{E5D059D1-9EE1-40E2-83A3-88CD89AD2D33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Test", "CaaS.Test\CaaS.Test.csproj", "{E5D059D1-9EE1-40E2-83A3-88CD89AD2D33}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Test.Integration", "CaaS.Test.Integration\CaaS.Test.Integration.csproj", "{F2C9CE85-95E4-4070-871B-DE8317466FA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Test.Integration", "CaaS.Test.Integration\CaaS.Test.Integration.csproj", "{F2C9CE85-95E4-4070-871B-DE8317466FA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaaS.Test.Common", "CaaS.Test.Common\CaaS.Test.Common.csproj", "{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CaaS.Test.Common", "CaaS.Test.Common\CaaS.Test.Common.csproj", "{8BDD6B50-D78B-4BB8-94A5-39EDC56E4417}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwKo.Pay", "SwKo.Pay\SwKo.Pay.csproj", "{A5C7BBBA-DF77-4F02-AE18-26814AC5D81F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SwKo.Pay", "SwKo.Pay\SwKo.Pay.csproj", "{A5C7BBBA-DF77-4F02-AE18-26814AC5D81F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwKo.Pay.Api", "SwKo.Pay.Api\SwKo.Pay.Api.csproj", "{138CE981-3A50-45D5-9405-96CE12DB6D7B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SwKo.Pay.Api", "SwKo.Pay.Api\SwKo.Pay.Api.csproj", "{138CE981-3A50-45D5-9405-96CE12DB6D7B}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "CaaS.UI", "CaaS.UI\CaaS.UI.esproj", "{6FB80CCD-4B69-4DBC-8072-2EDC1183EB31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,12 @@ Global
 		{138CE981-3A50-45D5-9405-96CE12DB6D7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{138CE981-3A50-45D5-9405-96CE12DB6D7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{138CE981-3A50-45D5-9405-96CE12DB6D7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FB80CCD-4B69-4DBC-8072-2EDC1183EB31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FB80CCD-4B69-4DBC-8072-2EDC1183EB31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FB80CCD-4B69-4DBC-8072-2EDC1183EB31}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{6FB80CCD-4B69-4DBC-8072-2EDC1183EB31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FB80CCD-4B69-4DBC-8072-2EDC1183EB31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FB80CCD-4B69-4DBC-8072-2EDC1183EB31}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
